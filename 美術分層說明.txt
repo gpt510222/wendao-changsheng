@@ -1,0 +1,15 @@
+《問道長生》美術分層 V2
+
+由後至前：
+1. cultivation-bg-v2.png：無人物洞府、山景與石臺
+2. back-mist-a / back-mist-b：程式生成的遠景雲霧
+3. aura-ring：石臺靈氣波紋
+4. female-base-v3.png / male-base-v3.png：無頭髮、無外袍的基礎人物層
+5. female-outfit-1~3-v3.png / male-outfit-1~3-v3.png：男女各三套透明服裝層
+6. female-hair-1~3-v3.png / male-hair-1~3-v3.png：男女各三款透明髮型層
+7. mist-a / mist-b：角色前方薄霧
+8. lightning：渡劫閃電
+9. 介面：玩家資料、修為數值、靈修／體修圖示按鈕
+
+角色層可獨立進行：呼吸浮動、震動、發光、焦黑及後續眨眼動畫。
+背景、角色、前後霧與特效皆已分離，不再使用人物與場景合成圖。
