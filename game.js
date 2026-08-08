@@ -627,7 +627,7 @@ $$('.gender').forEach(b=>b.onclick=()=>{$$('.gender').forEach(x=>x.classList.rem
 $$('.outfit-choice').forEach(b=>b.onclick=()=>{$$('.outfit-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOutfit=+b.dataset.style;updateCreator()});
 function updateOriginPreview(){$('#originStats').textContent=originDescriptions[createOrigin]}
 $$('.origin-choice').forEach(b=>b.onclick=()=>{$$('.origin-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOrigin=b.dataset.origin;updateOriginPreview()});
-$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請留下你的道號';return}state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:Date.now(),lastSave:Date.now()};startGame();save()};
+$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:Date.now(),lastSave:Date.now()};startGame();save()};
 $('#spiritUp').onclick=()=>upgrade('spirit'); $('#bodyUp').onclick=()=>upgrade('body');
 $('#tribConfirm').onclick=tribulate; $('#tribCancel').onclick=()=>$('#tribulationModal').classList.add('hidden');
 $$('.feature-tab').forEach(b=>b.onclick=()=>toggleFeature(b));
