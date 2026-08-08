@@ -381,13 +381,21 @@ async function leaveSect(){
   state.sect='';state.sectFaction='';state.sectStar=0;state.sectContribution=0;state.sectRank=0;state.sectTask='';state.sectJoinedAt=null;state.sectYearsProcessed=0;state.actingLeader=false;state.npcAffinity={};toast('已脫離門派');render();renderSectPanel('home');save();
 }
 function npcSeed(){const names=sectCatalog.flatMap(g=>[...g.good,...g.evil]);return Math.max(0,names.indexOf(state.sect))}
+function sectNpcLevels(seed,minimum,star){
+  const roll=(slot,range)=>textSeed(`${state.sect}・境界・${seed}・${slot}`)%range;
+  const junior=minimum+roll(0,7);
+  const senior=junior+3+roll(1,5);
+  const offering=senior+4+roll(2,5);
+  const elder=offering+4+roll(3,6);
+  const master=Math.max(elder+5+roll(4,7),star===1?20:minimum+20);
+  return [master,elder,offering,senior,junior].map(level=>Math.min(229,level));
+}
 function sectNpcs(){
   const surnames=['趙','錢','孫','李','周','吳','鄭','王','馮','陳','褚','衛','蔣','沈','韓','楊','朱','秦','尤','許','何','呂','施','張','孔','曹','嚴','華','金','魏','陶','姜','戚','謝','鄒','喻','柏','水','竇','章','雲','蘇','潘','葛','奚','范','彭','郎','魯','韋','昌','馬','苗','鳳','花','方','俞','任','袁','柳','唐','羅','薛','歐陽','上官','司馬','諸葛','夏侯','東方','皇甫','尉遲','公孫','慕容','長孫','宇文','司徒','南宮','令狐','軒轅'];
   const maleGiven=['玄策','清衡','道一','長淵','若塵','星河','無涯','景行','明淵','懷瑾','扶光','晏清','承淵','照夜','守一','修遠','子墨','凌霄','朔','衡','澈','玄','川','長生遠','觀滄海','問天行','凌九霄','守山河','雲歸處','硯無聲'];
   const femaleGiven=['雲舒','清漪','知微','映雪','秋水','昭寧','疏影','望舒','青梧','霽月','含章','雲岫','驚鴻','凝霜','聽瀾','若水','靈犀','月華','瑤','霜','寧','蘭','月','月如霜','雲知意','柳含煙','星照晚','雪無痕','花解語','夢長安'];
-  const seed=npcSeed(),mode=seed%12,roles=['掌門','大長老','供奉','師兄','師弟'];
-  const offsets=[18,15,12,6,2];
-  return roles.map((role,i)=>{const id=seed*5+i,gender=mode===0?'男':mode===1?'女':textSeed(`${state.sect}・${role}・${i}`)%2===0?'男':'女',given=gender==='男'?maleGiven:femaleGiven,name=surnames[(id*37)%surnames.length]+given[id%given.length],title=i===3?(gender==='男'?'師兄':'師姐'):i===4?(gender==='男'?'師弟':'師妹'):role,portrait=i+(gender==='女'?5:0);return {title,name,gender,level:Math.min(229,(sectInfo()?.need||0)+offsets[i]),portrait,id}});
+  const seed=npcSeed(),mode=seed%12,roles=['掌門','大長老','供奉','師兄','師弟'],group=sectInfo()||sectCatalog[0],levels=sectNpcLevels(seed,group.need,group.star);
+  return roles.map((role,i)=>{const id=seed*5+i,gender=mode===0?'男':mode===1?'女':textSeed(`${state.sect}・${role}・${i}`)%2===0?'男':'女',given=gender==='男'?maleGiven:femaleGiven,name=surnames[(id*37)%surnames.length]+given[id%given.length],title=i===3?(gender==='男'?'師兄':'師姐'):i===4?(gender==='男'?'師弟':'師妹'):role,portrait=i+(gender==='女'?5:0),statSeed=textSeed(`${state.sect}・${name}・戰鬥`);return {title,name,gender,level:levels[i],portrait,id,role:i,statBias:{vitality:.92+statSeed%17/100,offense:.92+Math.floor(statSeed/7)%19/100,guard:.92+Math.floor(statSeed/13)%17/100,speed:.92+Math.floor(statSeed/19)%15/100,spirit:.92+Math.floor(statSeed/29)%17/100}}});
 }
 function renderSectPanel(view='home'){
   currentSectView=view;processSectYears();
@@ -463,14 +471,15 @@ function battlePlayerStats(){
 function battleEnemyStats(n){
   const star=state.sectStar||1,npcIndex=sectNpcs().findIndex(x=>x.id===n.id),role=n.role??(npcIndex>=0?npcIndex:2);
   const rolePower=[1.18,1.1,1.03,.94,.86][role]||1;
+  const bias=n.statBias||{vitality:1,offense:1,guard:1,speed:1,spirit:1};
   const bodyLevel=Math.floor(n.level*(.25+star*.025));
   const growth=cumulativeGrowth(n.level,bodyLevel);
   const artPower=artTierMax[star-1]*(.12+star*.02)*rolePower;
-  const rootBone=Math.round((5+growth.rootBone+star*2)*rolePower+artPower*.42);
-  const trueQi=Math.round((5+growth.trueQi+star*2)*rolePower+artPower*.46);
-  const physique=Math.round((5+growth.physique+star)*rolePower+artPower*.34);
-  const agility=Math.round((5+growth.agility+star)*rolePower+artPower*.16);
-  const spiritualPower=Math.round((5+Math.floor(n.level/8)+star)*rolePower+artPower*.08);
+  const rootBone=Math.round(((5+growth.rootBone+star*2)*rolePower+artPower*.42)*bias.vitality);
+  const trueQi=Math.round(((5+growth.trueQi+star*2)*rolePower+artPower*.46)*bias.offense);
+  const physique=Math.round(((5+growth.physique+star)*rolePower+artPower*.34)*bias.guard);
+  const agility=Math.round(((5+growth.agility+star)*rolePower+artPower*.16)*bias.speed);
+  const spiritualPower=Math.round(((5+Math.floor(n.level/8)+star)*rolePower+artPower*.08)*bias.spirit);
   const dodgeRating=agility*3,critRating=spiritualPower*3;
   return {maxHp:Math.max(240,rootBone*5),attack:Math.max(12,trueQi*5),defense:physique*20,dodge:Math.min(.32,dodgeRating/(dodgeRating+1100)),crit:Math.min(.38,critRating/(critRating+1100))};
 }
