@@ -55,11 +55,31 @@ const artKinds={secret:{tab:'秘籍',attribute:'trueQi',label:'真氣'},formula:
 const artTabs=[['sect','門派技能'],['secret','秘籍'],['formula','真訣'],['sutra','心經'],['escape','遁術'],['ultimate','絕學'],['fragment','殘頁'],['moves','招式']];
 const artElements=[['metal','金','metalRoot'],['wood','木','woodRoot'],['water','水','waterRoot'],['fire','火','fireRoot'],['earth','土','earthRoot']];
 const artTierMax=[120,260,520,900,1400,2050,2933,3352,4800];
-const defaults = { name:'', gender:'女', hair:1, outfit:1, origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, pills:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:1, learnedArts:[],artsCapacity:8,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:0, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0, workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, righteousness:0, evilQi:0, prestige:200, actingLeader:false, npcAffinity:{}, npcDaily:{}, sectTokens:0, sectTokenDaily:{date:'',exchanged:0}, practiceBuff:{active:false,until:0,remaining:0,total:0}, transmissionBuff:{active:false,until:0,remaining:0,total:0}, lastGreetingDay:'', lastSalaryDay:'', lastPracticeDay:'', bornAt:null, lastSave:Date.now() };
+const defaults = { name:'', gender:'女', hair:1, outfit:1, origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, pills:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:1, learnedArts:[],artsCapacity:8,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:0, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0, workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, righteousness:0, evilQi:0, prestige:200, actingLeader:false, npcAffinity:{}, npcDaily:{}, sectTokens:0, sectTokenDaily:{date:'',exchanged:0}, practiceBuff:{active:false,until:0,remaining:0,total:0}, transmissionBuff:{active:false,until:0,remaining:0,total:0}, lastGreetingDay:'', lastSalaryDay:'', lastPracticeDay:'', bornAt:null, lastTrustedTime:0, lastSave:Date.now() };
 let state = { ...defaults }, tickStart = Date.now();
 const saveKey = 'wendao-idle-v2';
 let createGender='女', createOutfit=1, createOrigin='家族子弟', audioContext=null, currentFeature=null, currentRootView='root', currentCaveView='dwelling', currentSectView='home', currentArtsView='sect', suppressSave=false;
 let bgmTheme=null,battle=null,battleTimer=null,pauseStartedAt=null,sessionOnline=false;
+let clockEpoch=Date.now(),clockPerf=performance.now(),trustedClockReady=location.protocol==='file:',clockSyncPromise=null;
+
+function setClockAnchor(epoch,trusted=false){clockEpoch=epoch;clockPerf=performance.now();trustedClockReady=trusted||location.protocol==='file:'}
+function gameNow(){return Math.floor(clockEpoch+(performance.now()-clockPerf))}
+async function syncTrustedTime(){
+  if(location.protocol==='file:'){setClockAnchor(Date.now(),true);return true}
+  if(clockSyncPromise)return clockSyncPromise;
+  clockSyncPromise=(async()=>{
+    try{
+      const started=performance.now(),url=`${location.origin}${location.pathname}?clock=${Math.random().toString(36).slice(2)}`;
+      const response=await fetch(url,{method:'HEAD',cache:'no-store'}),received=performance.now(),header=response.headers.get('date'),serverTime=Date.parse(header||'');
+      if(!response.ok||!Number.isFinite(serverTime))throw new Error('server time unavailable');
+      const estimated=serverTime+Math.min(1000,Math.max(0,(received-started)/2)),previous=state.lastTrustedTime||0;
+      if(previous&&estimated+120000<previous)throw new Error('server time moved backwards');
+      const trusted=Math.max(estimated,previous);setClockAnchor(trusted,true);state.lastTrustedTime=trusted;return true;
+    }catch{return false}finally{clockSyncPromise=null}
+  })();
+  return clockSyncPromise;
+}
+function requireTrustedTime(){if(trustedClockReady)return true;toast('尚未取得可信時間，請確認網路後重新進入遊戲');return false}
 
 function req(level) { const realm=Math.min(Math.floor(level/10),realmGrowthMultipliers.length-1);return Math.round(1000*Math.pow(1.10,level)*realmGrowthMultipliers[realm]); }
 function bodyReq(level) { return req(level)*5; }
@@ -75,7 +95,7 @@ function bodyAttributeGain(newLevel) {
 function applyAttributeGain(gain){Object.entries(gain).forEach(([key,value])=>state[key]=(state[key]||0)+value)}
 function cumulativeGrowth(spiritLevel,bodyLevel=0){const total={rootBone:0,trueQi:0,physique:0,agility:0,comprehension:0};for(let i=1;i<=spiritLevel;i++)Object.entries(spiritAttributeGain(i)).forEach(([k,v])=>total[k]=(total[k]||0)+v);for(let i=1;i<=bodyLevel;i++)Object.entries(bodyAttributeGain(i)).forEach(([k,v])=>total[k]=(total[k]||0)+v);return total}
 function hasSpiritualSense() { return state.spiritLevel>=40; }
-function experiencedYears() { return state.bornAt ? Math.max(0,Math.floor((Date.now()-state.bornAt)/900000)) : 0; }
+function experiencedYears() { return state.bornAt ? Math.max(0,Math.floor((gameNow()-state.bornAt)/900000)) : 0; }
 function realmName(level, arr) {
   return `${arr[Math.min(Math.floor(level/10),arr.length-1)]}・${['一','二','三','四','五','六','七','八','九','十'][level%10]}層`;
 }
@@ -89,12 +109,12 @@ function auraEfficiency() { return Math.floor(1.25*Math.sqrt(Math.max(0,effectiv
 function pathEfficiency(level){const realm=Math.min(Math.floor(level/10),realmEfficiencyMultipliers.length-1),layer=level%10;return realmEfficiencyMultipliers[realm]*(1+layer*.035)}
 function realmEfficiency(){return Math.max(1,pathEfficiency(state.spiritLevel)+pathEfficiency(state.bodyLevel)-realmEfficiencyMultipliers[0])}
 function baseRate() { return Math.max(1,Math.floor((10+cultivationEfficiency())*realmEfficiency())); }
-function buffRemaining(key,now=Date.now()){const buff=state[key]||defaults[key];return buff.active?Math.max(0,(buff.until||0)-now):Math.max(0,buff.remaining||0)}
-function buffActive(key,now=Date.now()){return !!state[key]?.active&&buffRemaining(key,now)>0}
-function cultivationMultiplier(now=Date.now()){return 1+(buffActive('practiceBuff',now)?4:0)+(buffActive('transmissionBuff',now)?7:0)}
+function buffRemaining(key,now=gameNow()){const buff=state[key]||defaults[key];return buff.active?Math.max(0,(buff.until||0)-now):Math.max(0,buff.remaining||0)}
+function buffActive(key,now=gameNow()){return !!state[key]?.active&&buffRemaining(key,now)>0}
+function cultivationMultiplier(now=gameNow()){return 1+(buffActive('practiceBuff',now)?4:0)+(buffActive('transmissionBuff',now)?7:0)}
 function rate() { return Math.max(1,Math.floor(baseRate()*cultivationMultiplier())); }
 function buffYears(key){return buffRemaining(key)/900000}
-function addCultivationBuff(key,years){const remaining=buffRemaining(key),duration=years*900000,total=remaining+duration;state[key]={active:true,until:Date.now()+total,remaining:0,total}}
+function addCultivationBuff(key,years){const remaining=buffRemaining(key),duration=years*900000,total=remaining+duration;state[key]={active:true,until:gameNow()+total,remaining:0,total}}
 function buffClock(key){const seconds=Math.max(0,Math.ceil(buffRemaining(key)/1000)),hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60),secs=seconds%60;return `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(secs).padStart(2,'0')}`}
 function buffPercent(key){const buff=state[key],total=Math.max(1,buff?.total||buffRemaining(key));return Math.max(0,Math.min(100,buffRemaining(key)/total*100))}
 function offlineCultivationGain(from,to){const base=baseRate(),ticks=Math.max(0,(to-from)/5000);let gain=base*ticks;for(const [key,bonus] of [['practiceBuff',4],['transmissionBuff',7]]){const buff=state[key];if(buff?.active)gain+=base*bonus*Math.max(0,Math.min(to,buff.until||0)-from)/5000}return Math.floor(gain)}
@@ -106,11 +126,11 @@ function poolWoodCost() { return Math.floor(20*Math.pow(1.45,state.spiritPoolLev
 function poolIronCost() { return Math.floor(10*Math.pow(1.5,state.spiritPoolLevel-1)); }
 function rootRank(level) { return `${spiritRootRanks[Math.min(Math.floor(level/10),spiritRootRanks.length-1)]}・${level%10+1}階`; }
 function chanceFromRating(rating,cap) { return Math.min(cap,rating/(rating+1000)*100); }
-function save() { if(suppressSave)return;state.lastSave=Date.now(); localStorage.setItem(saveKey,JSON.stringify(state)); }
+function save() { if(suppressSave)return;const now=gameNow();state.lastSave=now;if(trustedClockReady)state.lastTrustedTime=Math.max(state.lastTrustedTime||0,now);localStorage.setItem(saveKey,JSON.stringify(state)); }
 function load() {
   try {
     const current=JSON.parse(localStorage.getItem(saveKey));
-    if(current) { const migrateGrowth=current.attributeGrowthVersion!==1;state={...defaults,...current};state.learnedArts=Array.isArray(current.learnedArts)?current.learnedArts:[];state.sectTokenDaily={...defaults.sectTokenDaily,...current.sectTokenDaily};state.practiceBuff={...defaults.practiceBuff,...current.practiceBuff};state.transmissionBuff={...defaults.transmissionBuff,...current.transmissionBuff};['practiceBuff','transmissionBuff'].forEach(key=>{const buff=state[key];if(!buff.active&&buff.remaining>0)state[key]={active:true,until:Date.now()+buff.remaining,remaining:0,total:buff.total||buff.remaining}});if(migrateGrowth){applyAttributeGain(cumulativeGrowth(state.spiritLevel,state.bodyLevel));state.attributeGrowthVersion=1}state.bornAt ||= Date.now(); state.npcAffinity||={};state.npcDaily||={};normalizeLearnedArts();migrateSectName(); return state; }
+    if(current) { const migrateGrowth=current.attributeGrowthVersion!==1;state={...defaults,...current};state.learnedArts=Array.isArray(current.learnedArts)?current.learnedArts:[];state.sectTokenDaily={...defaults.sectTokenDaily,...current.sectTokenDaily};state.practiceBuff={...defaults.practiceBuff,...current.practiceBuff};state.transmissionBuff={...defaults.transmissionBuff,...current.transmissionBuff};if(migrateGrowth){applyAttributeGain(cumulativeGrowth(state.spiritLevel,state.bodyLevel));state.attributeGrowthVersion=1}state.bornAt ||= Date.now(); state.npcAffinity||={};state.npcDaily||={};normalizeLearnedArts();migrateSectName(); return state; }
     const old=JSON.parse(localStorage.getItem('wendao-idle-v1'));
     if(old) { state={...defaults,...old,free:(old.free||0)+(old.spiritQi||0)+(old.bodyQi||0)}; state.bornAt ||= Date.now(); }
   } catch {}
@@ -121,10 +141,23 @@ function migrateSectName(){
   const seed=[...state.sect].reduce((n,c)=>n+c.charCodeAt(0),0);state.sect=pool[seed%pool.length];
 }
 function show(id) { $$('.screen').forEach(x=>x.classList.remove('active')); $(id).classList.add('active'); }
-function toast(text) { const x=$('#toast'); x.textContent=text; x.classList.add('show'); setTimeout(()=>x.classList.remove('show'),1800); }
+function isPureCultivationView() {
+  return $('#gameScreen').classList.contains('active')
+    && currentFeature===null
+    && $('#featurePanel').classList.contains('hidden')
+    && $('#gameMenu').classList.contains('hidden')
+    && !document.querySelector('.modal:not(.hidden)');
+}
+function hideCultivationToast() {
+  const x=$('#toast');
+  if(x.dataset.kind==='cultivation')x.classList.remove('show');
+}
+function toast(text,kind='general') { const x=$('#toast'); x.textContent=text;x.dataset.kind=kind;x.classList.add('show'); setTimeout(()=>x.classList.remove('show'),1800); }
+new MutationObserver(()=>{if(!isPureCultivationView())hideCultivationToast()})
+  .observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class']});
 function addCultivation(amount,silent=false) {
   state.free += amount; state.totalEarned += amount;
-  if(!silent) { toast(`修為+${amount}`); playTone(); }
+  if(!silent) { if(isPureCultivationView())toast(`修為+${amount}`,'cultivation'); playTone(); }
   render(); save();
 }
 function addAura(amount) { const cap=auraCapacity();if(state.aura<cap)state.aura=Math.min(cap,state.aura+amount); }
@@ -206,8 +239,13 @@ function showOfflineRewards(before,seconds){
   const hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60),secs=seconds%60;$('#offlineDuration').textContent=`離線時間 ${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
   $('#offlineRewardList').innerHTML=rows.length?rows.map(([label,amount])=>`<div><span>${label}</span><b>+${amount.toLocaleString()}</b></div>`).join(''):'<p>本次離線時間不足，尚未產生收益。</p>';$('#offlineModal').classList.remove('hidden');
 }
-function startGame() {
-  finishPause(); sessionOnline=true;
+async function startGame() {
+  finishPause();sessionOnline=true;
+  const savedLast=state.lastSave||0,savedTrusted=state.lastTrustedTime||0;
+  trustedClockReady=location.protocol==='file:';
+  const clockOkay=await syncTrustedTime(),now=gameNow(),clockRollback=(savedTrusted&&now+120000<savedTrusted)||(savedLast&&savedLast>now+120000);
+  if(clockRollback){if(state.bornAt>now)state.bornAt=now;if(state.sectJoinedAt>now)state.sectJoinedAt=now}
+  ['practiceBuff','transmissionBuff'].forEach(key=>{const buff=state[key];if(!buff.active&&buff.remaining>0)state[key]={active:true,until:now+buff.remaining,remaining:0,total:buff.total||buff.remaining}});
   show('#gameScreen');
   startBgm('main');
   const offlineBefore=rewardSnapshot();
@@ -218,9 +256,11 @@ function startGame() {
   $$('.feature-tab').forEach(x=>x.classList.remove('active'));
   const g=state.gender==='男'?'male':'female';
   $('#heroCharacter').src=`assets/${g}-character-outfit-${state.outfit||1}-v12.png`;
-  const now=Date.now(),away=Math.max(0,Math.floor((now-state.lastSave)/5000));
-  if(away>0) { const gain=offlineCultivationGain(state.lastSave,now);addAura(away*auraRate());runSettlementTick(away);addCultivation(gain,true);setTimeout(()=>{if(sessionOnline)showOfflineRewards(offlineBefore,away*5)},180); }
-  tickStart=Date.now();render();save();
+  const away=clockOkay&&!clockRollback?Math.max(0,Math.floor((now-savedLast)/5000)):0;
+  if(away>0) { const gain=offlineCultivationGain(savedLast,now);addAura(away*auraRate());runSettlementTick(away);addCultivation(gain,true);setTimeout(()=>{if(sessionOnline)showOfflineRewards(offlineBefore,away*5)},180); }
+  else if(clockRollback)setTimeout(()=>toast('偵測到時間異常，本次不結算離線收益'),250);
+  else if(!clockOkay&&location.protocol!=='file:')setTimeout(()=>toast('無法取得可信時間，已暫停離線與每日結算'),250);
+  tickStart=gameNow();render();save();
 }
 function updateCreator() {
   const g=createGender==='男'?'male':'female';
@@ -296,12 +336,16 @@ function renderSectLearning(){
 }
 function learnSectArt(id){const art=sectTechniqueSet().find(item=>item.id===id);if(!art||state.learnedArts.some(item=>item.id===id))return;if(art.slot>=sectLearnLimit())return toast('目前職位不足');if(state.learnedArts.length>=state.artsCapacity)return toast('門派技能欄已滿');state.learnedArts.push(art);toast(`習得${art.name}`);renderSectLearning();render();save()}
 
-function dateKey(){return new Date().toLocaleDateString('en-CA')}
+function dateKey(){
+  if(!trustedClockReady&&location.protocol!=='file:')return null;
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(gameNow())),values=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
 function sectInfo(){return sectCatalog.find(x=>x.star===state.sectStar)}
 function selectedSectTask(){return sectTasks.find(x=>x.id===state.sectTask)}
 function processSectYears(){
   if(!state.sect||!state.sectJoinedAt)return;
-  const total=Math.floor((Date.now()-state.sectJoinedAt)/900000),delta=Math.max(0,total-state.sectYearsProcessed);
+  const total=Math.floor((gameNow()-state.sectJoinedAt)/900000),delta=Math.max(0,total-state.sectYearsProcessed);
   if(!delta)return;
   state.sectYearsProcessed=total;
   if(state.sectFaction==='正')state.righteousness+=delta;else state.evilQi+=delta;
@@ -316,7 +360,7 @@ function sectDescription(){
 function allEligibleSects(){return sectCatalog.filter(g=>state.spiritLevel>=g.need).flatMap(g=>[...g.good.map(name=>({name,faction:'正',star:g.star})),...g.evil.map(name=>({name,faction:'邪',star:g.star}))])}
 function joinRandomSect(){
   const pool=allEligibleSects(),pick=pool[Math.floor(Math.random()*pool.length)];if(!pick)return;
-  state.sect=pick.name;state.sectFaction=pick.faction;state.sectStar=pick.star;state.sectContribution=0;state.sectRank=0;state.sectTask='';state.sectJoinedAt=Date.now();state.sectYearsProcessed=0;state.actingLeader=false;state.npcAffinity={};
+  state.sect=pick.name;state.sectFaction=pick.faction;state.sectStar=pick.star;state.sectContribution=0;state.sectRank=0;state.sectTask='';state.sectJoinedAt=gameNow();state.sectYearsProcessed=0;state.actingLeader=false;state.npcAffinity={};
   toast(`拜入${['一','二','三','四','五','六','七','八','九'][pick.star-1]}星門派・${pick.name}`);render();renderSectPanel('home');save();
 }
 function leaveSect(){
@@ -366,7 +410,8 @@ function renderSectView(view){
   if(view==='challenge'){inner.innerHTML=`<div class="challenge-card"><b>挑戰掌門</b><p>消耗200威望與掌門一戰。獲勝可成為代理掌門，但原門派職位不變。</p><strong>目前威望：${Math.floor(state.prestige)}</strong><button id="challengeMaster" class="jade-button" ${state.prestige>=200&&!state.actingLeader?'':'disabled'}>${state.actingLeader?'已是代理掌門':'消耗200威望挑戰'}</button></div>`;$('#challengeMaster').onclick=challengeMaster}
 }
 function sectTokenDailyState(){
-  if(!state.sectTokenDaily||state.sectTokenDaily.date!==dateKey())state.sectTokenDaily={date:dateKey(),exchanged:0};
+  const today=dateKey();if(!today)return state.sectTokenDaily||{date:'',exchanged:3};
+  if(!state.sectTokenDaily||state.sectTokenDaily.date!==today)state.sectTokenDaily={date:today,exchanged:0};
   return state.sectTokenDaily;
 }
 function renderSectShop(){
@@ -375,6 +420,7 @@ function renderSectShop(){
   $('#shopBackBtn').onclick=()=>renderSectPanel('npcs');$('#exchangeSectToken').onclick=exchangeSectToken;
 }
 function exchangeSectToken(){
+  if(!requireTrustedTime())return;
   const daily=sectTokenDailyState();if(daily.exchanged>=3)return toast('今日兌換次數已用完');if(state.sectContribution<200)return toast('門派貢獻不足');
   state.sectContribution-=200;state.sectTokens=(state.sectTokens||0)+1;daily.exchanged++;toast('兌換門派令牌 ×1');renderSectShop();save();
 }
@@ -392,9 +438,9 @@ function openItemModal(key){
 function closeItemModal(){$('#itemModal').classList.add('hidden')}
 function useItem(key){if(key==='sectToken'&&useSectToken())closeItemModal()}
 function promoteSect(){const cost=sectPromotionCosts[state.sectRank];if(state.sectContribution<cost)return;state.sectContribution-=cost;state.sectRank++;toast(`晉升為${sectRanks[state.sectRank]}`);renderSectView('home');save()}
-function npcDailyState(index){const key=String(sectNpcs()[index].id),record=state.npcDaily[key];if(!record||record.date!==dateKey())state.npcDaily[key]={date:dateKey(),chat:0,gift:0};return state.npcDaily[key]}
+function npcDailyState(index){const key=String(sectNpcs()[index].id),record=state.npcDaily[key],today=dateKey();if(!today)return record||{date:'',chat:3,gift:3};if(!record||record.date!==today)state.npcDaily[key]={date:today,chat:0,gift:0};return state.npcDaily[key]}
 function renderNpcDetail(index){const n=sectNpcs()[index],aff=state.npcAffinity[n.id]||0,daily=npcDailyState(index),master=index===0,elder=index===1,offering=index===2;$('#npcDetail').innerHTML=`<b>${n.title}・${n.name}</b><span>${realmName(n.level,spiritRealms)}・好感 ${aff} / 100</span><div><button data-npc-action="chat" ${daily.chat>=3||aff>=100?'disabled':''}>聊天 ${daily.chat}/3</button><button data-npc-action="gift" ${daily.gift>=3||aff>=100?'disabled':''}>送禮 ${daily.gift}/3</button><button data-npc-action="spar">切磋</button>${master?'<button data-npc-action="greet">請安</button>':''}${elder?'<button data-npc-action="arts">學習功法</button>':''}${offering?'<button data-npc-action="shop">物資兌換</button>':''}</div>`;$$('[data-npc-action]').forEach(b=>b.onclick=()=>npcAction(index,b.dataset.npcAction))}
-function npcAction(index,action){const n=sectNpcs()[index],daily=npcDailyState(index),aff=state.npcAffinity[n.id]||0;if(action==='chat'){if(daily.chat>=3||aff>=100)return;daily.chat++;state.npcAffinity[n.id]=Math.min(100,aff+1);toast('交談甚歡・好感+1')}else if(action==='gift'){if(daily.gift>=3||aff>=100)return;daily.gift++;state.npcAffinity[n.id]=Math.min(100,aff+5);toast('對方欣然收禮・好感+5')}else if(action==='spar'){startNpcBattle(n);return}else if(action==='greet'){if(state.lastGreetingDay===dateKey())return toast('今日已向掌門請安');state.lastGreetingDay=dateKey();state.sectContribution+=100;toast('掌門頷首嘉許・門派貢獻+100')}else if(action==='arts'){renderSectLearning();return}else if(action==='shop'){renderSectPanel('shop');return}renderNpcDetail(index);save()}
+function npcAction(index,action){const n=sectNpcs()[index],daily=npcDailyState(index),aff=state.npcAffinity[n.id]||0;if(['chat','gift','greet'].includes(action)&&!requireTrustedTime())return;if(action==='chat'){if(daily.chat>=3||aff>=100)return;daily.chat++;state.npcAffinity[n.id]=Math.min(100,aff+1);toast('交談甚歡・好感+1')}else if(action==='gift'){if(daily.gift>=3||aff>=100)return;daily.gift++;state.npcAffinity[n.id]=Math.min(100,aff+5);toast('對方欣然收禮・好感+5')}else if(action==='spar'){startNpcBattle(n);return}else if(action==='greet'){if(state.lastGreetingDay===dateKey())return toast('今日已向掌門請安');state.lastGreetingDay=dateKey();state.sectContribution+=100;toast('掌門頷首嘉許・門派貢獻+100')}else if(action==='arts'){renderSectLearning();return}else if(action==='shop'){renderSectPanel('shop');return}renderNpcDetail(index);save()}
 
 function battlePlayerStats(){
   const rootBone=effectiveCore('rootBone'),trueQi=effectiveCore('trueQi'),physique=effectiveCore('physique'),agility=effectiveCore('agility'),dodgeRating=agility*3,critRating=state.spiritualPower*3;
@@ -483,9 +529,9 @@ function updatePracticeTimers(){
   if(currentFeature!=='sect'||currentSectView!=='practice')return;
   for(const [key,prefix] of [['practiceBuff','practice'],['transmissionBuff','transmission']]){const bar=$(`#${prefix}TimerBar`),text=$(`#${prefix}TimerText`);if(!bar||!text)continue;const active=buffActive(key);bar.style.width=`${buffPercent(key)}%`;text.textContent=active?buffClock(key):'未開啟';if(!active&&text.closest('.buff-timer')?.classList.contains('active')){renderSectView('practice');render();break}}
 }
-function dailyPractice(){if(state.sectRank<1)return toast('需晉升內門弟子才能使用練功房');if(state.lastPracticeDay===dateKey())return toast('今日已完成練功');if(state.spiritStone<1000)return toast(`尚缺 ${Math.ceil(1000-state.spiritStone)} 靈石`);state.spiritStone-=1000;state.lastPracticeDay=dateKey();const years=state.actingLeader?20:10;addCultivationBuff('practiceBuff',years);toast(`練功已開啟・5倍修為持續${years}年`);renderSectView('practice');render();save()}
+function dailyPractice(){if(!requireTrustedTime())return;if(state.sectRank<1)return toast('需晉升內門弟子才能使用練功房');if(state.lastPracticeDay===dateKey())return toast('今日已完成練功');if(state.spiritStone<1000)return toast(`尚缺 ${Math.ceil(1000-state.spiritStone)} 靈石`);state.spiritStone-=1000;state.lastPracticeDay=dateKey();const years=state.actingLeader?20:10;addCultivationBuff('practiceBuff',years);toast(`練功已開啟・5倍修為持續${years}年`);renderSectView('practice');render();save()}
 function masterTransmission(times,cost){if(state.sectRank<1)return toast('需晉升內門弟子才能接受掌門傳功');if(state.spiritJade<cost)return toast('靈玉不足');state.spiritJade-=cost;addCultivationBuff('transmissionBuff',10*times);toast(`掌門傳功已開啟・8倍修為增加 ${10*times} 年`);renderSectView('practice');render();save()}
-function claimSalary(){if(state.lastSalaryDay===dateKey())return;const amount=sectSalary[state.sectRank];state.spiritStone+=amount;state.lastSalaryDay=dateKey();toast(`俸祿・靈石+${amount}`);renderSectView('salary');render();save()}
+function claimSalary(){if(!requireTrustedTime())return;if(state.lastSalaryDay===dateKey())return;const amount=sectSalary[state.sectRank];state.spiritStone+=amount;state.lastSalaryDay=dateKey();toast(`俸祿・靈石+${amount}`);renderSectView('salary');render();save()}
 function challengeMaster(){if(state.prestige<200||state.actingLeader)return;state.prestige-=200;save();render();startNpcBattle(sectNpcs()[0],'master')}
 
 const caveAreas = {
@@ -603,7 +649,7 @@ function finishPause(){
   pauseStartedAt=null;
 }
 function forceOffline(){
-  if(suppressSave||!state.name||pauseStartedAt!==null)return;pauseStartedAt=Date.now();sessionOnline=false;clearTimeout(battleTimer);battle=null;
+  if(suppressSave||!state.name||pauseStartedAt!==null)return;pauseStartedAt=gameNow();sessionOnline=false;clearTimeout(battleTimer);battle=null;
   $('#battleModal').classList.add('hidden');$('#tribulationModal').classList.add('hidden');$('#itemModal').classList.add('hidden');$('#offlineModal').classList.add('hidden');$('#gameMenu').classList.add('hidden');$('#settingsModal').classList.add('hidden');stopAllBgm();show('#titleScreen');$('#titleHint').textContent='已離線・點擊螢幕重新進入';save();
 }
 function enterFromTitle() { if(state.name) startGame(); else { startBgm('title'); show('#createScreen'); } }
@@ -619,7 +665,7 @@ function openSettings() {
   showSettingsSection('#settingsMain');
 }
 
-load(); $('#titleHint').textContent=state.name?'點擊螢幕繼續修煉':'點擊螢幕進入遊戲';
+load();setClockAnchor(state.lastTrustedTime||Math.min(state.lastSave||Date.now(),Date.now()),location.protocol==='file:');$('#titleHint').textContent=state.name?'點擊螢幕繼續修煉':'點擊螢幕進入遊戲';
 $('#titleScreen').onclick=enterFromTitle;
 $('#titleScreen').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();enterFromTitle()}};
 $('#backTitleBtn').onclick=()=>{startBgm('title');show('#titleScreen')};
@@ -627,7 +673,7 @@ $$('.gender').forEach(b=>b.onclick=()=>{$$('.gender').forEach(x=>x.classList.rem
 $$('.outfit-choice').forEach(b=>b.onclick=()=>{$$('.outfit-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOutfit=+b.dataset.style;updateCreator()});
 function updateOriginPreview(){$('#originStats').textContent=originDescriptions[createOrigin]}
 $$('.origin-choice').forEach(b=>b.onclick=()=>{$$('.origin-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOrigin=b.dataset.origin;updateOriginPreview()});
-$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:Date.now(),lastSave:Date.now()};startGame();save()};
+$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now};startGame();save()};
 $('#spiritUp').onclick=()=>upgrade('spirit'); $('#bodyUp').onclick=()=>upgrade('body');
 $('#tribConfirm').onclick=tribulate; $('#tribCancel').onclick=()=>$('#tribulationModal').classList.add('hidden');
 $$('.feature-tab').forEach(b=>b.onclick=()=>toggleFeature(b));
@@ -643,15 +689,16 @@ $('#deleteVerifyBtn').onclick=()=>{
   $('#deleteError').textContent=''; showSettingsSection('#deleteStepTwo');
 };
 $('#deleteBackBtn').onclick=()=>showSettingsSection('#deleteStepOne');
-$('#deleteFinalBtn').onclick=()=>{suppressSave=true;sessionOnline=false;clearTimeout(battleTimer);battle=null;stopAllBgm();localStorage.removeItem(saveKey);localStorage.removeItem('wendao-idle-v1');state={...defaults,name:'',bornAt:null,lastSave:Date.now()};location.reload()};
+$('#deleteFinalBtn').onclick=()=>{suppressSave=true;sessionOnline=false;clearTimeout(battleTimer);battle=null;stopAllBgm();localStorage.removeItem(saveKey);localStorage.removeItem('wendao-idle-v1');state={...defaults,name:'',bornAt:null,lastSave:gameNow()};location.reload()};
 $('#backToTitle').onclick=()=>{save();$('#gameMenu').classList.add('hidden');$('#settingsModal').classList.add('hidden');$('#titleHint').textContent='點擊螢幕繼續修煉';show('#titleScreen');startBgm('title')};
 $('#muteBtn').onclick=()=>{state.muted=!state.muted;updateBgmVolume();render();save()};
 $('#battleExitBtn').onclick=forceEndBattle;
 $('#battleResultClose').onclick=closeBattle;
-setInterval(()=>{if($('#gameScreen').classList.contains('active')){addAura(auraRate());runSettlementTick();processSectYears();addCultivation(rate());if(currentFeature==='root')renderSpiritRootView(currentRootView);if(currentFeature==='cave'&&state.spiritLevel>=10)renderCavePanel(currentCaveView);if(currentFeature==='sect'&&currentSectView!=='npcs')renderSectPanel(currentSectView);if(currentFeature==='arts')updateArtsLive();tickStart=Date.now()}},5000);
-setInterval(()=>{if($('#gameScreen').classList.contains('active'))$('#tickBar').style.width=Math.min(100,(Date.now()-tickStart)/50)+'%'},50);
+setInterval(()=>{if($('#gameScreen').classList.contains('active')){addAura(auraRate());runSettlementTick();processSectYears();addCultivation(rate());if(currentFeature==='root')renderSpiritRootView(currentRootView);if(currentFeature==='cave'&&state.spiritLevel>=10)renderCavePanel(currentCaveView);if(currentFeature==='sect'&&currentSectView!=='npcs')renderSectPanel(currentSectView);if(currentFeature==='arts')updateArtsLive();tickStart=gameNow()}},5000);
+setInterval(()=>{if($('#gameScreen').classList.contains('active'))$('#tickBar').style.width=Math.min(100,(gameNow()-tickStart)/50)+'%'},50);
 setInterval(()=>{if($('#gameScreen').classList.contains('active'))$('#yearsElapsed').textContent=`${experiencedYears().toLocaleString()} 年`},1000);
 setInterval(updatePracticeTimers,1000);
+setInterval(()=>{if(sessionOnline&&!document.hidden)syncTrustedTime()},600000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)forceOffline();else finishPause()});
 window.addEventListener('blur',forceOffline);window.addEventListener('focus',finishPause);window.addEventListener('pagehide',forceOffline);
 window.addEventListener('beforeunload',()=>{if(!suppressSave)save()}); updateCreator(); updateOriginPreview(); render();
