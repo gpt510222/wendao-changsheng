@@ -59,7 +59,7 @@ const defaults = { name:'', gender:'女', hair:1, outfit:1, origin:'家族子弟
 let state = { ...defaults }, tickStart = Date.now();
 const saveKey = 'wendao-idle-v2';
 let createGender='女', createOutfit=1, createOrigin='家族子弟', audioContext=null, currentFeature=null, currentRootView='root', currentCaveView='dwelling', currentSectView='home', currentArtsView='sect', suppressSave=false;
-let bgmTheme=null,battle=null,battleTimer=null,pauseStartedAt=null,sessionOnline=false;
+let bgmTheme=null,battle=null,battleTimer=null,pauseStartedAt=null,sessionOnline=false,confirmResolver=null;
 let clockEpoch=Date.now(),clockPerf=performance.now(),trustedClockReady=location.protocol==='file:',clockSyncPromise=null;
 
 function setClockAnchor(epoch,trusted=false){clockEpoch=epoch;clockPerf=performance.now();trustedClockReady=trusted||location.protocol==='file:'}
@@ -155,6 +155,17 @@ function hideCultivationToast() {
 function toast(text,kind='general') { const x=$('#toast'); x.textContent=text;x.dataset.kind=kind;x.classList.add('show'); setTimeout(()=>x.classList.remove('show'),1800); }
 new MutationObserver(()=>{if(!isPureCultivationView())hideCultivationToast()})
   .observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class']});
+function closeGameConfirm(result=false){
+  $('#confirmModal').classList.add('hidden');
+  const resolve=confirmResolver;confirmResolver=null;if(resolve)resolve(result);
+}
+function gameConfirm(message,{title='確認操作',confirmText='確認',danger=false}={}){
+  if(confirmResolver)closeGameConfirm(false);
+  $('#confirmModalTitle').textContent=title;$('#confirmModalMessage').textContent=message;
+  const accept=$('#confirmModalAccept');accept.textContent=confirmText;accept.className=danger?'danger-button':'jade-button';
+  $('#confirmModal').classList.remove('hidden');
+  return new Promise(resolve=>{confirmResolver=resolve});
+}
 function addCultivation(amount,silent=false) {
   state.free += amount; state.totalEarned += amount;
   if(!silent) { if(isPureCultivationView())toast(`修為+${amount}`,'cultivation'); playTone(); }
@@ -326,7 +337,7 @@ function renderArtsPanel(view='sect'){
   $$('[data-art-upgrade]').forEach(button=>button.onclick=()=>upgradeArt(button.dataset.artUpgrade,view));$$('[data-art-forget]').forEach(button=>button.onclick=()=>forgetArt(button.dataset.artForget,view));
 }
 function upgradeArt(id,view){const art=state.learnedArts.find(item=>item.id===id);if(!art||art.level>=10)return;const cost=artUpgradeCost(art);if(state.aura<cost)return toast('靈氣不足');state.aura-=cost;art.level++;toast(`${art.name}提升至${art.level}級`);renderArtsPanel(view);render();save()}
-function forgetArt(id,view='sect'){const index=state.learnedArts.findIndex(item=>item.id===id);if(index<0)return;const art=state.learnedArts[index],kind=artKinds[art.kind],lost=artTotalEffect(art);if(!confirm(`確定遺忘「${art.name}」？\n將失去 ${kind.label}+${lost.toLocaleString()}，已投入的靈氣不會返還。`))return;state.learnedArts.splice(index,1);toast(`已遺忘${art.name}・${kind.label}-${lost}`);renderArtsPanel(view);render();save()}
+async function forgetArt(id,view='sect'){const index=state.learnedArts.findIndex(item=>item.id===id);if(index<0)return;const art=state.learnedArts[index],kind=artKinds[art.kind],lost=artTotalEffect(art);if(!await gameConfirm(`確定遺忘「${art.name}」？\n將失去 ${kind.label}+${lost.toLocaleString()}，已投入的靈氣不會返還。`,{title:'遺忘功法',confirmText:'確認遺忘',danger:true}))return;state.learnedArts.splice(index,1);toast(`已遺忘${art.name}・${kind.label}-${lost}`);renderArtsPanel(view);render();save()}
 function updateArtsLive(){if(currentFeature!=='arts')return;const amount=$('#artsAuraAmount');if(amount)amount.textContent=`靈氣 ${Math.floor(state.aura).toLocaleString()}`;$$('[data-art-upgrade]').forEach(button=>{const art=state.learnedArts.find(item=>item.id===button.dataset.artUpgrade);button.disabled=!art||art.level>=10||state.aura<+button.dataset.artCost})}
 function expandArtsCapacity(){if(state.artsCapacity>=40)return;const cost=artsExpandCost();if(state.spiritStone<cost)return toast('靈石不足');state.spiritStone-=cost;state.artsCapacity++;toast(`門派技能上限擴充至${state.artsCapacity}格`);renderArtsPanel('sect');render();save()}
 function renderSectLearning(){
@@ -363,9 +374,9 @@ function joinRandomSect(){
   state.sect=pick.name;state.sectFaction=pick.faction;state.sectStar=pick.star;state.sectContribution=0;state.sectRank=0;state.sectTask='';state.sectJoinedAt=gameNow();state.sectYearsProcessed=0;state.actingLeader=false;state.npcAffinity={};
   toast(`拜入${['一','二','三','四','五','六','七','八','九'][pick.star-1]}星門派・${pick.name}`);render();renderSectPanel('home');save();
 }
-function leaveSect(){
+async function leaveSect(){
   if(state.prestige<200)return toast('叛教需要200威望');
-  if(!confirm(`確定叛離${state.sect}？將扣除200威望，剩餘 ${Math.floor(state.sectContribution)} 門派貢獻亦會全部清空。`))return;
+  if(!await gameConfirm(`確定叛離${state.sect}？\n將扣除200威望，剩餘 ${Math.floor(state.sectContribution)} 門派貢獻亦會全部清空。`,{title:'叛離門派',confirmText:'確認叛教',danger:true}))return;
   state.prestige-=200;
   state.sect='';state.sectFaction='';state.sectStar=0;state.sectContribution=0;state.sectRank=0;state.sectTask='';state.sectJoinedAt=null;state.sectYearsProcessed=0;state.actingLeader=false;state.npcAffinity={};toast('已脫離門派');render();renderSectPanel('home');save();
 }
@@ -682,6 +693,8 @@ $('#settingsBtn').onclick=openSettings;
 $('#settingsCloseBtn').onclick=()=>$('#settingsModal').classList.add('hidden');
 $('#itemModalClose').onclick=closeItemModal;
 $('#offlineModalClose').onclick=()=>$('#offlineModal').classList.add('hidden');
+$('#confirmModalCancel').onclick=()=>closeGameConfirm(false);
+$('#confirmModalAccept').onclick=()=>closeGameConfirm(true);
 $('#deleteStartBtn').onclick=()=>showSettingsSection('#deleteStepOne');
 $('#deleteCancelBtn').onclick=()=>showSettingsSection('#settingsMain');
 $('#deleteVerifyBtn').onclick=()=>{
