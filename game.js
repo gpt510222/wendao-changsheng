@@ -150,7 +150,7 @@ function isPureCultivationView() {
 }
 function hideCultivationToast() {
   const x=$('#toast');
-  if(x.dataset.kind==='cultivation')x.classList.remove('show');
+  if(x.dataset.kind==='cultivation'&&x.classList.contains('show'))x.classList.remove('show');
 }
 function toast(text,kind='general') { const x=$('#toast'); x.textContent=text;x.dataset.kind=kind;x.classList.add('show'); setTimeout(()=>x.classList.remove('show'),1800); }
 new MutationObserver(()=>{if(!isPureCultivationView())hideCultivationToast()})
