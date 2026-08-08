@@ -145,10 +145,42 @@
           </div>
         </div>
       </div>
+
+      <div id="battleModal" class="modal battle-modal hidden">
+        <div class="paper-panel battle-card">
+          <section id="battleStage">
+            <div class="battle-heading"><span>切磋</span><b id="battleTurn">第一回合</b></div>
+            <div class="battle-arena">
+              <div class="combatant player-combatant">
+                <span id="playerDamage" class="damage-number"></span>
+                <div id="playerSilhouette" class="battle-silhouette silhouette-player-male"></div>
+                <strong id="battlePlayerName">玩家</strong>
+                <div class="health-bar"><i id="playerHealthBar"></i></div>
+              </div>
+              <div class="battle-mark">戰</div>
+              <div class="combatant enemy-combatant">
+                <span id="enemyDamage" class="damage-number"></span>
+                <div id="enemySilhouette" class="battle-silhouette silhouette-human"></div>
+                <strong id="battleEnemyName">敵人</strong>
+                <div class="health-bar enemy-health"><i id="enemyHealthBar"></i></div>
+              </div>
+            </div>
+            <div id="battleLog" class="battle-log"></div>
+            <button id="battleExitBtn" class="text-button" disabled>退出</button>
+          </section>
+          <section id="battleResult" class="battle-result hidden">
+            <div id="battleResultSeal" class="result-seal">勝</div>
+            <h2 id="battleResultTitle">戰鬥勝利</h2>
+            <p id="battleResultText"></p>
+            <button id="battleResultClose" class="jade-button">返回</button>
+          </section>
+        </div>
+      </div>
     </section>
   </main>
   <audio id="titleBgm" src="assets/bgm-title-user-v3.wav" preload="auto" loop></audio>
-  <audio id="mainBgm" src="assets/bgm-main-user-v3.wav" preload="auto" loop></audio>
+  <audio id="mainBgm" src="assets/bgm-main-user-v4.wav" preload="auto" loop></audio>
+  <audio id="battleBgm" src="assets/bgm-battle-user-v1.wav" preload="auto" loop></audio>
   <script src="game.js"></script>
 </body>
 </html>
