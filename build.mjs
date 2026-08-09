@@ -8,6 +8,11 @@ await mkdir("dist/.openai", { recursive: true });
 for (const file of ["index.html", "styles.css", "game.js"]) {
   await cp(file, `dist/client/${file}`);
 }
+const characterVariants = ["female", "male"].flatMap((gender) =>
+  [1, 2, 3].flatMap((appearance) =>
+    [1, 2, 3].map((outfit) => `${gender}-appearance-${appearance}-outfit-${outfit}-v1.png`),
+  ),
+);
 const gameAssets = [
   "battle-demon-v3.png", "battle-dragon-v3.png", "battle-human-v3.png",
   "battle-immortal-v3.png", "battle-player-female-v3.png",
@@ -16,9 +21,7 @@ const gameAssets = [
   "body-icon-v2.png", "cultivation-bg-v2.png", "spirit-icon-v2.png", "title-bg.png",
   "element-earth-v2.png", "element-fire-v2.png", "element-metal-v2.png",
   "element-water-v2.png", "element-wood-v2.png",
-  "female-character-outfit-1-v12.png", "female-character-outfit-2-v12.png",
-  "female-character-outfit-3-v12.png", "male-character-outfit-1-v12.png",
-  "male-character-outfit-2-v12.png", "male-character-outfit-3-v12.png",
+  ...characterVariants,
   "nav-arts-v1.png", "nav-bag-v1.png", "nav-cave-v1.png",
   "nav-experience-v1.png", "nav-sect-v1.png", "nav-spirit-root-v1.png",
   "resource-dao-child-v1.png", "resource-food-v1.png",
