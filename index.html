@@ -19,6 +19,17 @@
       <small class="version">概念試玩版 0.1</small>
     </section>
 
+    <section id="prologueScreen" class="screen prologue-screen" role="button" tabindex="0" aria-label="點擊跳過序章">
+      <div class="prologue-mist"></div>
+      <div class="prologue-copy">
+        <p>天地未問來處，眾生皆在途中。</p>
+        <p>一縷凡心聽見山海之外的回響。</p>
+        <p>今日，你將為自己寫下第一筆命數。</p>
+        <strong>此身入世・此道由我</strong>
+      </div>
+      <small>點擊可跳過</small>
+    </section>
+
     <section id="createScreen" class="screen create-screen">
       <div class="paper-panel create-card">
         <p class="eyebrow">命格初定</p><h2>創建角色</h2>
@@ -68,7 +79,7 @@
       <header class="topbar paper-panel">
         <div class="player-identity">
           <strong id="playerName">雲知月</strong>
-          <span class="identity-meta"><small id="headerSpiritRealm">開光・一層</small><small id="headerSect">無門無派</small></span>
+          <span class="identity-meta"><small id="headerSpiritRealm">聽息・一層</small><small id="headerSect">無門無派</small></span>
           <span class="years-lived"><small>歷練歲月</small><b id="yearsElapsed">0 年</b></span>
         </div>
         <div class="header-wallet" aria-label="持有貨幣">
@@ -91,10 +102,10 @@
 
       <div class="path-actions">
         <button id="spiritUp" class="path-button spirit-button">
-          <img src="assets/spirit-icon-v2.png" alt="練氣"><span><b>練氣</b><small id="spiritRealm">開光・一層</small><em id="spiritCost">提升需 100</em></span>
+          <img src="assets/spirit-icon-v2.png" alt="練氣"><span><b>練氣</b><small id="spiritRealm">聽息・一層</small><em id="spiritCost">提升需 100</em></span>
         </button>
         <button id="bodyUp" class="path-button body-button">
-          <img src="assets/body-icon-v2.png" alt="煉體"><span><b>煉體</b><small id="bodyRealm">凡身・一層</small><em id="bodyCost">提升需 300</em></span>
+          <img src="assets/body-icon-v2.png" alt="煉體"><span><b>煉體</b><small id="bodyRealm">塵軀・一層</small><em id="bodyCost">提升需 300</em></span>
         </button>
       </div>
 
@@ -115,7 +126,7 @@
       <div id="toast" class="toast"></div>
       <div id="tribulationModal" class="modal hidden">
         <div class="paper-panel modal-card">
-          <p class="eyebrow">天道有劫</p><h2 id="tribTitle">融合雷劫</h2>
+          <p class="eyebrow">天道有劫</p><h2 id="tribTitle">引霞雷劫</h2>
           <p>成功率 <b id="tribChance">75%</b></p>
           <label class="pill-option"><input id="usePill" type="checkbox"> 服用護脈丹（成功率 +15%）</label>
           <small id="pillCount">護脈丹：1</small>
@@ -185,7 +196,7 @@
       <div id="battleModal" class="modal battle-modal hidden">
         <div class="paper-panel battle-card">
           <section id="battleStage">
-            <div class="battle-heading"><span>切磋</span><b id="battleTurn">第一回合</b></div>
+            <div class="battle-heading"><span>切磋</span><i class="battle-mark">戰</i><b id="battleTurn">第一回合</b></div>
             <div class="battle-arena">
               <div class="combatant player-combatant">
                 <span id="playerDamage" class="damage-number"></span>
@@ -193,13 +204,13 @@
                 <strong id="battlePlayerName">玩家</strong>
                 <div class="health-bar"><i id="playerHealthBar"></i></div>
               </div>
-              <div class="battle-mark">戰</div>
               <div class="combatant enemy-combatant">
                 <span id="enemyDamage" class="damage-number"></span>
                 <div id="enemySilhouette" class="battle-silhouette silhouette-human"></div>
                 <strong id="battleEnemyName">敵人</strong>
                 <div class="health-bar enemy-health"><i id="enemyHealthBar"></i></div>
               </div>
+              <div id="battleTechniqueFx" class="battle-technique-fx"><i></i><b></b></div>
             </div>
             <div id="battleLog" class="battle-log"></div>
             <button id="battleExitBtn" class="text-button" disabled>退出</button>
