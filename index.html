@@ -34,7 +34,7 @@
       <div class="paper-panel create-card">
         <p class="eyebrow">命格初定</p><h2>創建角色</h2>
         <div class="creator-avatar">
-          <img id="createCharacter" src="assets/female-character-outfit-1-v12.png" alt="完整人物">
+          <img id="createCharacter" src="assets/female-appearance-1-outfit-1-v1.png" alt="完整人物">
         </div>
         <div class="gender-pick">
           <button class="gender active" data-gender="女"><span>女</span><small>柔中藏鋒</small></button>
@@ -42,6 +42,11 @@
         </div>
         <label for="nameInput">道號</label>
         <input id="nameInput" maxlength="8" placeholder="可取名（1至8個字）" value="">
+        <div class="custom-group"><label>人物形象</label><div id="appearanceChoices" class="choice-row">
+          <button class="style-choice appearance-choice active" data-appearance="1"><img alt="形象一"><small>清正</small></button>
+          <button class="style-choice appearance-choice" data-appearance="2"><img alt="形象二"><small>霜華</small></button>
+          <button class="style-choice appearance-choice" data-appearance="3"><img alt="形象三"><small>幽冥</small></button>
+        </div></div>
         <div class="custom-group"><label>起始服裝</label><div id="outfitChoices" class="choice-row">
           <button class="style-choice outfit-choice active" data-style="1"><img alt="服裝一"><small>雲水袍</small></button>
           <button class="style-choice outfit-choice" data-style="2"><img alt="服裝二"><small>月華袍</small></button>
@@ -63,7 +68,7 @@
     <section id="gameScreen" class="screen game-screen scenic">
       <img class="scene-bg" src="assets/cultivation-bg-v2.png" alt="洞府修煉場景">
       <div class="back-mist back-mist-a"></div><div class="back-mist back-mist-b"></div>
-      <div id="heroArt" class="hero-stack" aria-label="修士於洞府前修煉"><img id="heroCharacter" src="assets/female-character-outfit-1-v12.png" alt="完整人物"></div>
+      <div id="heroArt" class="hero-stack" aria-label="修士於洞府前修煉"><img id="heroCharacter" src="assets/female-appearance-1-outfit-1-v1.png" alt="完整人物"></div>
       <div class="mist mist-a"></div><div class="mist mist-b"></div>
       <div id="lightning" class="lightning" aria-hidden="true">
         <div class="storm-flash"></div>

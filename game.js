@@ -60,7 +60,7 @@ const basicTechniqueName='凝念馭元';
 const defaults = { name:'', gender:'女', hair:1, outfit:1, origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, pills:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:1, learnedArts:[],artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:0, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0, workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, righteousness:0, evilQi:0, prestige:200, actingLeader:false, npcAffinity:{}, npcDaily:{}, sectTokens:0, sectTokenDaily:{date:'',exchanged:0}, practiceBuff:{active:false,until:0,remaining:0,total:0}, transmissionBuff:{active:false,until:0,remaining:0,total:0}, lastGreetingDay:'', lastSalaryDay:'', lastPracticeDay:'', bornAt:null, lastTrustedTime:0, lastSave:Date.now() };
 let state = { ...defaults }, tickStart = Date.now();
 const saveKey = 'wendao-idle-v2';
-let createGender='女', createOutfit=1, createOrigin='家族子弟', audioContext=null, currentFeature=null, currentRootView='root', currentCaveView='dwelling', currentSectView='home', currentArtsView='sect', suppressSave=false;
+let createGender='女', createAppearance=1, createOutfit=1, createOrigin='家族子弟', audioContext=null, currentFeature=null, currentRootView='root', currentCaveView='dwelling', currentSectView='home', currentArtsView='sect', suppressSave=false;
 let bgmTheme=null,battle=null,battleTimer=null,pauseStartedAt=null,sessionOnline=false,confirmResolver=null,prologueTimer=null;
 let clockEpoch=Date.now(),clockPerf=performance.now(),trustedClockReady=location.protocol==='file:',clockSyncPromise=null;
 
@@ -268,7 +268,7 @@ async function startGame() {
   $('#gameScreen').classList.remove('feature-open');
   $$('.feature-tab').forEach(x=>x.classList.remove('active'));
   const g=state.gender==='男'?'male':'female';
-  $('#heroCharacter').src=`assets/${g}-character-outfit-${state.outfit||1}-v12.png`;
+  $('#heroCharacter').src=`assets/${g}-appearance-${state.appearance||1}-outfit-${state.outfit||1}-v1.png`;
   const away=clockOkay&&!clockRollback?Math.max(0,Math.floor((now-savedLast)/5000)):0;
   if(away>0) { const gain=offlineCultivationGain(savedLast,now);addAura(away*auraRate());runSettlementTick(away);addCultivation(gain,true);setTimeout(()=>{if(sessionOnline)showOfflineRewards(offlineBefore,away*5)},180); }
   else if(clockRollback)setTimeout(()=>toast('偵測到時間異常，本次不結算離線收益'),250);
@@ -277,8 +277,11 @@ async function startGame() {
 }
 function updateCreator() {
   const g=createGender==='男'?'male':'female';
-  $('#createCharacter').src=`assets/${g}-character-outfit-${createOutfit}-v12.png`;
-  $$('.outfit-choice').forEach((b,i)=>b.querySelector('img').src=`assets/${g}-character-outfit-${i+1}-v12.png`);
+  $('#createCharacter').src=`assets/${g}-appearance-${createAppearance}-outfit-${createOutfit}-v1.png`;
+  $$('.appearance-choice').forEach((b,i)=>b.querySelector('img').src=`assets/${g}-appearance-${i+1}-outfit-${createOutfit}-v1.png`);
+  $$('.outfit-choice').forEach((b,i)=>b.querySelector('img').src=`assets/${g}-appearance-${createAppearance}-outfit-${i+1}-v1.png`);
+  const appearances=createGender==='男'?['清衡','鶴髮','幽煞']:['清婉','霜華','幽姬'];
+  $$('.appearance-choice').forEach((b,i)=>b.querySelector('small').textContent=appearances[i]);
   const names=createGender==='男'?['青雲袍','玄劍袍','山嶽袍']:['雲水袍','月華袍','丹霞袍'];
   $$('.outfit-choice').forEach((b,i)=>b.querySelector('small').textContent=names[i]);
 }
@@ -684,7 +687,7 @@ function renderBagView(view) {
     $$('[data-bag-item]').forEach(button=>button.onclick=()=>openItemModal(button.dataset.bagItem));if(state.bagRank<16)$('#upgradeBagBtn').onclick=upgradeBag;
     return;
   }
-  const g=state.gender==='男'?'male':'female', src=`assets/${g}-character-outfit-${state.outfit||1}-v12.png`;
+  const g=state.gender==='男'?'male':'female', src=`assets/${g}-appearance-${state.appearance||1}-outfit-${state.outfit||1}-v1.png`;
   const slots=Array.from({length:4},()=>'<span class="equip-slot"></span>').join('');
   inner.innerHTML=`<div class="equipment-layout"><div class="equipment-side">${slots}</div><div class="equipment-character"><img src="${src}" alt="人物"><button id="characterAttributesBtn" ${hasMindEmbodiment()?'':'disabled'}>${hasMindEmbodiment()?'人物屬性':'需習得意念入體'}</button></div><div class="equipment-side">${slots}</div></div>`;
   if(hasMindEmbodiment()) $('#characterAttributesBtn').onclick=showCharacterAttributes;
@@ -732,10 +735,11 @@ $('#prologueScreen').onclick=finishCreationPrologue;
 $('#prologueScreen').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();finishCreationPrologue()}};
 $('#backTitleBtn').onclick=()=>{startBgm('title');show('#titleScreen')};
 $$('.gender').forEach(b=>b.onclick=()=>{$$('.gender').forEach(x=>x.classList.remove('active'));b.classList.add('active');createGender=b.dataset.gender;updateCreator()});
+$$('.appearance-choice').forEach(b=>b.onclick=()=>{$$('.appearance-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createAppearance=+b.dataset.appearance;updateCreator()});
 $$('.outfit-choice').forEach(b=>b.onclick=()=>{$$('.outfit-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOutfit=+b.dataset.style;updateCreator()});
 function updateOriginPreview(){$('#originStats').textContent=originDescriptions[createOrigin]}
 $$('.origin-choice').forEach(b=>b.onclick=()=>{$$('.origin-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOrigin=b.dataset.origin;updateOriginPreview()});
-$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now};startGame();save()};
+$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,appearance:createAppearance,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now};startGame();save()};
 $('#spiritUp').onclick=()=>upgrade('spirit'); $('#bodyUp').onclick=()=>upgrade('body');
 $('#tribConfirm').onclick=tribulate; $('#tribCancel').onclick=()=>$('#tribulationModal').classList.add('hidden');
 $$('.feature-tab').forEach(b=>b.onclick=()=>toggleFeature(b));
