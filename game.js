@@ -74,7 +74,7 @@ const wardrobeOutfits={
 };
 const trueFormCatalog=[
   {id:'none',name:'返璞歸真',description:'收斂真身異象，以本來面目示人。'},
-  {id:'taixu-sword',name:'太虛劍相',image:'assets/qstyle-v2/true-form-sword.png',description:'九柄虛靈古劍結成劍輪，隨吐納緩緩流轉。'},
+  {id:'taixu-sword',name:'太虛劍相',image:'assets/qstyle-v2/true-form-sword-v2.png',description:'八方虛靈古劍結成劍陣，隨吐納明滅共鳴。'},
   {id:'jiuxiao-wings',name:'九霄靈翼',image:'assets/qstyle-v2/true-form-wings.png',description:'以清靈元息凝成的光翼，非羽非骨，如雲霞舒展。'}
 ];
 const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, pills:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:0, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0, workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, righteousness:0, evilQi:0, prestige:200, actingLeader:false, npcAffinity:{}, npcDaily:{}, sectTokens:0, sectTokenDaily:{date:'',exchanged:0}, practiceBuff:{active:false,until:0,remaining:0,total:0}, transmissionBuff:{active:false,until:0,remaining:0,total:0}, lastGreetingDay:'', lastSalaryDay:'', lastPracticeDay:'', bornAt:null, lastTrustedTime:0, lastSave:Date.now() };
@@ -89,8 +89,12 @@ function gameNow(){return Math.floor(clockEpoch+(performance.now()-clockPerf))}
 function appearanceAsset(gender,appearance,outfit){
   if(qStyleMode){
     const g=gender==='男'?'male':'female';
-    const selected=Math.max(1,Math.min(5,Number(outfit)||1));
-    return `assets/qstyle-v2/${g}-outfit-${selected}.png`;
+    const selectedOutfit=Math.max(1,Math.min(5,Number(outfit)||1));
+    const selectedAppearance=Math.max(1,Math.min(3,Number(appearance)||1));
+    const asset=selectedAppearance===1
+      ? `assets/qstyle-v2/${g}-outfit-${selectedOutfit}.png`
+      : `assets/qstyle-v2/${g}-appearance-${selectedAppearance}-outfit-${selectedOutfit}.png`;
+    return `${asset}?v=20260810c`;
   }
   const g=gender==='男'?'male':'female';
   const version=appearance===2?'v2':'v1';
@@ -484,7 +488,7 @@ function renderSectView(view){
   }
   if(view==='npcs'){inner.innerHTML=`<div class="npc-grid">${sectNpcs().map((n,index)=>`<button class="npc-card" data-npc="${index}"><span class="npc-portrait p${n.portrait}" style="--portrait-hue:${n.id%37-18}deg;--portrait-bright:${.92+(n.id%9)*.02}"></span><b>${n.title}</b><strong>${n.name}</strong><small>${realmName(n.level,spiritRealms)}</small></button>`).join('')}</div><div id="npcDetail" class="npc-detail">點選一位門人進行互動</div>`;$$('.npc-card').forEach(b=>b.onclick=()=>renderNpcDetail(+b.dataset.npc));return}
   if(view==='shop'){renderSectShop();return}
-  if(view==='tasks'){inner.innerHTML=`<div class="task-list">${sectTasks.map(t=>`<button data-task="${t.id}" class="task-card ${state.sectTask===t.id?'active':''}" ${state.spiritLevel<t.need?'disabled':''}><b>${t.name}</b><span>每年：貢獻+${t.gain}・靈石+${t.stone}・威望+${t.prestige}</span><small>${t.desc}</small><em>${state.spiritLevel>=t.need?'可接取':`需 ${realmName(t.need,spiritRealms)}`}</em></button>`).join('')}</div><p class="sect-note">任務會持續執行；境界提高後不會自動更換。叛教時任務立即終止。</p>`;$$('.task-card:not(:disabled)').forEach(b=>b.onclick=()=>{state.sectTask=b.dataset.task;toast(`開始持續任務：${selectedSectTask().name}`);renderSectView('tasks');save()});return}
+  if(view==='tasks'){inner.innerHTML=`<div class="task-list">${sectTasks.map(t=>`<button data-task="${t.id}" class="task-card ${state.sectTask===t.id?'active':''}" ${state.spiritLevel<t.need?'disabled':''}><b>${t.name}</b><span>每年：貢獻+${t.gain}・靈石+${t.stone}・威望+${t.prestige}</span><small>${t.desc}</small><em>${state.sectTask===t.id?'已接取':state.spiritLevel>=t.need?'可接取':`需 ${realmName(t.need,spiritRealms)}`}</em></button>`).join('')}</div><p class="sect-note">任務會持續執行；境界提高後不會自動更換。叛教時任務立即終止。</p>`;$$('.task-card:not(:disabled)').forEach(b=>b.onclick=()=>{state.sectTask=b.dataset.task;toast(`開始持續任務：${selectedSectTask().name}`);renderSectView('tasks');save()});return}
   if(view==='practice'){
     const can=state.sectRank>=1,done=state.lastPracticeDay===dateKey(),practiceOn=buffActive('practiceBuff'),transmissionOn=buffActive('transmissionBuff');
     const practiceReason=!can?'需晉升內門弟子':done?'今日已完成':state.spiritStone<1000?`尚缺 ${Math.ceil(1000-state.spiritStone)} 靈石`:'開始練功';

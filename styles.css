@@ -177,3 +177,10 @@
 .path-button em,.path-button.body-button em{color:#174f45;font-size:11px;font-weight:900;text-shadow:none}
 .path-button.ready{animation:none}.path-button.ready img{animation:pathIconReady 1.5s ease-in-out infinite}@keyframes pathIconReady{50%{filter:drop-shadow(0 0 7px #78d9b9)}}
 @media(max-width:540px){.path-button.spirit-button{left:1%}.path-button.body-button{right:1%}.path-button.spirit-button,.path-button.sword-button,.path-button.body-button{bottom:1px}.path-button b{font-size:15px}.path-button small,.path-button em{font-size:9px}}
+
+/* True-form artwork: transparent card previews and stable, non-flipping sword formation. */
+.true-form-preview{background:linear-gradient(135deg,#eee5d3,#e1d4bb)}
+.true-form-preview img{width:96%;height:96%;opacity:.9}
+.true-form-card[data-true-form="taixu-sword"] .true-form-preview img{width:84%;height:84%}
+.hero-stack .true-form-taixu-sword{inset:-5%;width:110%;height:110%;animation:trueFormSwordStable 5.2s ease-in-out infinite,trueFormPulse 3.8s ease-in-out infinite}
+@keyframes trueFormSwordStable{0%,100%{transform:translateY(0) scale(.97)}50%{transform:translateY(-1.2%) scale(1.015)}}
