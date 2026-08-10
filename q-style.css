@@ -1,0 +1,102 @@
+.q-style{--q-ink:#32435b;--q-blue:#74c9d5;--q-mint:#8dd9bd;--q-gold:#e4b95f;--q-paper:#fffaf0}
+.q-style body{background:linear-gradient(145deg,#bbdce4,#789fb2);color:var(--q-ink);font-family:"Microsoft JhengHei",sans-serif}
+.q-style #app{background:#d7edf0;box-shadow:0 0 0 4px #eafaff,0 12px 60px #16384d99}
+.q-style .title-screen{background-image:linear-gradient(#e8fcff33,#fff6dd55),url("assets/qstyle-v2/title-bg.png");filter:saturate(1.08)}
+.q-style .title-wrap h1{color:#2b6575;font-weight:900;text-shadow:0 3px 0 #fff,0 6px 18px #447d8c88}
+.q-style .seal,.q-style .tap-to-enter{border:2px solid #d5a84f;border-radius:999px;background:#fff8e8e8;box-shadow:inset 0 0 0 3px #fff,0 5px 14px #5b7d8c66}
+.q-style .scene-bg{filter:saturate(1.12) brightness(1.08);object-position:center 48%}
+.q-style .game-screen::after{background:linear-gradient(#e6fbff88 0,transparent 28%,transparent 66%,#315e7294 100%)}
+.q-style .paper-panel{border:2px solid #6ca4af;border-radius:18px;background:linear-gradient(180deg,#fffdf5f5,#e9f7f3f2);box-shadow:inset 0 0 0 3px #fff,0 6px 0 #47788755,0 10px 22px #214b5c44}
+.q-style .topbar{border-color:#d0a14b;background:linear-gradient(180deg,#fffdf3f7,#fff0cdeb)}
+.q-style .topbar strong,.q-style .efficiency b{color:#286e79;font-weight:900;text-shadow:0 1px #fff}
+.q-style .efficiency i{background:#8db6bb}.q-style .tick{background:#cfe1dc}.q-style .tick span{background:linear-gradient(90deg,#71cfd3,#7fe0af)}
+.q-style .hero-stack{width:64%;height:47%;bottom:18%;filter:drop-shadow(0 10px 12px #17465e55)}
+.q-style .hero-stack .hero-character{filter:saturate(1.05) contrast(1.02)}
+.q-style .path-actions{inset:150px 0 76px;display:block;width:auto;height:auto;transform:none;pointer-events:none}
+.q-style .path-button,.q-style .path-button.body-button,.q-style .path-button.sword-button{position:absolute;display:flex;width:116px;min-height:0;padding:0;flex-direction:column;gap:3px;align-items:center;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:center;pointer-events:auto}
+.q-style .path-button img{position:static;width:64px;height:64px;transform:none;border:2px solid #fff;background:transparent;border-radius:50%;box-shadow:0 3px 10px #1d4d6255}
+.q-style .path-button b{font-size:17px;color:#315f70;text-shadow:0 1px #fff}.q-style .path-button small,.q-style .path-button em{font-weight:700}
+.q-style .bottom-nav{height:78px;border-radius:20px 20px 0 0;background:linear-gradient(180deg,#fffdf7f5,#dff1edf5)}
+.q-style .bottom-nav button{color:#527080;font-weight:700}.q-style .bottom-nav button.active{color:#236f79;background:linear-gradient(#d8f7f5,#a9ddd5)}
+.q-style .bottom-nav .nav-icon{width:43px;height:43px;filter:saturate(1.15) drop-shadow(0 2px 0 #fff)}
+.q-style .feature-panel{border-radius:24px;background:linear-gradient(180deg,#fffdf7f7,#e7f4f0f5)}
+.q-style button:not(.icon-button):not(.feature-tab){border-radius:14px}
+.q-style .jade-button{border:2px solid #fff;border-radius:16px;background:linear-gradient(180deg,#74d4cb,#3d9d9d);box-shadow:0 4px 0 #2f737b,0 8px 16px #28536755;font-weight:900}
+.q-style .bag-tabs button,.q-style .root-tabs button,.q-style .sect-tabs button,.q-style .arts-tabs button{border:2px solid #8ab0b5;border-radius:12px;background:#fff9e9;color:#526b78;box-shadow:inset 0 0 0 2px #fff}
+.q-style .bag-tabs button.active,.q-style .root-tabs button.active,.q-style .sect-tabs button.active,.q-style .arts-tabs button.active{border-color:#4ca5a6;background:#bfe9df;color:#236d74}
+.q-style .modal{background:#183a4c9e}.q-style .modal-card{border:3px solid #6da8b1;border-radius:24px;background:#fffaf1;box-shadow:inset 0 0 0 4px #fff,0 8px 0 #315f7066}
+.q-style .toast{border:2px solid #fff;border-radius:999px;background:#386d7bed;box-shadow:0 4px 0 #234955}
+@media(min-width:900px){.q-style .hero-stack{width:390px;height:51%;bottom:14.5%}.q-style .path-actions{width:680px}.q-style .path-button{width:210px}}
+@media(max-height:760px){.q-style .hero-stack{height:43%;bottom:17%}.q-style .path-button{min-height:92px;padding-top:48px}.q-style .path-button img{width:61px;height:61px}}
+
+/* Q-style v2 asset migration. Original files remain in assets/ for rollback. */
+.q-style .create-screen{background-image:linear-gradient(#dff5f1cc,#fff4d9df),url("assets/qstyle-v2/title-bg.png")}
+.q-style .pool-art img{content:url("assets/qstyle-v2/spirit-pool.png")}
+.q-style .dao-child-yard>img{content:url("assets/qstyle-v2/dao-child.png")}
+.q-style .path-button.spirit-button img{content:url("assets/qstyle-v2/nav-spirit-root.png")}
+.q-style .path-button.sword-button img{content:url("assets/qstyle-v2/sword-cultivation.png")}
+.q-style .path-button.body-button img{content:url("assets/qstyle-v2/body-cultivation.png")}
+.q-style .bottom-nav .feature-tab:nth-child(1) img{content:url("assets/qstyle-v2/nav-spirit-root.png")}
+.q-style .bottom-nav .feature-tab:nth-child(2) img{content:url("assets/qstyle-v2/nav-cave.png")}
+.q-style .bottom-nav .feature-tab:nth-child(3) img{content:url("assets/qstyle-v2/nav-sect.png")}
+.q-style .bottom-nav .feature-tab:nth-child(4) img{content:url("assets/qstyle-v2/nav-arts.png")}
+.q-style .bottom-nav .feature-tab:nth-child(5) img{content:url("assets/qstyle-v2/nav-experience.png")}
+.q-style .bottom-nav .feature-tab:nth-child(6) img{content:url("assets/qstyle-v2/nav-bag.png")}
+.q-style .hero-stack .hero-character{object-fit:contain;object-position:center bottom;width:100%;height:100%}
+.q-style .creator-preview img,.q-style .appearance-choice img,.q-style .outfit-choice img,.q-style .wardrobe-character img{object-fit:contain;object-position:center bottom}
+.q-style .npc-portrait{background-image:none!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;filter:none!important}
+.q-style .npc-portrait.p0{background-image:url("assets/qstyle-v2/npc-0.png")!important}.q-style .npc-portrait.p1{background-image:url("assets/qstyle-v2/npc-1.png")!important}.q-style .npc-portrait.p2{background-image:url("assets/qstyle-v2/npc-2.png")!important}.q-style .npc-portrait.p3{background-image:url("assets/qstyle-v2/npc-3.png")!important}.q-style .npc-portrait.p4{background-image:url("assets/qstyle-v2/npc-4.png")!important}
+.q-style .npc-portrait.p5{background-image:url("assets/qstyle-v2/npc-5.png")!important}.q-style .npc-portrait.p6{background-image:url("assets/qstyle-v2/npc-6.png")!important}.q-style .npc-portrait.p7{background-image:url("assets/qstyle-v2/npc-7.png")!important}.q-style .npc-portrait.p8{background-image:url("assets/qstyle-v2/npc-8.png")!important}.q-style .npc-portrait.p9{background-image:url("assets/qstyle-v2/npc-9.png")!important}
+.q-style .silhouette-player-male{background-image:url("assets/qstyle-v2/battle-player-male.png")}.q-style .silhouette-player-female{background-image:url("assets/qstyle-v2/battle-player-female.png")}.q-style .silhouette-human{background-image:url("assets/qstyle-v2/battle-human.png")}.q-style .silhouette-demon{background-image:url("assets/qstyle-v2/battle-demon.png")}.q-style .silhouette-yao{background-image:url("assets/qstyle-v2/battle-yao.png")}.q-style .silhouette-dragon{background-image:url("assets/qstyle-v2/battle-dragon.png")}.q-style .silhouette-immortal{background-image:url("assets/qstyle-v2/battle-immortal.png")}
+
+/* Close-range combat: dash, clash, recoil and an impact flash at the target. */
+.q-style .battle-arena{isolation:isolate;overflow:hidden}
+.q-style .battle-arena::before{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;background:radial-gradient(circle at 50% 43%,rgba(255,255,255,.92) 0 2%,rgba(116,239,229,.38) 3% 9%,transparent 25%);opacity:0}
+.q-style .battle-arena.clashing::before{animation:qClashFlash .52s .25s ease-out}
+.q-style .battle-arena.clashing{animation:qCameraShake .44s .28s ease-out}
+.q-style .player-combatant .battle-silhouette.attacking{animation:qPlayerEngage .84s cubic-bezier(.2,.75,.25,1)!important}
+.q-style .enemy-combatant .battle-silhouette{transform:scaleX(-1)}
+.q-style .enemy-combatant .battle-silhouette.attacking{animation:qEnemyEngage .84s cubic-bezier(.2,.75,.25,1)!important}
+.q-style .battle-silhouette.hit{animation:qCombatRecoil .68s .27s ease-out!important;filter:brightness(1.55) saturate(.7)}
+.q-style .enemy-combatant .battle-silhouette.hit{animation:qEnemyCombatRecoil .68s .27s ease-out!important}
+.q-style .battle-technique-fx{left:0!important;right:0!important;top:14%!important;height:70%!important;overflow:visible;z-index:6;pointer-events:none}
+.q-style .battle-technique-fx i{position:absolute!important;top:34%!important;width:116px!important;height:82px!important;border:0!important;border-radius:50%!important;background:conic-gradient(from 215deg,transparent 0 38%,rgba(255,255,255,.98) 42%,rgba(97,235,219,.85) 46%,transparent 52% 100%)!important;filter:drop-shadow(0 0 10px rgba(80,224,215,.9));opacity:0;transform:rotate(-17deg) scale(.35)!important}
+.q-style .battle-technique-fx.player-cast i{left:66%!important;animation:qImpactSlash .45s .23s ease-out!important}
+.q-style .battle-technique-fx.enemy-cast i{right:66%!important;left:auto!important;filter:hue-rotate(145deg) drop-shadow(0 0 10px rgba(220,89,119,.8));animation:qImpactSlashEnemy .45s .23s ease-out!important}
+.q-style .battle-technique-fx b{position:absolute!important;top:46%!important;width:28px!important;height:28px!important;border:3px solid rgba(255,255,255,.9)!important;border-radius:50%!important;background:transparent!important;box-shadow:0 0 0 8px rgba(84,220,211,.2),0 0 22px rgba(255,255,255,.85)!important;opacity:0}
+.q-style .battle-technique-fx.player-cast b{left:71%!important;animation:qImpactRing .42s .27s ease-out!important}
+.q-style .battle-technique-fx.enemy-cast b{right:71%!important;left:auto!important;animation:qImpactRing .42s .27s ease-out!important}
+/* 凝念馭元：聚氣成珠後迸發，不帶劍刃。 */
+.q-style .battle-technique-fx.origin-technique i{width:54px!important;height:54px!important;top:39%!important;border-radius:50%!important;background:radial-gradient(circle,#fff 0 10%,#d8fff5 13% 27%,rgba(91,224,190,.92) 34% 51%,rgba(48,136,119,.35) 58%,transparent 72%)!important;box-shadow:0 0 11px #fff,0 0 27px rgba(74,222,185,.9),0 0 48px rgba(39,143,123,.65)!important;filter:none!important}
+.q-style .battle-technique-fx.origin-technique i::before,.q-style .battle-technique-fx.origin-technique i::after{content:"";position:absolute;inset:-12px;border:2px solid rgba(188,255,235,.65);border-radius:50%;background:none;clip-path:none;animation:qOriginOrbit .45s linear infinite}
+.q-style .battle-technique-fx.origin-technique i::after{inset:-22px;border-style:dashed;animation-direction:reverse}
+/* 流光御鋒：三道實體劍氣交錯斬落，命中時爆出劍芒。 */
+.q-style .battle-technique-fx.sword-technique i{width:150px!important;height:96px!important;top:30%!important;border-radius:0!important;background:linear-gradient(154deg,transparent 0 43%,rgba(118,245,255,.25) 44%,#f8ffff 48%,#72dfed 51%,rgba(34,137,173,.34) 55%,transparent 59%)!important;box-shadow:none!important;filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 13px rgba(57,204,231,.95))!important}
+.q-style .battle-technique-fx.sword-technique i::before,.q-style .battle-technique-fx.sword-technique i::after{content:"";position:absolute;inset:0;background:inherit;filter:inherit;opacity:.82;clip-path:none!important}
+.q-style .battle-technique-fx.sword-technique i::before{transform:translate(-13px,15px) rotate(31deg) scale(.8)}
+.q-style .battle-technique-fx.sword-technique i::after{transform:translate(13px,-15px) rotate(-29deg) scale(.74)}
+.q-style .battle-technique-fx.sword-technique b{width:42px!important;height:42px!important;top:41%!important;border:0!important;border-radius:0!important;background:conic-gradient(from 0deg,transparent,#fff,transparent,#62dff3,transparent,#fff,transparent)!important;box-shadow:0 0 15px #fff,0 0 34px rgba(66,211,239,.9)!important;clip-path:polygon(50% 0,58% 39%,100% 50%,60% 59%,50% 100%,40% 60%,0 50%,40% 40%)!important}
+.q-style .battle-technique-fx.sword-technique.player-cast i{animation:qSwordStorm .56s .12s cubic-bezier(.12,.78,.2,1)!important}
+.q-style .battle-technique-fx.sword-technique.enemy-cast i{animation:qSwordStormEnemy .56s .12s cubic-bezier(.12,.78,.2,1)!important}
+.q-style .battle-technique-fx.sword-technique.player-cast b,.q-style .battle-technique-fx.sword-technique.enemy-cast b{animation:qSwordBurst .48s .31s ease-out!important}
+@keyframes qPlayerEngage{0%,100%{transform:translateX(0) scale(1)}38%{transform:translateX(min(9vw,82px)) scale(1.06) rotate(2deg)}52%{transform:translateX(min(8vw,72px)) scale(1.03) rotate(-2deg)}72%{transform:translateX(-8px) scale(.98)}}
+@keyframes qEnemyEngage{0%,100%{transform:translateX(0) scaleX(-1) scale(1)}38%{transform:translateX(max(-9vw,-82px)) scaleX(-1) scale(1.06) rotate(-2deg)}52%{transform:translateX(max(-8vw,-72px)) scaleX(-1) scale(1.03) rotate(2deg)}72%{transform:translateX(8px) scaleX(-1) scale(.98)}}
+@keyframes qCombatRecoil{0%,25%,100%{transform:translateX(0)}42%{transform:translateX(14px) rotate(3deg)}58%{transform:translateX(-7px) rotate(-2deg)}}
+@keyframes qEnemyCombatRecoil{0%,25%,100%{transform:translateX(0) scaleX(-1)}42%{transform:translateX(14px) scaleX(-1) rotate(3deg)}58%{transform:translateX(-7px) scaleX(-1) rotate(-2deg)}}
+@keyframes qImpactSlash{0%{opacity:0;transform:rotate(-28deg) scale(.25)}35%{opacity:1}100%{opacity:0;transform:rotate(19deg) scale(1.5)}}
+@keyframes qImpactSlashEnemy{0%{opacity:0;transform:scaleX(-1) rotate(-28deg) scale(.25)}35%{opacity:1}100%{opacity:0;transform:scaleX(-1) rotate(19deg) scale(1.5)}}
+@keyframes qImpactRing{0%{opacity:0;transform:scale(.2)}35%{opacity:1}100%{opacity:0;transform:scale(3.4)}}
+@keyframes qOriginOrbit{to{transform:rotate(360deg)}}
+@keyframes qSwordStorm{0%{opacity:0;transform:translate(-95px,34px) rotate(-18deg) scale(.35)}24%{opacity:1}68%{opacity:1;transform:translate(0,0) rotate(8deg) scale(1.12)}100%{opacity:0;transform:translate(24px,-12px) rotate(18deg) scale(1.45)}}
+@keyframes qSwordStormEnemy{0%{opacity:0;transform:translate(95px,34px) scaleX(-1) rotate(-18deg) scale(.35)}24%{opacity:1}68%{opacity:1;transform:translate(0,0) scaleX(-1) rotate(8deg) scale(1.12)}100%{opacity:0;transform:translate(-24px,-12px) scaleX(-1) rotate(18deg) scale(1.45)}}
+@keyframes qSwordBurst{0%{opacity:0;transform:scale(.15) rotate(0)}32%{opacity:1}100%{opacity:0;transform:scale(3.8) rotate(95deg)}}
+@keyframes qClashFlash{0%,100%{opacity:0}35%{opacity:.9}}
+@keyframes qCameraShake{0%,100%{transform:translate(0)}30%{transform:translate(-3px,2px)}45%{transform:translate(4px,-2px)}60%{transform:translate(-2px,-1px)}75%{transform:translate(2px,1px)}}
+
+/* Keep the established cultivation layout: three transparent seals below the hero. */
+.q-style .path-button,.q-style .path-button.body-button,.q-style .path-button.sword-button{width:116px;background:none!important;border:0!important;box-shadow:none!important}
+.q-style .path-button.spirit-button{left:3%;right:auto;top:auto;bottom:0;transform:none}
+.q-style .path-button.sword-button{left:50%;right:auto;top:auto;bottom:0;transform:translateX(-50%)}
+.q-style .path-button.body-button{left:auto;right:3%;top:auto;bottom:0;transform:none}
+@media(min-width:900px){.q-style .path-actions{width:660px}.q-style .path-button,.q-style .path-button.body-button,.q-style .path-button.sword-button{width:128px}}
+@media(max-width:540px){.q-style .path-button,.q-style .path-button.body-button,.q-style .path-button.sword-button{width:103px}.q-style .path-button.spirit-button{left:1%}.q-style .path-button.body-button{right:1%}}
