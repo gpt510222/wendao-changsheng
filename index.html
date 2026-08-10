@@ -90,12 +90,13 @@
           <span class="years-lived"><small>歷練歲月</small><b id="yearsElapsed">0 年</b></span>
         </div>
         <div class="header-wallet" aria-label="持有貨幣">
-          <span><img src="assets/qstyle-v2/spirit-stone.png" alt="靈石"><b id="spiritStoneAmount">0</b></span>
-          <span><img src="assets/qstyle-v2/spirit-jade.png" alt="靈玉"><b id="spiritJadeAmount">0</b></span>
+          <span><img src="assets/qstyle-v2/spirit-stone.png" alt="靈石"><em>靈石</em><b id="spiritStoneAmount">0</b></span>
+          <span><img src="assets/qstyle-v2/spirit-jade.png" alt="靈玉"><em>靈玉</em><b id="spiritJadeAmount">0</b></span>
         </div>
         <button id="menuBtn" class="icon-button menu-button" title="選單">☰</button>
         <div id="gameMenu" class="game-menu hidden">
           <button id="settingsBtn">⚙ 設定</button>
+          <button id="helpBtn">? 幫助</button>
           <button id="backToTitle">⌂ 回到標題</button>
         </div>
       </header>
@@ -137,9 +138,12 @@
       <div id="tribulationModal" class="modal hidden">
         <div class="paper-panel modal-card">
           <p class="eyebrow">天道有劫</p><h2 id="tribTitle">引霞雷劫</h2>
-          <p>成功率 <b id="tribChance">75%</b></p>
-          <label class="pill-option"><input id="usePill" type="checkbox"> 服用護脈丹（成功率 +15%）</label>
-          <small id="pillCount">護脈丹：1</small>
+          <p>成功率 <b id="tribChance">50%</b></p>
+          <div class="tribulation-pill-option">
+            <img id="tribPillImage" src="assets/qstyle-v2/tribulation-pills/pill-01.png" alt="引霞丹">
+            <div><b id="tribPillName">引霞丹</b><small>每顆成功率 +5%，最多提升至 100%</small><em id="pillCount">持有 0 顆</em></div>
+            <div class="tribulation-pill-stepper"><button id="tribPillMinus" type="button">−</button><strong id="tribPillUseCount">0</strong><button id="tribPillPlus" type="button">＋</button></div>
+          </div>
           <div><button id="tribConfirm" class="jade-button">引動天雷</button><button id="tribCancel" class="text-button">暫緩</button></div>
         </div>
       </div>
@@ -188,6 +192,15 @@
             <p>角色、境界與所有修為都會永久消失。</p>
             <button id="deleteFinalBtn" class="danger-button">確認永久刪除</button><button id="deleteBackBtn" class="text-button">返回</button>
           </div>
+        </div>
+      </div>
+
+      <div id="helpModal" class="modal hidden">
+        <div class="paper-panel modal-card help-card">
+          <p class="eyebrow">問道指引</p><h2>幫助</h2>
+          <div class="help-tabs"><button class="active" data-help-tab="realms">境界</button></div>
+          <div id="helpContent" class="help-content"></div>
+          <button id="helpCloseBtn" class="text-button">關閉</button>
         </div>
       </div>
 
