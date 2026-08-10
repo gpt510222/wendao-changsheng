@@ -100,3 +100,132 @@
 .q-style .path-button.body-button{left:auto;right:3%;top:auto;bottom:0;transform:none}
 @media(min-width:900px){.q-style .path-actions{width:660px}.q-style .path-button,.q-style .path-button.body-button,.q-style .path-button.sword-button{width:128px}}
 @media(max-width:540px){.q-style .path-button,.q-style .path-button.body-button,.q-style .path-button.sword-button{width:103px}.q-style .path-button.spirit-button{left:1%}.q-style .path-button.body-button{right:1%}}
+
+/* Stable cultivation stage: hero and seals share one bottom-anchored coordinate system. */
+.q-style .game-screen{--q-nav-height:78px;--q-path-zone:132px}
+.q-style .path-actions{
+  left:50%;right:auto;top:auto;bottom:var(--q-nav-height);
+  width:min(660px,100%);height:var(--q-path-zone);
+  transform:translateX(-50%);display:block
+}
+.q-style .path-button,
+.q-style .path-button.body-button,
+.q-style .path-button.sword-button{
+  top:auto;bottom:8px;min-height:0;padding:0
+}
+.q-style .path-button.spirit-button{left:0;right:auto;transform:none}
+.q-style .path-button.sword-button{left:50%;right:auto;transform:translateX(-50%)}
+.q-style .path-button.body-button{left:auto;right:0;transform:none}
+.q-style .hero-stack{
+  left:50%;bottom:calc(var(--q-nav-height) + var(--q-path-zone) - 2px);
+  width:min(440px,70vw);height:min(50vh,625px);
+  transform:translateX(-50%)
+}
+@media(max-height:760px){
+  .q-style .hero-stack{bottom:calc(var(--q-nav-height) + var(--q-path-zone) - 2px);height:min(50vh,625px)}
+  .q-style .path-button,.q-style .path-button.body-button,.q-style .path-button.sword-button{min-height:0;padding:0}
+}
+@media(max-width:540px){
+  .q-style .game-screen{--q-path-zone:128px}
+  .q-style .path-actions{width:100%}
+  .q-style .path-button.spirit-button{left:0}
+  .q-style .path-button.body-button{right:0}
+}
+
+/* Keep all three cultivation seals on an identical vertical baseline. */
+.q-style .path-button,
+.q-style .path-button.body-button,
+.q-style .path-button.sword-button{
+  height:124px;justify-content:flex-start
+}
+.q-style .path-button img{flex:0 0 auto}
+.q-style .path-button span{
+  flex:0 0 54px;height:54px;justify-content:flex-start;line-height:1.2
+}
+.q-style .path-button b{line-height:21px}
+.q-style .path-button small,.q-style .path-button em{line-height:14px}
+
+/* Pixel-lock every seal instead of letting each button's content determine its height. */
+.q-style .path-button,
+.q-style .path-button.body-button,
+.q-style .path-button.sword-button{
+  top:0!important;bottom:auto!important;height:124px!important;
+  display:block!important;font-family:inherit!important
+}
+.q-style .path-button img{
+  position:absolute!important;top:0!important;left:50%!important;
+  width:64px!important;height:64px!important;margin:0!important;
+  transform:translateX(-50%)!important
+}
+.q-style .path-button span{
+  position:absolute!important;top:68px!important;left:0!important;right:0!important;
+  width:100%!important;height:56px!important;margin:0!important;padding:0!important;
+  display:grid!important;grid-template-rows:22px 15px 15px!important;
+  align-content:start!important;justify-items:center!important
+}
+.q-style .path-button b{
+  margin:0!important;font-size:17px!important;line-height:22px!important;font-weight:900!important
+}
+.q-style .path-button small,
+.q-style .path-button em,
+.q-style .path-button.body-button em{
+  margin:0!important;font-size:11px!important;line-height:15px!important;font-weight:800!important
+}
+@media(max-width:540px){
+  .q-style .path-button img{width:58px!important;height:58px!important}
+  .q-style .path-button span{top:62px!important}
+  .q-style .path-button b{font-size:15px!important}
+  .q-style .path-button small,.q-style .path-button em,.q-style .path-button.body-button em{font-size:9px!important}
+}
+
+/* Final three-column layout: one identical cell for each cultivation path. */
+.q-style .path-actions{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  align-items:start!important;justify-items:stretch!important;padding:0 8px!important;
+  box-sizing:border-box!important
+}
+.q-style .path-button,
+.q-style .path-button.spirit-button,
+.q-style .path-button.sword-button,
+.q-style .path-button.body-button{
+  position:relative!important;inset:auto!important;left:auto!important;right:auto!important;
+  top:auto!important;bottom:auto!important;transform:none!important;
+  justify-self:stretch!important;width:100%!important;min-width:0!important;
+  height:124px!important;margin:0!important
+}
+.q-style .path-button img{top:0!important}
+.q-style .path-button span{top:68px!important}
+.q-style .path-button b,
+.q-style .path-button small,
+.q-style .path-button em{
+  width:100%!important;text-align:center!important;font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif!important
+}
+@media(max-width:540px){
+  .q-style .path-actions{padding:0 3px!important}
+  .q-style .path-button span{top:62px!important}
+}
+
+/* Keep each text block in the same flow as its own icon. */
+.q-style .path-button,
+.q-style .path-button.spirit-button,
+.q-style .path-button.sword-button,
+.q-style .path-button.body-button{
+  display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:flex-start!important;gap:4px!important
+}
+.q-style .path-button img{
+  position:static!important;inset:auto!important;left:auto!important;top:auto!important;
+  margin:0 auto!important;transform:none!important;flex:0 0 64px!important
+}
+.q-style .path-button span{
+  position:static!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;
+  width:100%!important;height:56px!important;margin:0!important;padding:0!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;
+  justify-content:flex-start!important;flex:0 0 56px!important
+}
+@media(max-width:540px){
+  .q-style .path-button img{flex-basis:58px!important}
+}
+
+/* Cultivation controls belong to the main meditation view only. */
+.q-style .game-screen.feature-open .path-actions{display:none!important}
