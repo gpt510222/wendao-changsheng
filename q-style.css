@@ -229,3 +229,4 @@
 
 /* Cultivation controls belong to the main meditation view only. */
 .q-style .game-screen.feature-open .path-actions{display:none!important}
+.q-style .path-actions.hidden{display:none!important}
