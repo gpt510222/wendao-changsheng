@@ -83,8 +83,9 @@ const trueFormCatalog=[
   {id:'taixu-sword',name:'太虛劍相',image:'assets/qstyle-v2/true-form-sword-v2.png',description:'八方虛靈古劍結成劍陣，隨吐納明滅共鳴。'},
   {id:'jiuxiao-wings',name:'九霄靈翼',image:'assets/qstyle-v2/true-form-wings.png',description:'以清靈元息凝成的光翼，非羽非骨，如雲霞舒展。'}
 ];
-const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, ...tribulationPillDefaults, tribulationPillMigration:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:0, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0, workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, righteousness:0, evilQi:0, prestige:200, actingLeader:false, npcAffinity:{}, npcDaily:{}, sectTokens:0, sectTokenDaily:{date:'',exchanged:0}, practiceBuff:{active:false,until:0,remaining:0,total:0}, transmissionBuff:{active:false,until:0,remaining:0,total:0}, lastGreetingDay:'', lastSalaryDay:'', lastPracticeDay:'', bornAt:null, lastTrustedTime:0, lastSave:Date.now() };
-let state = { ...defaults }, tickStart = Date.now();
+const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, ...tribulationPillDefaults, tribulationPillMigration:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:99999, testJadeGrantVersion:1, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0, workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, righteousness:0, evilQi:0, prestige:200, actingLeader:false, npcAffinity:{}, npcDaily:{}, sectTokens:0, sectTokenDaily:{date:'',exchanged:0}, practiceBuff:{active:false,until:0,remaining:0,total:0}, transmissionBuff:{active:false,until:0,remaining:0,total:0}, lastGreetingDay:'', lastSalaryDay:'', lastPracticeDay:'', bornAt:null, lastTrustedTime:0, lastSave:Date.now() };
+defaults.cultivationAwakened=false;
+let state = { ...defaults }, tickStart = Date.now(), manualCultivationStartedAt=0, manualCultivationTimer=null, breakthroughInProgress=false;
 const saveKey = 'wendao-idle-v2';
 let createGender='女', createAppearance=1, createOutfit=1, createOrigin='家族子弟', audioContext=null, currentFeature=null, currentRootView='root', currentCaveView='dwelling', currentSectView='home', currentArtsView='sect', suppressSave=false;
 let bgmTheme=null,battle=null,battleTimer=null,pauseStartedAt=null,sessionOnline=false,confirmResolver=null,prologueTimer=null,tribulationPillUseCount=0;
@@ -199,9 +200,9 @@ function save() { if(suppressSave)return;const now=gameNow();state.lastSave=now;
 function load() {
   try {
     const current=JSON.parse(localStorage.getItem(saveKey));
-    if(current) { const growthVersion=current.attributeGrowthVersion||0,needsPillMigration=!current.tribulationPillMigration;state={...defaults,...current};if(needsPillMigration)state.tribPill1=(state.tribPill1||0)+Math.max(0,current.pills||0);delete state.pills;state.tribulationPillMigration=1;state.learnedArts=Array.isArray(current.learnedArts)?current.learnedArts:[];state.sectTokenDaily={...defaults.sectTokenDaily,...current.sectTokenDaily};state.practiceBuff={...defaults.practiceBuff,...current.practiceBuff};state.transmissionBuff={...defaults.transmissionBuff,...current.transmissionBuff};migrateAttributeGrowth(growthVersion);state.bornAt ||= Date.now(); state.npcAffinity||={};state.npcDaily||={};normalizeLearnedArts();migrateSectName(); return state; }
+    if(current) { const growthVersion=current.attributeGrowthVersion||0,needsPillMigration=!current.tribulationPillMigration,needsTestJadeGrant=!current.testJadeGrantVersion;state={...defaults,...current};if(needsTestJadeGrant){state.spiritJade=Math.max(99999,state.spiritJade||0);state.testJadeGrantVersion=1}if(needsPillMigration)state.tribPill1=(state.tribPill1||0)+Math.max(0,current.pills||0);delete state.pills;state.tribulationPillMigration=1;state.learnedArts=Array.isArray(current.learnedArts)?current.learnedArts:[];state.sectTokenDaily={...defaults.sectTokenDaily,...current.sectTokenDaily};state.practiceBuff={...defaults.practiceBuff,...current.practiceBuff};state.transmissionBuff={...defaults.transmissionBuff,...current.transmissionBuff};migrateAttributeGrowth(growthVersion);state.bornAt ||= Date.now(); state.npcAffinity||={};state.npcDaily||={};normalizeLearnedArts();migrateSectName(); return state; }
     const old=JSON.parse(localStorage.getItem('wendao-idle-v1'));
-    if(old) { state={...defaults,...old,free:(old.free||0)+(old.spiritQi||0)+(old.bodyQi||0),tribPill1:Math.max(0,old.pills||0),tribulationPillMigration:1};delete state.pills;state.bornAt ||= Date.now(); }
+    if(old) { state={...defaults,...old,free:(old.free||0)+(old.spiritQi||0)+(old.bodyQi||0),spiritJade:99999,testJadeGrantVersion:1,tribPill1:Math.max(0,old.pills||0),tribulationPillMigration:1};delete state.pills;state.bornAt ||= Date.now(); }
   } catch {}
 }
 function migrateSectName(){
@@ -240,6 +241,50 @@ function addCultivation(amount,silent=false) {
   if(!silent) { if(isPureCultivationView())toast(`修為+${amount}`,'cultivation'); playTone(); }
   render(); save();
 }
+function renderNoviceCultivation(){
+  const awakened=!!state.cultivationAwakened,ready=!awakened&&state.free>=600,progress=Math.min(100,state.free/6),novice=$('#noviceCultivation'),button=$('#manualCultivateBtn');
+  novice.classList.toggle('hidden',awakened);novice.classList.toggle('breakthrough-ready',ready);
+  $('.path-actions').classList.toggle('hidden',!awakened);
+  $$('.feature-tab[data-page="root"],.feature-tab[data-page="sect"]').forEach(tab=>tab.classList.toggle('novice-locked',!awakened));
+  if(awakened)return;
+  $('#noviceProgressText').textContent=ready?'修為已足，點擊突破踏入聽息一層':`入門進度 ${Math.floor(state.free).toLocaleString()} / 600`;
+  $('#noviceProgressBar').style.width=`${progress}%`;
+  button.classList.toggle('breakthrough-button',ready);
+  if(ready){button.disabled=breakthroughInProgress;button.setAttribute('aria-label','突破至聽息一層');}
+  else if(!manualCultivationStartedAt){button.disabled=false;button.classList.remove('channeling');$('#manualCultivateLabel').textContent='修練';$('#manualCultivateHint').textContent=`凝神吐納 5 秒・可得 ${rate()} 修為`;$('#manualCultivateBar').style.width='0%'}
+}
+function finishManualCultivation(){
+  clearInterval(manualCultivationTimer);manualCultivationTimer=null;manualCultivationStartedAt=0;
+  if(state.cultivationAwakened)return;
+  const amount=rate();state.free+=amount;state.totalEarned+=amount;playTone();render();save();
+  if(state.free<600)toast(`吐納完成・修為+${amount}`);
+}
+function beginManualCultivation(){
+  if(state.cultivationAwakened||manualCultivationStartedAt||breakthroughInProgress)return;
+  if(state.free>=600)return beginFirstBreakthrough();
+  manualCultivationStartedAt=performance.now();const button=$('#manualCultivateBtn');button.disabled=true;button.classList.add('channeling');
+  const update=()=>{const elapsed=performance.now()-manualCultivationStartedAt,left=Math.max(0,5-Math.floor(elapsed/1000));$('#manualCultivateLabel').textContent='吐納中';$('#manualCultivateHint').textContent=`尚需 ${left} 秒`;$('#manualCultivateBar').style.width=`${Math.min(100,elapsed/50)}%`;if(elapsed>=5000)finishManualCultivation()};
+  update();manualCultivationTimer=setInterval(update,80);
+}
+function beginFirstBreakthrough(){
+  if(state.cultivationAwakened||state.free<600||breakthroughInProgress)return;
+  breakthroughInProgress=true;$('#manualCultivateBtn').disabled=true;$('#heroArt').classList.add('breakthrough-absorb');playBreakthroughSound();
+  setTimeout(()=>{state.free-=600;state.cultivationAwakened=true;breakthroughInProgress=false;$('#heroArt').classList.remove('breakthrough-absorb');render();save();toast('已突破至聽息・一層，新手指引完成');},2100);
+}
+function playBreakthroughSound(){
+  if(state.muted)return;
+  try{
+    audioContext=audioContext||new (window.AudioContext||window.webkitAudioContext)();audioContext.resume?.();
+    const now=audioContext.currentTime,master=audioContext.createGain();master.connect(audioContext.destination);
+    master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(.2,now+.18);master.gain.setValueAtTime(.2,now+1.35);master.gain.exponentialRampToValueAtTime(.0001,now+2.05);
+    const length=Math.floor(audioContext.sampleRate*1.75),buffer=audioContext.createBuffer(1,length,audioContext.sampleRate),data=buffer.getChannelData(0);
+    for(let i=0;i<length;i++){const t=i/length;data[i]=(Math.random()*2-1)*Math.sin(Math.PI*t)*.55}
+    const breath=audioContext.createBufferSource(),breathFilter=audioContext.createBiquadFilter();breath.buffer=buffer;breathFilter.type='bandpass';breathFilter.Q.value=.8;breathFilter.frequency.setValueAtTime(260,now);breathFilter.frequency.exponentialRampToValueAtTime(1900,now+1.45);breath.connect(breathFilter).connect(master);breath.start(now);breath.stop(now+1.78);
+    [164,246,369].forEach((frequency,index)=>{const tone=audioContext.createOscillator(),gain=audioContext.createGain();tone.type=index===1?'triangle':'sine';tone.frequency.setValueAtTime(frequency,now);tone.frequency.exponentialRampToValueAtTime(frequency*2.4,now+1.45);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.09-index*.018,now+.22+index*.08);gain.gain.exponentialRampToValueAtTime(.0001,now+1.7);tone.connect(gain).connect(master);tone.start(now);tone.stop(now+1.75)});
+    const impact=audioContext.createOscillator(),impactGain=audioContext.createGain();impact.type='sine';impact.frequency.setValueAtTime(145,now+1.48);impact.frequency.exponentialRampToValueAtTime(42,now+1.98);impactGain.gain.setValueAtTime(.0001,now);impactGain.gain.setValueAtTime(.42,now+1.48);impactGain.gain.exponentialRampToValueAtTime(.0001,now+2.04);impact.connect(impactGain).connect(audioContext.destination);impact.start(now+1.48);impact.stop(now+2.06);
+    [880,1320,1760].forEach((frequency,index)=>{const chime=audioContext.createOscillator(),gain=audioContext.createGain();chime.type='sine';chime.frequency.value=frequency;gain.gain.setValueAtTime(.0001,now);gain.gain.setValueAtTime(.07/(index+1),now+1.5+index*.04);gain.gain.exponentialRampToValueAtTime(.0001,now+2.08);chime.connect(gain).connect(audioContext.destination);chime.start(now+1.5+index*.04);chime.stop(now+2.1)});
+  }catch{}
+}
 function addAura(amount) { const cap=auraCapacity();if(state.aura<cap)state.aura=Math.min(cap,state.aura+amount); }
 function playTone() {
   if(state.muted) return;
@@ -263,7 +308,7 @@ function render() {
   $('#playerName').textContent=state.name; $('#totalQi').textContent=free.toLocaleString();
   $('#spiritStoneAmount').textContent=Math.floor(state.spiritStone).toLocaleString();
   $('#spiritJadeAmount').textContent=Math.floor(state.spiritJade).toLocaleString();
-  $('#headerSpiritRealm').textContent=realmName(state.spiritLevel,spiritRealms);
+  $('#headerSpiritRealm').textContent=state.cultivationAwakened?realmName(state.spiritLevel,spiritRealms):'尚未入門';
   $('#headerSect').textContent=state.sect||'無門無派';
   $('#yearsElapsed').textContent=`${experiencedYears().toLocaleString()} 年`;
   $('#rateText').textContent=rate().toLocaleString()+' / 5秒';
@@ -277,12 +322,13 @@ function render() {
   $('#bodyUp').classList.toggle('ready',!bodyMax&&free>=bodyCost);
   $('#swordUp').classList.toggle('ready',!swordMax&&free>=swordCost);
   $('#muteBtn').textContent=state.muted?'♫ 開啟音效':'♪ 靜音';
+  renderNoviceCultivation();
 }
 function upgrade(type) {
   const spirit=type==='spirit',sword=type==='sword',cost=spirit?req(state.spiritLevel):sword?swordReq(state.swordLevel||0):bodyReq(state.bodyLevel);
   if((spirit&&state.spiritLevel>=maxSpiritLevel)||(sword&&(state.swordLevel||0)>=maxSwordLevel)||(!spirit&&!sword&&state.bodyLevel>=maxBodyLevel))return toast('已達此道最高境界');
   if(state.free<cost) return toast(`尚缺 ${(cost-state.free).toFixed(0)} 修為`);
-  if(spirit && state.spiritLevel+1>=10) return openTrib();
+  if(spirit && state.spiritLevel+1>10) return openTrib();
   state.free-=cost;
   if(spirit) { const gain=spiritAttributeGain(state.spiritLevel+1);state.spiritLevel++;applyAttributeGain(gain);toast(`已提升至${realmName(state.spiritLevel,spiritRealms)}`); }
   else if(sword){const gain=swordAttributeGain((state.swordLevel||0)+1);state.swordLevel=(state.swordLevel||0)+1;applyAttributeGain(gain);toast(`已提升至${realmName(state.swordLevel,swordRealms)}`)}
@@ -350,7 +396,7 @@ async function startGame() {
   $$('.feature-tab').forEach(x=>x.classList.remove('active'));
   applyCharacterVisual();
   const away=clockOkay&&!clockRollback?Math.max(0,Math.floor((now-savedLast)/5000)):0;
-  if(away>0) { const gain=offlineCultivationGain(savedLast,now);addAura(away*auraRate());runSettlementTick(away);addCultivation(gain,true);setTimeout(()=>{if(sessionOnline)showOfflineRewards(offlineBefore,away*5)},180); }
+  if(away>0&&state.cultivationAwakened) { const gain=offlineCultivationGain(savedLast,now);addAura(away*auraRate());runSettlementTick(away);addCultivation(gain,true);setTimeout(()=>{if(sessionOnline)showOfflineRewards(offlineBefore,away*5)},180); }
   else if(clockRollback)setTimeout(()=>toast('偵測到時間異常，本次不結算離線收益'),250);
   else if(!clockOkay&&location.protocol!=='file:')setTimeout(()=>toast('無法取得可信時間，已暫停離線與每日結算'),250);
   tickStart=gameNow();render();save();
@@ -368,6 +414,7 @@ function updateCreator() {
 
 function toggleFeature(button) {
   const page=button.dataset.page;
+  if(!state.cultivationAwakened&&(page==='root'||page==='sect'))return toast(`${page==='root'?'靈池':'門派'}需踏入聽息・一層後開啟`);
   if(currentFeature===page) {
     currentFeature=null;
     $('#featurePanel').classList.add('hidden');
@@ -849,7 +896,9 @@ function renderHelpRealms(){
   $('#helpContent').innerHTML=groups.map(([title,realms])=>`<section class="help-realm-group"><h3>${title}</h3><ol>${realms.map((realm,index)=>`<li><span>${index+1}</span><b>${realm}</b><small>每境十層</small></li>`).join('')}</ol></section>`).join('');
 }
 
-load();setClockAnchor(state.lastTrustedTime||Math.min(state.lastSave||Date.now(),Date.now()),location.protocol==='file:');$('#titleHint').textContent=state.name?'點擊螢幕繼續修煉':'點擊螢幕進入遊戲';
+load();
+try{const existing=JSON.parse(localStorage.getItem(saveKey));if(state.name&&(!existing||!Object.prototype.hasOwnProperty.call(existing,'cultivationAwakened')))state.cultivationAwakened=true}catch{}
+setClockAnchor(state.lastTrustedTime||Math.min(state.lastSave||Date.now(),Date.now()),location.protocol==='file:');$('#titleHint').textContent=state.name?'點擊螢幕繼續修煉':'點擊螢幕進入遊戲';
 $('#titleScreen').onclick=enterFromTitle;
 $('#titleScreen').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();enterFromTitle()}};
 $('#prologueScreen').onclick=finishCreationPrologue;
@@ -860,7 +909,7 @@ $$('.appearance-choice').forEach(b=>b.onclick=()=>{$$('.appearance-choice').forE
 $$('.outfit-choice').forEach(b=>b.onclick=()=>{$$('.outfit-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOutfit=+b.dataset.style;updateCreator()});
 function updateOriginPreview(){$('#originStats').textContent=originDescriptions[createOrigin]}
 $$('.origin-choice').forEach(b=>b.onclick=()=>{$$('.origin-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOrigin=b.dataset.origin;updateOriginPreview()});
-$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,appearance:createAppearance,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now};startGame();save()};
+$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,appearance:createAppearance,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now};Object.keys(tribulationPillDefaults).forEach(key=>state[key]=200);startGame();save()};
 $('#spiritUp').onclick=()=>upgrade('spirit'); $('#swordUp').onclick=()=>upgrade('sword'); $('#bodyUp').onclick=()=>upgrade('body');
 $('#tribConfirm').onclick=tribulate; $('#tribCancel').onclick=()=>$('#tribulationModal').classList.add('hidden');
 $('#tribPillMinus').onclick=()=>adjustTribulationPills(-1);$('#tribPillPlus').onclick=()=>adjustTribulationPills(1);
@@ -886,7 +935,8 @@ $('#backToTitle').onclick=()=>{save();$('#gameMenu').classList.add('hidden');$('
 $('#muteBtn').onclick=()=>{state.muted=!state.muted;updateBgmVolume();render();save()};
 $('#battleExitBtn').onclick=forceEndBattle;
 $('#battleResultClose').onclick=closeBattle;
-setInterval(()=>{if($('#gameScreen').classList.contains('active')){addAura(auraRate());runSettlementTick();processSectYears();addCultivation(rate());if(currentFeature==='root')renderSpiritRootView(currentRootView);if(currentFeature==='cave'&&state.spiritLevel>=10)renderCavePanel(currentCaveView);if(currentFeature==='sect'&&currentSectView!=='npcs')renderSectPanel(currentSectView);if(currentFeature==='arts')updateArtsLive();tickStart=gameNow()}},5000);
+$('#manualCultivateBtn').onclick=beginManualCultivation;
+setInterval(()=>{if($('#gameScreen').classList.contains('active')){if(state.cultivationAwakened){addAura(auraRate());runSettlementTick();processSectYears();addCultivation(rate())}if(currentFeature==='root')renderSpiritRootView(currentRootView);if(currentFeature==='cave'&&state.spiritLevel>=10)renderCavePanel(currentCaveView);if(currentFeature==='sect'&&currentSectView!=='npcs')renderSectPanel(currentSectView);if(currentFeature==='arts')updateArtsLive();tickStart=gameNow()}},5000);
 setInterval(()=>{if($('#gameScreen').classList.contains('active'))$('#tickBar').style.width=Math.min(100,(gameNow()-tickStart)/50)+'%'},50);
 setInterval(()=>{if($('#gameScreen').classList.contains('active'))$('#yearsElapsed').textContent=`${experiencedYears().toLocaleString()} 年`},1000);
 setInterval(updatePracticeTimers,1000);
