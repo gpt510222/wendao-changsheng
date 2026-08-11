@@ -92,6 +92,7 @@
         <div class="header-wallet" aria-label="持有貨幣">
           <span><img src="assets/qstyle-v2/spirit-stone.png" alt="靈石"><em>靈石</em><b id="spiritStoneAmount">0</b></span>
           <span><img src="assets/qstyle-v2/spirit-jade.png" alt="靈玉"><em>靈玉</em><b id="spiritJadeAmount">0</b></span>
+          <span><img src="assets/qstyle-v2/reputation.png" alt="聲望"><em>聲望</em><b id="reputationAmount">0</b></span>
         </div>
         <button id="menuBtn" class="icon-button menu-button" title="選單">☰</button>
         <div id="gameMenu" class="game-menu hidden">
@@ -107,6 +108,10 @@
         <div><small>修煉效率</small><b id="rateText">10 / 5秒</b></div>
         <div class="tick"><span id="tickBar"></span></div>
       </section>
+
+      <button id="marketButton" class="market-button" type="button" aria-label="開啟坊市">
+        <img src="assets/qstyle-v2/market-button.png" alt="坊市">
+      </button>
 
       <section id="noviceCultivation" class="novice-cultivation hidden" aria-live="polite">
         <div class="novice-guide paper-panel">
@@ -143,9 +148,9 @@
         <button class="feature-tab" data-page="root" data-title="靈根"><img class="nav-icon" src="assets/qstyle-v2/nav-spirit-root.png" alt=""><small>靈根</small></button>
         <button class="feature-tab" data-page="cave" data-title="洞府"><img class="nav-icon" src="assets/qstyle-v2/nav-cave.png" alt=""><small>洞府</small></button>
         <button class="feature-tab" data-page="sect" data-title="門派"><img class="nav-icon" src="assets/qstyle-v2/nav-sect.png" alt=""><small>門派</small></button>
-        <button class="feature-tab" data-page="arts" data-title="功法"><img class="nav-icon" src="assets/qstyle-v2/nav-arts.png" alt=""><small>功法</small></button>
+        <button class="feature-tab" data-page="arts" data-title="功法"><img class="nav-icon" src="assets/qstyle-v2/nav-arts-cutout.png" alt=""><small>功法</small></button>
         <button class="feature-tab" data-page="experience" data-title="歷練"><img class="nav-icon" src="assets/qstyle-v2/nav-experience.png" alt=""><small>歷練</small></button>
-        <button class="feature-tab" data-page="bag" data-title="儲物袋"><img class="nav-icon" src="assets/qstyle-v2/nav-bag.png" alt=""><small>儲物袋</small></button>
+        <button class="feature-tab" data-page="bag" data-title="儲物袋"><img class="nav-icon" src="assets/qstyle-v2/nav-bag-cutout.png" alt=""><small>儲物袋</small></button>
       </footer>
 
       <div id="toast" class="toast"></div>
@@ -227,6 +232,28 @@
             <button id="confirmModalCancel" class="text-button">取消</button>
             <button id="confirmModalAccept" class="jade-button">確認</button>
           </div>
+        </div>
+      </div>
+
+      <div id="marketModal" class="modal market-modal hidden">
+        <div class="paper-panel modal-card market-card">
+          <div class="market-heading">
+            <span>雲市交易</span>
+            <h2>坊市</h2>
+            <div class="market-wallet">
+              <span><img src="assets/qstyle-v2/spirit-stone.png" alt="靈石">靈石 <b id="marketSpiritStone">0</b></span>
+              <span><img src="assets/qstyle-v2/spirit-jade.png" alt="靈玉">靈玉 <b id="marketSpiritJade">0</b></span>
+              <span><img src="assets/qstyle-v2/reputation.png" alt="聲望">聲望 <b id="marketReputation">0</b></span>
+            </div>
+          </div>
+          <div class="market-tabs">
+            <button class="active" data-market-tab="market">坊市</button>
+            <button data-market-tab="scripture">藏經閣</button>
+            <button data-market-tab="reputation">聲望堂</button>
+            <button data-market-tab="treasure">百寶樓</button>
+          </div>
+          <section id="marketContent" class="market-content"></section>
+          <button id="marketCloseBtn" class="text-button">退出</button>
         </div>
       </div>
 
