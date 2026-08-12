@@ -25,6 +25,7 @@
 .q-style .bag-tabs button,.q-style .root-tabs button,.q-style .sect-tabs button,.q-style .arts-tabs button{border:2px solid #8ab0b5;border-radius:12px;background:#fff9e9;color:#526b78;box-shadow:inset 0 0 0 2px #fff}
 .q-style .bag-tabs button.active,.q-style .root-tabs button.active,.q-style .sect-tabs button.active,.q-style .arts-tabs button.active{border-color:#4ca5a6;background:#bfe9df;color:#236d74}
 .q-style .modal{background:#183a4c9e}.q-style .modal-card{border:3px solid #6da8b1;border-radius:24px;background:#fffaf1;box-shadow:inset 0 0 0 4px #fff,0 8px 0 #315f7066}
+.q-style .item-modal-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:center}.q-style .item-modal-actions.no-use{grid-template-columns:1fr 1fr}.q-style .item-modal-actions.no-use #itemModalClose{grid-column:2}.q-style .sell-button{border:2px solid #f5e0a0!important;background:linear-gradient(180deg,#e8b85d,#b66b2d)!important;color:#fffaf0!important;box-shadow:0 4px 0 #7b461f,0 8px 15px #613c2250!important;font-weight:900}.q-style .sell-modal-card{width:min(90vw,520px);text-align:center}.q-style .sell-modal-card>img{width:130px;height:130px;object-fit:contain}.q-style .sell-modal-message{color:#765d42}.q-style .sell-quantity-panel{margin:18px 0;padding:16px;border:1px solid #c5aa78;border-radius:16px;background:#f3ead6}.q-style .sell-quantity-controls{display:grid;grid-template-columns:1.2fr .8fr 1fr .8fr 1.2fr;gap:8px;align-items:center;margin-top:12px}.q-style .sell-quantity-controls button{min-height:44px;border:1px solid #9e8052;background:#fffaf0;color:#5b4936}.q-style .sell-quantity-controls strong{font-size:24px;color:#286b68}.q-style .sell-modal-total{font-size:20px;font-weight:900;color:#286b68}.q-style .sell-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
 .q-style .toast{border:2px solid #fff;border-radius:999px;background:#386d7bed;box-shadow:0 4px 0 #234955}
 @media(min-width:900px){.q-style .hero-stack{width:390px;height:51%;bottom:14.5%}.q-style .path-actions{width:680px}.q-style .path-button{width:210px}}
 @media(max-height:760px){.q-style .hero-stack{height:43%;bottom:17%}.q-style .path-button{min-height:92px;padding-top:48px}.q-style .path-button img{width:61px;height:61px}}
@@ -130,6 +131,50 @@
   .q-style .path-actions{width:100%}
   .q-style .path-button.spirit-button{left:0}
   .q-style .path-button.body-button{right:0}
+}
+
+/* Illustrated mailbox entrance and letter UI. */
+.q-style .mail-button{
+  position:absolute;z-index:9;top:28.5%;right:3.5%;width:92px;height:92px;
+  margin:0;padding:0;border:0!important;border-radius:0;background:none!important;
+  box-shadow:none!important;filter:drop-shadow(0 7px 8px #1c515766);
+  cursor:pointer;transition:transform .18s ease,filter .18s ease
+}
+.q-style .mail-button img{display:block;width:100%;height:100%;object-fit:contain}
+.q-style .mail-button:hover,.q-style .mail-button:focus-visible{transform:translateY(-3px) scale(1.04);filter:drop-shadow(0 9px 12px #1c515788)}
+.q-style .mail-button:active{transform:translateY(1px) scale(.98)}
+.q-style .mail-unread-badge{position:absolute;right:2px;top:1px;min-width:25px;height:25px;padding:0 6px;border:2px solid #fff9df;border-radius:99px;background:#c95748;color:white;font:900 13px/21px sans-serif;text-align:center;box-shadow:0 3px 7px #173d4766}
+.q-style .game-screen.feature-open .mail-button{display:none}
+
+.q-style .mailbox-modal,.q-style .mail-detail-modal{z-index:74;background:#153842b8;backdrop-filter:blur(5px)}
+.q-style #confirmModal{z-index:90}
+.q-style .mailbox-card{width:min(92vw,720px);max-height:min(88vh,850px);padding:20px;overflow:auto;border:3px solid #6aa8ad;border-radius:28px;background:linear-gradient(150deg,#fffaf0 0%,#edf8f4 100%);box-shadow:0 20px 60px #082a32a6,inset 0 0 0 3px #fff9dd}
+.q-style .mailbox-heading{display:grid;grid-template-columns:1fr auto;align-items:center;gap:18px;margin-bottom:14px;padding:10px 12px 17px;border-bottom:2px solid #c99a50;color:#205e63}
+.q-style .mailbox-heading small{color:#a1743d;letter-spacing:.22em}.q-style .mailbox-heading h2{margin:2px 0 0;font-size:30px}.q-style .mailbox-heading>span{padding:8px 12px;border-radius:99px;background:#d9efea;color:#356d70;font-weight:800}
+.q-style .mail-list{display:grid;gap:10px;min-height:180px}
+.q-style .mail-list-item{display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:12px;width:100%;padding:14px 16px;border:1px solid #b59a69;border-radius:16px;background:#f2ead7;color:#53605e;text-align:left;box-shadow:0 4px 9px #6a573122;cursor:pointer;transition:.16s}
+.q-style .mail-list-item:hover{transform:translateY(-2px);box-shadow:0 7px 15px #43646530}
+.q-style .mail-list-item i{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#aaa08c;color:#fff;font-style:normal;font-weight:900}
+.q-style .mail-list-item span{display:grid;gap:4px}.q-style .mail-list-item span b{font-size:18px}.q-style .mail-list-item span small{color:#887b68}
+.q-style .mail-list-item em{padding:5px 9px;border-radius:99px;background:#d7d1c4;color:#706858;font-size:12px;font-style:normal}
+.q-style .mail-list-item.is-unread{border-color:#4c9996;background:linear-gradient(110deg,#effbf7,#fff3d7);color:#245f61}.q-style .mail-list-item.is-unread i{background:#2b827f;box-shadow:0 0 0 4px #d8f1e8}.q-style .mail-list-item.is-unread em{background:#e5b95f;color:#624211;font-weight:900}
+.q-style .mail-empty{display:grid;place-items:center;align-content:center;gap:7px;min-height:220px;color:#84918b}.q-style .mail-empty b{font-size:22px}
+.q-style .mailbox-card>.text-button{display:block;margin:18px auto 0;min-width:118px}
+
+.q-style .mail-letter-card{position:relative;width:min(90vw,650px);max-height:90vh;padding:54px 48px 32px;overflow:auto;border:2px solid #b48b52;border-radius:8px;background:linear-gradient(#fffaf0e8,#f4e5c8f2),repeating-linear-gradient(0deg,transparent 0 33px,#a57c4820 34px 35px);box-shadow:0 22px 65px #122f32b8,inset 0 0 40px #bd8e4830;color:#604d36}
+.q-style .mail-letter-card::before,.q-style .mail-letter-card::after{content:"";position:absolute;width:60px;height:60px;border-color:#c59c5e}.q-style .mail-letter-card::before{left:12px;top:12px;border-left:3px solid;border-top:3px solid}.q-style .mail-letter-card::after{right:12px;bottom:12px;border-right:3px solid;border-bottom:3px solid}
+.q-style .mail-letter-card h2{margin:0 0 24px;text-align:center;font-size:30px;color:#385e59}
+.q-style .mail-letter-meta{display:flex;justify-content:space-between;gap:15px;padding-bottom:10px;border-bottom:1px dashed #b18e5b;color:#917752;font-size:13px}
+.q-style .mail-letter-body{min-height:150px;margin:22px 4px;white-space:pre-line;font-size:18px;line-height:2;text-align:left}
+.q-style .mail-attachment-section{margin:18px 0 6px;padding:15px;border:1px solid #b99258;border-radius:12px;background:#fff9e6a8}.q-style .mail-attachment-section>small{display:block;margin-bottom:10px;color:#987240;text-align:center;letter-spacing:.2em}
+.q-style .mail-attachment-list{display:flex;justify-content:center;flex-wrap:wrap;gap:12px}.q-style .mail-attachment{display:flex;align-items:center;gap:9px;min-width:150px;padding:8px 12px;border-radius:12px;background:#e4f2e9;border:1px solid #76a99b}.q-style .mail-attachment img{width:48px;height:48px;object-fit:contain}.q-style .mail-attachment span{display:grid}.q-style .mail-attachment span small{color:#886e46}.q-style .mail-attachment.is-claimed{filter:grayscale(.65);opacity:.62}
+.q-style .mail-letter-actions{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:18px}.q-style .mail-letter-actions button{min-width:112px}.q-style .danger-button{border:1px solid #a45148;background:#f4e2dc;color:#943e37}
+
+@media(max-width:540px){
+  .q-style .mail-button{top:29%;right:2%;width:72px;height:72px}
+  .q-style .mailbox-card{width:96vw;padding:12px}.q-style .mailbox-heading{grid-template-columns:1fr auto;gap:10px;padding:8px 5px 14px}.q-style .mailbox-heading h2{font-size:24px}.q-style .mailbox-heading>span{padding:6px 8px;font-size:11px}
+  .q-style .mail-list-item{grid-template-columns:38px 1fr auto;padding:11px 9px;gap:8px}.q-style .mail-list-item i{width:34px;height:34px}.q-style .mail-list-item span b{font-size:15px}.q-style .mail-list-item span small{font-size:10px}
+  .q-style .mail-letter-card{width:94vw;padding:45px 20px 25px}.q-style .mail-letter-card h2{margin-bottom:19px;font-size:25px}.q-style .mail-letter-body{font-size:16px}.q-style .mail-letter-actions{gap:7px}.q-style .mail-letter-actions button{min-width:82px;padding-inline:8px}
 }
 
 /* Keep all three cultivation seals on an identical vertical baseline. */
@@ -288,6 +333,24 @@
 .q-style .market-product small{display:none}
 .q-style .market-restock{position:absolute;z-index:3;left:50%;bottom:2.5%;margin:0;width:max-content;max-width:90%;padding:5px 13px;border-radius:15px;background:#244d49d9;color:#fff5d5;font-size:8px;text-align:center;transform:translateX(-50%)}
 .q-style .market-card>#marketCloseBtn{display:block;margin:14px auto 0;padding:9px 26px}
+.q-style .market-product.sold-out{filter:saturate(.55);opacity:.72}
+.q-style .market-product.sold-out::before{content:"已購買";position:absolute;z-index:7;right:9%;top:13%;padding:2px 5px;border:1px solid #fff0c7;border-radius:10px;background:#315b54e8;color:#fff7df;font-size:7px;font-weight:900;box-shadow:0 2px 5px #1c160f66}
+
+/* Marketplace item details and purchase confirmation. */
+.q-style .market-purchase-modal{z-index:76;background:#123139bf;backdrop-filter:blur(5px)}
+.q-style .market-purchase-card{width:min(88vw,430px);max-height:90vh;padding:22px 24px;overflow:auto;border:3px solid #bd914e;border-radius:24px;background:linear-gradient(180deg,#fffaf0,#e9f7f3);box-shadow:0 18px 50px #09272f99,inset 0 0 0 3px #fff8da;text-align:center}
+.q-style .market-purchase-card .eyebrow{margin:0;color:#8f7146;letter-spacing:.28em}
+.q-style .market-purchase-image{display:block;width:132px;height:132px;margin:8px auto 3px;object-fit:contain;filter:drop-shadow(0 7px 7px #24443f42)}
+.q-style .market-purchase-card h2{margin:3px 0 12px;color:#276864;font-size:26px}
+.q-style .market-purchase-description{min-height:72px;margin:0;padding:13px 15px;border:1px solid #b99a6b;background:#f5ecd9;color:#586661;line-height:1.7;text-align:left;white-space:pre-line}
+.q-style .market-purchase-information{display:grid;gap:7px;margin:12px 0;padding:10px 12px;border-radius:12px;background:#dcefea;color:#445f5b}
+.q-style .market-purchase-information p{display:flex;align-items:center;justify-content:center;gap:5px;margin:0}
+.q-style .market-purchase-information img,.q-style .market-purchase-total img{width:22px;height:22px;object-fit:contain;vertical-align:middle}
+.q-style .market-purchase-quantity{margin:10px 0}.q-style .market-purchase-quantity.hidden{display:none!important}
+.q-style .market-purchase-total{margin:10px 0 3px;color:#775a32;font-size:17px;font-weight:900}
+.q-style .market-purchase-reason{min-height:22px;margin:4px 0;color:#a44c42;font-weight:900}
+.q-style .market-purchase-actions{display:flex;justify-content:center;gap:14px;margin-top:11px}
+.q-style .market-purchase-actions button{min-width:105px}
 
 @media(max-width:540px){
   .q-style .market-button{top:20%;right:2%;width:72px;height:72px}

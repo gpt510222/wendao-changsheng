@@ -112,6 +112,10 @@
       <button id="marketButton" class="market-button" type="button" aria-label="開啟坊市">
         <img src="assets/qstyle-v2/market-button.png" alt="坊市">
       </button>
+      <button id="mailButton" class="mail-button" type="button" aria-label="開啟信箱">
+        <img src="assets/qstyle-v2/mail-button.png" alt="信箱">
+        <b id="mailUnreadBadge" class="mail-unread-badge hidden">0</b>
+      </button>
 
       <section id="noviceCultivation" class="novice-cultivation hidden" aria-live="polite">
         <div class="novice-guide paper-panel">
@@ -175,8 +179,33 @@
           <p id="itemModalDescription" class="item-description"></p>
           <small id="itemModalCount"></small>
           <div id="itemModalActions" class="item-modal-actions">
-            <button id="itemModalUse" class="jade-button">使用</button>
+            <button id="itemModalSell" class="sell-button">售出</button>
             <button id="itemModalClose" class="text-button">退出</button>
+            <button id="itemModalUse" class="jade-button">使用</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="sellModal" class="modal hidden">
+        <div class="paper-panel modal-card sell-modal-card">
+          <p class="eyebrow">售出道具</p>
+          <img id="sellModalImage" src="" alt="">
+          <h2 id="sellModalName">道具名稱</h2>
+          <p id="sellModalMessage" class="sell-modal-message"></p>
+          <div class="sell-quantity-panel">
+            <span>售出數量</span>
+            <div class="sell-quantity-controls">
+              <button id="sellMinBtn" type="button">最小</button>
+              <button id="sellMinusBtn" type="button" aria-label="減少數量">−</button>
+              <strong id="sellQuantity">1</strong>
+              <button id="sellPlusBtn" type="button" aria-label="增加數量">＋</button>
+              <button id="sellMaxBtn" type="button">最大</button>
+            </div>
+          </div>
+          <p id="sellModalTotal" class="sell-modal-total"></p>
+          <div class="sell-modal-actions">
+            <button id="sellCancelBtn" class="text-button">取消</button>
+            <button id="sellConfirmBtn" class="sell-button">確認售出</button>
           </div>
         </div>
       </div>
@@ -255,6 +284,63 @@
           <section id="marketContent" class="market-content"></section>
           <button id="marketCloseBtn" class="text-button">退出</button>
         </div>
+      </div>
+
+      <div id="marketPurchaseModal" class="modal market-purchase-modal hidden">
+        <div class="paper-panel modal-card market-purchase-card">
+          <p class="eyebrow">商品詳情</p>
+          <img id="marketPurchaseImage" class="market-purchase-image" src="" alt="">
+          <h2 id="marketPurchaseName">商品名稱</h2>
+          <p id="marketPurchaseDescription" class="market-purchase-description"></p>
+          <div class="market-purchase-information">
+            <p id="marketPurchasePrice"></p>
+            <p id="marketPurchaseLimits"></p>
+          </div>
+          <div id="marketPurchaseQuantityPanel" class="sell-quantity-panel market-purchase-quantity hidden">
+            <span>購買數量</span>
+            <div class="sell-quantity-controls">
+              <button id="marketPurchaseMin" type="button">最小</button>
+              <button id="marketPurchaseMinus" type="button">−</button>
+              <b id="marketPurchaseQuantity">1</b>
+              <button id="marketPurchasePlus" type="button">＋</button>
+              <button id="marketPurchaseMax" type="button">最大</button>
+            </div>
+          </div>
+          <p id="marketPurchaseTotal" class="market-purchase-total"></p>
+          <p id="marketPurchaseReason" class="market-purchase-reason"></p>
+          <div class="market-purchase-actions">
+            <button id="marketPurchaseConfirm" class="jade-button">購買</button>
+            <button id="marketPurchaseCancel" class="text-button">退出</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="mailboxModal" class="modal mailbox-modal hidden">
+        <div class="paper-panel modal-card mailbox-card">
+          <header class="mailbox-heading">
+            <div><small>雲箋傳書</small><h2>信箱</h2></div>
+            <span>未讀 <b id="mailboxUnreadCount">0</b></span>
+          </header>
+          <div id="mailList" class="mail-list"></div>
+          <button id="mailboxCloseBtn" class="text-button">退出</button>
+        </div>
+      </div>
+
+      <div id="mailDetailModal" class="modal mail-detail-modal hidden">
+        <article class="modal-card mail-letter-card">
+          <h2 id="mailDetailSubject"></h2>
+          <div class="mail-letter-meta"><span id="mailDetailSender"></span><time id="mailDetailDate"></time></div>
+          <p id="mailDetailBody" class="mail-letter-body"></p>
+          <section id="mailAttachmentSection" class="mail-attachment-section hidden">
+            <small>隨信附贈</small>
+            <div id="mailAttachmentList" class="mail-attachment-list"></div>
+          </section>
+          <div class="mail-letter-actions">
+            <button id="mailDeleteBtn" class="danger-button">刪除信件</button>
+            <button id="mailDetailCloseBtn" class="text-button">退出</button>
+            <button id="mailClaimBtn" class="jade-button">領取附件</button>
+          </div>
+        </article>
       </div>
 
       <div id="battleModal" class="modal battle-modal hidden">
