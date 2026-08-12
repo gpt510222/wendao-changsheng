@@ -58,12 +58,27 @@ const tribulationPillDefaults={};
 spiritRealms.slice(1).forEach((realm,index)=>{
   const realmIndex=index+1,key=`tribPill${realmIndex}`;
   tribulationPillDefaults[key]=0;
-  itemCatalog[key]={name:`${realm}丹`,image:`assets/qstyle-v2/tribulation-pills/pill-${String(realmIndex).padStart(2,'0')}.png`,description:`蘊含${realm}境道韻的渡劫丹藥。僅在突破${realm}境層次時使用，每顆可增加 5% 渡劫成功率。`,count:key,usable:false,giftable:false};
+  itemCatalog[key]={name:`${realm}丹`,image:`assets/qstyle-v2/tribulation-pills/pill-${String(realmIndex).padStart(2,'0')}.png`,description:`蘊含${realm}境道韻的渡劫丹藥。僅在突破${realm}境層次時使用，每顆可增加 5% 渡劫成功率。`,count:key,usable:false,giftable:false,sellPrice:1};
 });
 const artKinds={secret:{tab:'玄錄',attribute:'trueQi',label:'元息'},formula:{tab:'命篇',attribute:'rootBone',label:'命骨'},sutra:{tab:'體典',attribute:'physique',label:'玄軀'},escape:{tab:'行章',attribute:'agility',label:'游影'},ultimate:{tab:'悟卷',attribute:'comprehension',label:'道悟'},fragment:{tab:'天箋',attribute:'fortune',label:'天契'}};
 const artTabs=[['sect','門派技能'],['secret','玄錄'],['formula','命篇'],['sutra','體典'],['escape','行章'],['ultimate','悟卷'],['fragment','天箋'],['moves','招式']];
 const artElements=[['metal','金','metalRoot'],['wood','木','woodRoot'],['water','水','waterRoot'],['fire','火','fireRoot'],['earth','土','earthRoot']];
 const artTierMax=[120,260,520,900,1400,2050,2933,3352,4800];
+const techniqueBookKinds={secret:'xuanlu',formula:'mingpian',sutra:'tidian',escape:'xingzhang'};
+const techniqueBookTierWords=[['清微','流雲'],['靈霄','玄真'],['星華','紫府'],['天罡','地脈'],['太玄','九曜'],['洞虛','萬象'],['無量','諸天'],['太初','鴻蒙'],['混元','天道']];
+const techniqueBookElementWords={metal:['庚金','玄鋒'],wood:['青木','建木'],water:['滄溟','玄水'],fire:['離火','炎陽'],earth:['坤元','厚土']};
+const techniqueBooks=[],techniqueBookDefaults={};
+Object.entries(techniqueBookKinds).forEach(([kind,assetPrefix])=>{
+  for(let tier=1;tier<=9;tier++)artElements.forEach(([element,elementName],elementIndex)=>{
+    for(let variant=0;variant<2;variant++){
+      const id=`artbook-${kind}-t${tier}-${element}-${variant+1}`,count=`artBook_${kind}_${tier}_${element}_${variant+1}`;
+      const name=`${techniqueBookTierWords[tier-1][variant]}${techniqueBookElementWords[element][variant]}${artKinds[kind].tab}`;
+      const book={id,count,name,kind,element,elementName,tier,level:1,source:'book'};
+      techniqueBooks.push(book);techniqueBookDefaults[count]=0;
+      itemCatalog[id]={name,image:`assets/qstyle-v2/art-books/${assetPrefix}-${String(tier).padStart(2,'0')}.png`,description:`${elementName}行・${['一','二','三','四','五','六','七','八','九'][tier-1]}階${artKinds[kind].tab}。使用後習得「${name}」，增加${artKinds[kind].label}；同名功法僅能習得一次。`,count,usable:true,giftable:false,sellPrice:1,techniqueBook:book};
+    }
+  });
+});
 const startingTechniques=[
   {name:'凝念馭元',kind:'origin',min:.8,max:1,description:'凝神引動體內元息，化為一道氣芒直擊對手。'},
   {name:'流光御鋒',kind:'sword',min:.8,max:1.5,description:'引元息淬成流光劍芒，破空而行，直取對手氣機。'}
@@ -83,7 +98,7 @@ const trueFormCatalog=[
   {id:'taixu-sword',name:'太虛劍相',image:'assets/qstyle-v2/true-form-sword-v2.png',description:'八方虛靈古劍結成劍陣，隨吐納明滅共鳴。'},
   {id:'jiuxiao-wings',name:'九霄靈翼',image:'assets/qstyle-v2/true-form-wings.png',description:'以清靈元息凝成的光翼，非羽非骨，如雲霞舒展。'}
 ];
-const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, ...tribulationPillDefaults, tribulationPillMigration:1, testTribulationPillGrantVersion:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:99999, testJadeGrantVersion:1, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0,workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, righteousness:0, evilQi:0, prestige:200, actingLeader:false, npcAffinity:{}, npcDaily:{}, sectTokens:0, sectTokenDaily:{date:'',exchanged:0}, practiceBuff:{active:false,until:0,remaining:0,total:0}, transmissionBuff:{active:false,until:0,remaining:0,total:0}, lastGreetingDay:'', lastSalaryDay:'', lastPracticeDay:'', bornAt:null, lastTrustedTime:0, lastSave:Date.now() };
+const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, ...tribulationPillDefaults, ...techniqueBookDefaults, tribulationPillMigration:1, testTribulationPillGrantVersion:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],learnedBookIds:[],mailbox:[],scripturePurchases:{date:'',ids:[]},marketPermanentPurchases:{},marketDailyPurchases:{date:'',counts:{}},artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:99999, testJadeGrantVersion:1, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0,workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, righteousness:0, evilQi:0, prestige:0, actingLeader:false, npcAffinity:{}, npcDaily:{}, sectTokens:0, sectTokenDaily:{date:'',exchanged:0}, practiceBuff:{active:false,until:0,remaining:0,total:0}, transmissionBuff:{active:false,until:0,remaining:0,total:0}, lastGreetingDay:'', lastSalaryDay:'', lastPracticeDay:'', bornAt:null, lastTrustedTime:0, lastSave:Date.now() };
 defaults.cultivationAwakened=false;
 let state = { ...defaults }, tickStart = Date.now(), manualCultivationStartedAt=0, manualCultivationTimer=null, breakthroughInProgress=false;
 const saveKey = 'wendao-idle-v2';
@@ -91,8 +106,9 @@ let createGender='女', createAppearance=1, createOutfit=1, createOrigin='家族
 const marketFloors={market:1,scripture:1,reputation:1};
 const marketFloorStars=[1,3,5,7,9];
 const chineseFloorNames=['一','二','三','四','五'];
-let marketFloorNoticeTimer=null;
+let marketFloorNoticeTimer=null,lastScriptureDayKey='',marketPurchaseOffer=null,marketPurchaseQuantity=1,currentMailId=null;
 let bgmTheme=null,battle=null,battleTimer=null,pauseStartedAt=null,sessionOnline=false,confirmResolver=null,prologueTimer=null,tribulationPillUseCount=0;
+let sellItemKey=null,sellItemQuantity=1;
 let clockEpoch=Date.now(),clockPerf=performance.now(),trustedClockReady=location.protocol==='file:',clockSyncPromise=null;
 
 function setClockAnchor(epoch,trusted=false){clockEpoch=epoch;clockPerf=performance.now();trustedClockReady=trusted||location.protocol==='file:'}
@@ -208,7 +224,7 @@ function grantTestTribulationPills(){
 function load() {
   try {
     const current=JSON.parse(localStorage.getItem(saveKey));
-    if(current) { const growthVersion=current.attributeGrowthVersion||0,needsPillMigration=!current.tribulationPillMigration,needsTestJadeGrant=!current.testJadeGrantVersion,needsTestPillGrant=!current.testTribulationPillGrantVersion;state={...defaults,...current};if(needsTestJadeGrant){state.spiritJade=Math.max(99999,state.spiritJade||0);state.testJadeGrantVersion=1}if(needsPillMigration)state.tribPill1=(state.tribPill1||0)+Math.max(0,current.pills||0);delete state.pills;state.tribulationPillMigration=1;if(needsTestPillGrant)grantTestTribulationPills();state.learnedArts=Array.isArray(current.learnedArts)?current.learnedArts:[];state.sectTokenDaily={...defaults.sectTokenDaily,...current.sectTokenDaily};state.practiceBuff={...defaults.practiceBuff,...current.practiceBuff};state.transmissionBuff={...defaults.transmissionBuff,...current.transmissionBuff};migrateAttributeGrowth(growthVersion);state.bornAt ||= Date.now(); state.npcAffinity||={};state.npcDaily||={};normalizeLearnedArts();migrateSectName(); return state; }
+    if(current) { const growthVersion=current.attributeGrowthVersion||0,needsPillMigration=!current.tribulationPillMigration,needsTestJadeGrant=!current.testJadeGrantVersion,needsTestPillGrant=!current.testTribulationPillGrantVersion;state={...defaults,...current};if(needsTestJadeGrant){state.spiritJade=Math.max(99999,state.spiritJade||0);state.testJadeGrantVersion=1}if(needsPillMigration)state.tribPill1=(state.tribPill1||0)+Math.max(0,current.pills||0);delete state.pills;state.tribulationPillMigration=1;if(needsTestPillGrant)grantTestTribulationPills();state.learnedArts=Array.isArray(current.learnedArts)?current.learnedArts:[];state.learnedBookIds=Array.isArray(current.learnedBookIds)?current.learnedBookIds:[];state.mailbox=Array.isArray(current.mailbox)?current.mailbox:[];state.scripturePurchases={...defaults.scripturePurchases,...current.scripturePurchases};state.scripturePurchases.ids=Array.isArray(state.scripturePurchases.ids)?state.scripturePurchases.ids:[];state.marketPermanentPurchases=current.marketPermanentPurchases&&typeof current.marketPermanentPurchases==='object'?current.marketPermanentPurchases:{};state.marketDailyPurchases={...defaults.marketDailyPurchases,...current.marketDailyPurchases};state.marketDailyPurchases.counts=state.marketDailyPurchases.counts&&typeof state.marketDailyPurchases.counts==='object'?state.marketDailyPurchases.counts:{};state.sectTokenDaily={...defaults.sectTokenDaily,...current.sectTokenDaily};state.practiceBuff={...defaults.practiceBuff,...current.practiceBuff};state.transmissionBuff={...defaults.transmissionBuff,...current.transmissionBuff};migrateAttributeGrowth(growthVersion);state.bornAt ||= Date.now(); state.npcAffinity||={};state.npcDaily||={};normalizeLearnedArts();migrateSectName(); return state; }
     const old=JSON.parse(localStorage.getItem('wendao-idle-v1'));
     if(old) { state={...defaults,...old,free:(old.free||0)+(old.spiritQi||0)+(old.bodyQi||0),spiritJade:99999,testJadeGrantVersion:1,tribPill1:Math.max(0,old.pills||0),tribulationPillMigration:1};delete state.pills;grantTestTribulationPills();state.bornAt ||= Date.now(); }
   } catch {}
@@ -243,6 +259,44 @@ function gameConfirm(message,{title='確認操作',confirmText='確認',danger=f
   const accept=$('#confirmModalAccept');accept.textContent=confirmText;accept.className=danger?'danger-button':'jade-button';
   $('#confirmModal').classList.remove('hidden');
   return new Promise(resolve=>{confirmResolver=resolve});
+}
+function createWelcomeMail(now){
+  return {id:`welcome-${now}`,subject:'初入修途・迎新贈禮',sender:'問道長生',body:'道友既已結契入世，從此山高水長，自有仙途可尋。這份薄禮贈予初踏修途的你，願你守住本心，行遍九霄。',sentAt:now,read:false,claimed:false,attachments:[{type:'currency',key:'prestige',name:'聲望',image:'assets/qstyle-v2/reputation.png',amount:200}]};
+}
+function mailbox(){return Array.isArray(state.mailbox)?state.mailbox:(state.mailbox=[])}
+function unreadMailCount(){return mailbox().filter(mail=>!mail.read).length}
+function mailDate(value){return new Intl.DateTimeFormat('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(value||Date.now()))}
+function renderMailButton(){
+  const count=unreadMailCount(),badge=$('#mailUnreadBadge');if(!badge)return;
+  badge.textContent=count>99?'99+':count;badge.classList.toggle('hidden',count===0);
+}
+function renderMailbox(){
+  const list=$('#mailList');if(!list)return;const mails=[...mailbox()].sort((a,b)=>(b.sentAt||0)-(a.sentAt||0));
+  $('#mailboxUnreadCount').textContent=unreadMailCount();
+  list.innerHTML=mails.length?mails.map(mail=>`<button class="mail-list-item ${mail.read?'is-read':'is-unread'}" data-mail-id="${mail.id}"><i>${mail.read?'閱':'新'}</i><span><b>${mail.subject}</b><small>${mail.sender}・${mailDate(mail.sentAt)}</small></span>${mail.attachments?.length?`<em>${mail.claimed?'已領取':'有附件'}</em>`:''}</button>`).join(''):'<div class="mail-empty"><b>暫無書信</b><small>新的訊息與獎勵會送到此處。</small></div>';
+  list.querySelectorAll('[data-mail-id]').forEach(button=>button.onclick=()=>openMailDetail(button.dataset.mailId));
+}
+function openMailbox(){renderMailbox();$('#mailboxModal').classList.remove('hidden')}
+function closeMailbox(){$('#mailboxModal').classList.add('hidden')}
+function renderMailDetail(){
+  const mail=mailbox().find(entry=>entry.id===currentMailId);if(!mail)return closeMailDetail();
+  $('#mailDetailSubject').textContent=mail.subject;$('#mailDetailSender').textContent=`寄件人：${mail.sender}`;$('#mailDetailDate').textContent=mailDate(mail.sentAt);$('#mailDetailBody').textContent=mail.body;
+  const attachments=Array.isArray(mail.attachments)?mail.attachments:[],section=$('#mailAttachmentSection');section.classList.toggle('hidden',!attachments.length);
+  $('#mailAttachmentList').innerHTML=attachments.map(item=>`<div class="mail-attachment ${mail.claimed?'is-claimed':''}"><img src="${item.image||''}" alt=""><span><b>${item.name}</b><small>× ${Number(item.amount||0).toLocaleString()}</small></span></div>`).join('');
+  const claim=$('#mailClaimBtn');claim.classList.toggle('hidden',!attachments.length);claim.disabled=!!mail.claimed;claim.textContent=mail.claimed?'已領取':'領取附件';
+}
+function openMailDetail(id){const mail=mailbox().find(entry=>entry.id===id);if(!mail)return;mail.read=true;currentMailId=id;renderMailbox();renderMailButton();renderMailDetail();$('#mailDetailModal').classList.remove('hidden');save()}
+function closeMailDetail(){$('#mailDetailModal').classList.add('hidden');currentMailId=null}
+function claimMailAttachments(){
+  const mail=mailbox().find(entry=>entry.id===currentMailId);if(!mail||mail.claimed)return;
+  for(const attachment of mail.attachments||[]){if(attachment.type==='currency'&&Object.prototype.hasOwnProperty.call(state,attachment.key))state[attachment.key]=(Number(state[attachment.key])||0)+Number(attachment.amount||0);else if(attachment.type==='item'&&Object.prototype.hasOwnProperty.call(state,attachment.key))state[attachment.key]=(Number(state[attachment.key])||0)+Number(attachment.amount||0)}
+  mail.claimed=true;renderMailDetail();renderMailbox();renderMailButton();render();save();toast('附件已收入囊中');
+}
+async function deleteCurrentMail(){
+  const mail=mailbox().find(entry=>entry.id===currentMailId);if(!mail)return;
+  if(mail.attachments?.length&&!mail.claimed){await gameConfirm('此信尚有未領取附件，請先領取附件後再刪除信件。',{title:'無法刪除信件',confirmText:'我知道了'});return}
+  if(!await gameConfirm(`確定刪除「${mail.subject}」？`,{title:'刪除信件',confirmText:'確認刪除',danger:true}))return;
+  state.mailbox=mailbox().filter(entry=>entry.id!==currentMailId);closeMailDetail();renderMailbox();renderMailButton();save();
 }
 function addCultivation(amount,silent=false) {
   state.free += amount; state.totalEarned += amount;
@@ -334,6 +388,7 @@ function render() {
   $('#bodyUp').classList.toggle('ready',!bodyMax&&free>=bodyCost);
   $('#swordUp').classList.toggle('ready',!swordMax&&free>=swordCost);
   $('#muteBtn').textContent=state.muted?'♫ 開啟音效':'♪ 靜音';
+  renderMailButton();
   renderNoviceCultivation();
 }
 function upgrade(type) {
@@ -463,22 +518,22 @@ function sectTechniqueSet(sect=state.sect,star=state.sectStar){
   const suffix={secret:'玄錄',formula:'命篇',sutra:'體典',escape:'行章',ultimate:'悟卷',fragment:'天箋'},clean=sect.replace(/(仙宮|神宗|聖宗|天宗|劍宗|魔宗|宗|派|門|宮|谷|堂|殿|樓|府|院|山|庭|教|寨|幫|觀|閣|都|海)$/,'');
   return picked.map((kind,index)=>{const element=artElements[(seed+index*star+index)%artElements.length][0],name=`${clean}${suffix[kind]}`;return{id:`${sect}-${index}`,sourceSect:sect,name,kind,element,tier:star,level:1,slot:index}})
 }
-function normalizeLearnedArts(){state.learnedArts=(state.learnedArts||[]).map(art=>{if(!art.sourceSect)return art;const group=sectCatalog.find(entry=>[...entry.good,...entry.evil].includes(art.sourceSect)),expected=group?sectTechniqueSet(art.sourceSect,group.star).find(item=>item.id===art.id):null;return expected?{...expected,level:Math.max(1,Math.min(10,art.level||1))}:art})}
+function normalizeLearnedArts(){state.learnedArts=(state.learnedArts||[]).map(art=>{if(!art.sourceSect)return art;const group=sectCatalog.find(entry=>[...entry.good,...entry.evil].includes(art.sourceSect)),expected=group?sectTechniqueSet(art.sourceSect,group.star).find(item=>item.id===art.id):null;return expected?{...expected,level:Math.max(1,Math.min(10,art.level||1))}:art});state.learnedBookIds=Array.from(new Set([...(state.learnedBookIds||[]),...state.learnedArts.filter(art=>art.source==='book').map(art=>art.id)]))}
 function sectLearnLimit(){return state.sectRank>=3?3:state.sectRank>=2?2:1}
 function artUpgradeCost(art){return Math.round(500*art.tier*art.tier*Math.pow(1.5,art.level-1))}
 function artsExpandCost(){return Math.round(1000*Math.pow(1.28,Math.max(0,state.artsCapacity-8)))}
 function artCard(art){
   const kind=artKinds[art.kind],element=artElements.find(([key])=>key===art.element),cost=art.level<10?artUpgradeCost(art):0,tier=['一','二','三','四','五','六','七','八','九'][art.tier-1];
-  return `<article class="art-card element-${art.element}"><span class="art-element">${element[1]}</span><div><b>${tier}階・${art.name}（${art.level}級）</b><p>${kind.label}+${artBaseEffect(art)}（${element[1]}系靈根效果+${artRootEffect(art)}）</p></div><div class="art-actions"><button data-art-upgrade="${art.id}" data-art-cost="${cost}" ${art.level>=10||state.aura<cost?'disabled':''}>${art.level>=10?'已滿級':`升級<br><small>${cost.toLocaleString()} 靈氣</small>`}</button><button class="forget-art" data-art-forget="${art.id}">遺忘</button></div></article>`
+  return `<article class="art-card element-${art.element}"><span class="art-element">${element[1]}</span><div><b>${tier}階・${art.name}（${art.level}級）</b><p>${kind.label}+${artBaseEffect(art)}（${element[1]}系靈根效果+${artRootEffect(art)}）</p></div><div class="art-actions"><button data-art-upgrade="${art.id}" data-art-cost="${cost}" ${art.level>=10||state.aura<cost?'disabled':''}>${art.level>=10?'已滿級':`升級<br><small>${cost.toLocaleString()} 靈氣</small>`}</button>${art.sourceSect?`<button class="forget-art" data-art-forget="${art.id}">遺忘</button>`:''}</div></article>`
 }
 function renderArtsPanel(view='sect'){
   currentArtsView=view;
-  const learned=state.learnedArts||[],cap=state.artsCapacity||8,expand=artsExpandCost();
-  const wallet=view==='sect'?`<div class="arts-wallet"><span id="artsAuraAmount">靈氣 ${Math.floor(state.aura).toLocaleString()}</span><span>門派技能 ${learned.length} / ${cap}</span>${cap<40?`<button id="expandArtsBtn" ${state.spiritStone>=expand?'':'disabled'}>擴充一格・${expand.toLocaleString()}靈石</button>`:'<b>已達40格上限</b>'}</div>`:'';
+  const learned=state.learnedArts||[],sectLearned=learned.filter(art=>art.sourceSect),cap=state.artsCapacity||8,expand=artsExpandCost();
+  const wallet=view==='sect'?`<div class="arts-wallet"><span id="artsAuraAmount">靈氣 ${Math.floor(state.aura).toLocaleString()}</span><span>門派技能 ${sectLearned.length} / ${cap}</span>${cap<40?`<button id="expandArtsBtn" ${state.spiritStone>=expand?'':'disabled'}>擴充一格・${expand.toLocaleString()}靈石</button>`:'<b>已達40格上限</b>'}</div>`:'';
   $('#featureDescription').innerHTML=`<div class="arts-tabs">${artTabs.map(([key,label])=>`<button data-art-view="${key}" class="${key===view?'active':''}">${label}</button>`).join('')}</div>${wallet}<div id="artsInner"></div>`;
   $$('.arts-tabs button').forEach(button=>button.onclick=()=>renderArtsPanel(button.dataset.artView));if(view==='sect'&&cap<40)$('#expandArtsBtn').onclick=expandArtsCapacity;
   const inner=$('#artsInner');if(view==='moves'){inner.innerHTML=`<div class="art-list">${startingTechniques.map((move,index)=>`<article class="art-card move-card ${index?'element-metal':'element-water'}"><span class="art-element">${index?'劍':'元'}</span><div class="move-copy"><b>${move.name}（1級）</b><p>${move.description}</p><em>基礎傷害：${Math.round(move.min*100)}～${Math.round(move.max*100)}%</em></div><strong class="move-status">初始習得</strong></article>`).join('')}</div>`;return}
-  const list=view==='sect'?learned:[];inner.innerHTML=list.length?`<div class="art-list">${list.map(artCard).join('')}</div><div class="arts-total">門派技能總計：${Object.values(artKinds).map(kind=>`${kind.label}+${artBonusFor(kind.attribute).toLocaleString()}`).join('・')}</div>`:`<div class="arts-empty"><b>${artTabs.find(([key])=>key===view)[1]}尚無功法</b><small>${view==='sect'?'可向目前門派的大長老學習功法。':'此分類將於後續探索、玄錄與奇遇系統取得。'}</small></div>`;
+  const list=view==='sect'?sectLearned:learned.filter(art=>!art.sourceSect&&art.kind===view);inner.innerHTML=list.length?`<div class="art-list">${list.map(artCard).join('')}</div>${view==='sect'?`<div class="arts-total">門派技能總計：${Object.values(artKinds).map(kind=>`${kind.label}+${sectLearned.filter(art=>artKinds[art.kind].attribute===kind.attribute).reduce((sum,art)=>sum+artTotalEffect(art),0).toLocaleString()}`).join('・')}</div>`:''}`:`<div class="arts-empty"><b>${artTabs.find(([key])=>key===view)[1]}尚無功法</b><small>${view==='sect'?'可向目前門派的大長老學習功法。':'可於藏經閣購得相應功法書，並在儲物袋中使用習得。'}</small></div>`;
   $$('[data-art-upgrade]').forEach(button=>button.onclick=()=>upgradeArt(button.dataset.artUpgrade,view));$$('[data-art-forget]').forEach(button=>button.onclick=()=>forgetArt(button.dataset.artForget,view));
 }
 function upgradeArt(id,view){const art=state.learnedArts.find(item=>item.id===id);if(!art||art.level>=10)return;const cost=artUpgradeCost(art);if(state.aura<cost)return toast('靈氣不足');state.aura-=cost;art.level++;toast(`${art.name}提升至${art.level}級`);renderArtsPanel(view);render();save()}
@@ -486,11 +541,11 @@ async function forgetArt(id,view='sect'){const index=state.learnedArts.findIndex
 function updateArtsLive(){if(currentFeature!=='arts')return;const amount=$('#artsAuraAmount');if(amount)amount.textContent=`靈氣 ${Math.floor(state.aura).toLocaleString()}`;$$('[data-art-upgrade]').forEach(button=>{const art=state.learnedArts.find(item=>item.id===button.dataset.artUpgrade);button.disabled=!art||art.level>=10||state.aura<+button.dataset.artCost})}
 function expandArtsCapacity(){if(state.artsCapacity>=40)return;const cost=artsExpandCost();if(state.spiritStone<cost)return toast('靈石不足');state.spiritStone-=cost;state.artsCapacity++;toast(`門派技能上限擴充至${state.artsCapacity}格`);renderArtsPanel('sect');render();save()}
 function renderSectLearning(){
-  if(!state.sect)return toast('目前無門無派');const techniques=sectTechniqueSet(),limit=sectLearnLimit(),learned=state.learnedArts||[];
-  $('#sectInner').innerHTML=`<section class="sect-learning"><button id="learningBackBtn" class="text-button">返回門人</button><h2>${state.sect}・傳功閣</h2><div class="learning-list">${techniques.map((art,index)=>{const known=learned.some(item=>item.id===art.id),rankReady=index<limit,full=learned.length>=state.artsCapacity,tier=['一','二','三','四','五','六','七','八','九'][art.tier-1];return `<article><b>${tier}階・${art.name}</b><span>${artElements.find(([key])=>key===art.element)[1]}系・${artKinds[art.kind].tab}・${artKinds[art.kind].label}+${artBaseEffect(art)}</span><button data-learn-art="${art.id}" ${known||!rankReady||full?'disabled':''}>${known?'已習得':!rankReady?`需${index===1?'親傳弟子':'供奉'}`:full?'技能欄已滿':'學習'}</button></article>`}).join('')}</div></section>`;
+  if(!state.sect)return toast('目前無門無派');const techniques=sectTechniqueSet(),limit=sectLearnLimit(),learned=state.learnedArts||[],sectLearned=learned.filter(art=>art.sourceSect);
+  $('#sectInner').innerHTML=`<section class="sect-learning"><button id="learningBackBtn" class="text-button">返回門人</button><h2>${state.sect}・傳功閣</h2><div class="learning-list">${techniques.map((art,index)=>{const known=learned.some(item=>item.id===art.id),rankReady=index<limit,full=sectLearned.length>=state.artsCapacity,tier=['一','二','三','四','五','六','七','八','九'][art.tier-1];return `<article><b>${tier}階・${art.name}</b><span>${artElements.find(([key])=>key===art.element)[1]}系・${artKinds[art.kind].tab}・${artKinds[art.kind].label}+${artBaseEffect(art)}</span><button data-learn-art="${art.id}" ${known||!rankReady||full?'disabled':''}>${known?'已習得':!rankReady?`需${index===1?'親傳弟子':'供奉'}`:full?'技能欄已滿':'學習'}</button></article>`}).join('')}</div></section>`;
   $('#learningBackBtn').onclick=()=>renderSectPanel('npcs');$$('[data-learn-art]').forEach(button=>button.onclick=()=>learnSectArt(button.dataset.learnArt));
 }
-function learnSectArt(id){const art=sectTechniqueSet().find(item=>item.id===id);if(!art||state.learnedArts.some(item=>item.id===id))return;if(art.slot>=sectLearnLimit())return toast('目前職位不足');if(state.learnedArts.length>=state.artsCapacity)return toast('門派技能欄已滿');state.learnedArts.push(art);toast(`習得${art.name}`);renderSectLearning();render();save()}
+function learnSectArt(id){const art=sectTechniqueSet().find(item=>item.id===id);if(!art||state.learnedArts.some(item=>item.id===id))return;if(art.slot>=sectLearnLimit())return toast('目前職位不足');if(state.learnedArts.filter(item=>item.sourceSect).length>=state.artsCapacity)return toast('門派技能欄已滿');state.learnedArts.push(art);toast(`習得${art.name}`);renderSectLearning();render();save()}
 
 function dateKey(){
   if(!trustedClockReady&&location.protocol!=='file:')return null;
@@ -596,12 +651,49 @@ function useSectToken(){
 }
 function openItemModal(key){
   const item=itemCatalog[key];if(!item)return;const count=state[item.count]||0;
-  $('#itemModalImage').src=item.image;$('#itemModalImage').alt=item.name;$('#itemModalName').textContent=item.name;$('#itemModalDescription').textContent=item.description;$('#itemModalCount').textContent=`持有數量：${count}`;
-  const use=$('#itemModalUse');use.classList.toggle('hidden',!item.usable);use.disabled=!item.usable||count<1;use.onclick=item.usable?()=>useItem(key):null;
-  $('#itemModalActions').classList.toggle('exit-only',!item.usable);$('#itemModal').classList.remove('hidden');
+  const learned=!!item.techniqueBook&&(state.learnedBookIds||[]).includes(item.techniqueBook.id);
+  $('#itemModalImage').src=item.image;$('#itemModalImage').alt=item.name;$('#itemModalName').textContent=item.name;$('#itemModalDescription').textContent=item.description+(learned?'\n\n此功法已習得，本書只能售出。':'');$('#itemModalCount').textContent=`持有數量：${count}`;
+  const sell=$('#itemModalSell');sell.disabled=count<1;sell.onclick=()=>openSellModal(key);
+  const canUse=item.usable&&!learned;const use=$('#itemModalUse');use.classList.toggle('hidden',!canUse);use.disabled=!canUse||count<1;use.onclick=canUse?()=>useItem(key):null;
+  $('#itemModalActions').classList.toggle('no-use',!canUse);$('#itemModal').classList.remove('hidden');
 }
 function closeItemModal(){$('#itemModal').classList.add('hidden')}
-function useItem(key){if(key==='sectToken'&&useSectToken())closeItemModal()}
+function useTechniqueBook(key){
+  const item=itemCatalog[key],book=item?.techniqueBook;if(!book)return false;
+  if((state.learnedBookIds||[]).includes(book.id)){toast('此功法已習得，道具只能售出');return false}
+  if((state[item.count]||0)<1)return false;
+  state[item.count]--;state.learnedBookIds.push(book.id);state.learnedArts.push({...book,level:1});
+  toast(`習得「${book.name}」・${artKinds[book.kind].label}+${artBaseEffect(book)}`);render();save();return true;
+}
+function useItem(key){let used=false;if(key==='sectToken')used=useSectToken();else if(itemCatalog[key]?.techniqueBook)used=useTechniqueBook(key);if(used){closeItemModal();if(currentFeature==='bag')renderBagView('bag')}}
+function itemSellPrice(item){return Math.max(1,Math.floor(Number(item.sellPrice)||1))}
+function updateSellModal(){
+  const item=itemCatalog[sellItemKey];if(!item)return;
+  const owned=Math.max(0,Math.floor(Number(state[item.count])||0));
+  sellItemQuantity=Math.max(1,Math.min(owned,sellItemQuantity));
+  $('#sellQuantity').textContent=sellItemQuantity.toLocaleString();
+  $('#sellModalTotal').textContent=`可獲得靈石：${(sellItemQuantity*itemSellPrice(item)).toLocaleString()}`;
+  $('#sellMinusBtn').disabled=sellItemQuantity<=1;$('#sellMinBtn').disabled=sellItemQuantity<=1;
+  $('#sellPlusBtn').disabled=sellItemQuantity>=owned;$('#sellMaxBtn').disabled=sellItemQuantity>=owned;
+  $('#sellConfirmBtn').disabled=owned<1;
+}
+function openSellModal(key){
+  const item=itemCatalog[key];if(!item)return;
+  const owned=Math.max(0,Math.floor(Number(state[item.count])||0));if(owned<1)return;
+  sellItemKey=key;sellItemQuantity=1;
+  $('#sellModalImage').src=item.image;$('#sellModalImage').alt=item.name;$('#sellModalName').textContent=item.name;
+  $('#sellModalMessage').textContent=`持有 ${owned.toLocaleString()} 個・單價 ${itemSellPrice(item).toLocaleString()} 靈石`;
+  updateSellModal();$('#sellModal').classList.remove('hidden');
+}
+function closeSellModal(){$('#sellModal').classList.add('hidden');sellItemKey=null;sellItemQuantity=1}
+function confirmSellItem(){
+  const item=itemCatalog[sellItemKey];if(!item)return closeSellModal();
+  const owned=Math.max(0,Math.floor(Number(state[item.count])||0));
+  const quantity=Math.max(1,Math.min(owned,sellItemQuantity));if(owned<1)return closeSellModal();
+  const earned=quantity*itemSellPrice(item);state[item.count]=owned-quantity;state.spiritStone+=earned;
+  closeSellModal();closeItemModal();
+  if(currentFeature==='bag')renderBagView('bag');render();save();toast(`已售出 ${item.name} ×${quantity}・靈石+${earned}`);
+}
 function promoteSect(){const cost=sectPromotionCosts[state.sectRank];if(state.sectContribution<cost)return;state.sectContribution-=cost;state.sectRank++;toast(`晉升為${sectRanks[state.sectRank]}`);renderSectView('home');save()}
 function npcDailyState(index){const key=String(sectNpcs()[index].id),record=state.npcDaily[key],today=dateKey();if(!today)return record||{date:'',chat:3,gift:3};if(!record||record.date!==today)state.npcDaily[key]={date:today,chat:0,gift:0};return state.npcDaily[key]}
 function availableGiftItem(){return Object.entries(itemCatalog).find(([,item])=>item.giftable&&(state[item.count]||0)>0)}
@@ -877,7 +969,8 @@ function finishPause(){
 }
 function forceOffline(){
   if(suppressSave||!state.name||pauseStartedAt!==null)return;pauseStartedAt=gameNow();sessionOnline=false;clearTimeout(battleTimer);battle=null;
-  $('#battleModal').classList.add('hidden');$('#tribulationModal').classList.add('hidden');$('#itemModal').classList.add('hidden');$('#offlineModal').classList.add('hidden');$('#marketModal').classList.add('hidden');$('#gameMenu').classList.add('hidden');$('#settingsModal').classList.add('hidden');$('#helpModal').classList.add('hidden');stopAllBgm();show('#titleScreen');$('#titleHint').textContent='已離線・點擊螢幕重新進入';save();
+  $('#mailboxModal').classList.add('hidden');$('#mailDetailModal').classList.add('hidden');
+  $('#battleModal').classList.add('hidden');$('#tribulationModal').classList.add('hidden');$('#itemModal').classList.add('hidden');$('#sellModal').classList.add('hidden');$('#offlineModal').classList.add('hidden');$('#marketModal').classList.add('hidden');$('#marketPurchaseModal').classList.add('hidden');$('#gameMenu').classList.add('hidden');$('#settingsModal').classList.add('hidden');$('#helpModal').classList.add('hidden');stopAllBgm();show('#titleScreen');$('#titleHint').textContent='已離線・點擊螢幕重新進入';save();
 }
 function finishCreationPrologue(){
   clearTimeout(prologueTimer);prologueTimer=null;
@@ -907,6 +1000,82 @@ function renderHelpRealms(){
   const groups=[['練氣',spiritRealms],['煉體',bodyRealms],['淬劍',swordRealms]];
   $('#helpContent').innerHTML=groups.map(([title,realms])=>`<section class="help-realm-group"><h3>${title}</h3><ol>${realms.map((realm,index)=>`<li><span>${index+1}</span><b>${realm}</b><small>每境十層</small></li>`).join('')}</ol></section>`).join('');
 }
+const scriptureFloorTiers=[[1,2],[3,4],[5,6],[7,8],[9]];
+const scriptureTierPrices=[200,600,1800,5400,16000,48000,145000,435000,1300000];
+function seededRandom(seedText){let seed=[...seedText].reduce((value,char)=>(value*31+char.charCodeAt(0))>>>0,2166136261);return()=>{seed+=0x6D2B79F5;let value=seed;value=Math.imul(value^value>>>15,value|1);value^=value+Math.imul(value^value>>>7,value|61);return((value^value>>>14)>>>0)/4294967296}}
+function scriptureDailyState(){const today=dateKey()||'local';if(state.scripturePurchases.date!==today){state.scripturePurchases={date:today,ids:[]};save()}return state.scripturePurchases}
+function scriptureStock(floor){
+  const today=dateKey()||'local',tiers=scriptureFloorTiers[floor-1]||[1,2],pool=techniqueBooks.filter(book=>tiers.includes(book.tier)),random=seededRandom(`藏經閣-${today}-${floor}`);
+  for(let index=pool.length-1;index>0;index--){const swap=Math.floor(random()*(index+1));[pool[index],pool[swap]]=[pool[swap],pool[index]]}
+  return pool.slice(0,9);
+}
+function marketDailyState(){
+  const today=dateKey()||'local';
+  if(state.marketDailyPurchases.date!==today)state.marketDailyPurchases={date:today,counts:{}};
+  state.marketDailyPurchases.counts||={};return state.marketDailyPurchases;
+}
+function marketOfferForBook(id){
+  const book=techniqueBooks.find(entry=>entry.id===id),item=itemCatalog[id];if(!book||!item)return null;
+  const tier=['一','二','三','四','五','六','七','八','九'][book.tier-1];
+  return {id,item,name:book.name,image:item.image,description:`${item.description}\n功法效果：${artKinds[book.kind].label}+${artBaseEffect(book).toLocaleString()}（${book.elementName}行・${tier}階）`,currencyKey:'spiritStone',currencyName:'靈石',currencyImage:'assets/qstyle-v2/spirit-stone.png',price:scriptureTierPrices[book.tier-1],dailyLimit:null,permanentLimit:1,quantityEnabled:false};
+}
+function marketPermanentBought(offer){
+  let count=Number(state.marketPermanentPurchases?.[offer.id]||0);
+  if(offer.item?.techniqueBook){
+    if((state.learnedBookIds||[]).includes(offer.id)||(state[offer.item.count]||0)>0||(state.scripturePurchases?.ids||[]).includes(offer.id))count=Math.max(1,count);
+  }
+  return count;
+}
+function marketDailyBought(offer){return Number(marketDailyState().counts[offer.id]||0)}
+function marketPurchaseCapacity(offer){
+  if(!offer)return 0;
+  const affordable=Math.floor((state[offer.currencyKey]||0)/offer.price);
+  const dailyRemaining=offer.dailyLimit==null?Infinity:Math.max(0,offer.dailyLimit-marketDailyBought(offer));
+  const permanentRemaining=offer.permanentLimit==null?Infinity:Math.max(0,offer.permanentLimit-marketPermanentBought(offer));
+  return Math.max(0,Math.min(affordable,dailyRemaining,permanentRemaining,999));
+}
+function marketPurchaseBlockReason(offer){
+  if(!offer)return '商品資料不存在';
+  if(offer.item?.techniqueBook&&(state.learnedBookIds||[]).includes(offer.id))return '此功法已習得，無法再次購買';
+  if(offer.permanentLimit!=null&&marketPermanentBought(offer)>=offer.permanentLimit)return '此商品已達永久限購上限';
+  if(offer.dailyLimit!=null&&marketDailyBought(offer)>=offer.dailyLimit)return '此商品今日購買次數已達上限';
+  if((state[offer.currencyKey]||0)<offer.price)return `${offer.currencyName}不足`;
+  if(!canStoreItem(offer.id))return '儲物袋已滿';
+  return '';
+}
+function updateMarketPurchaseModal(){
+  const offer=marketPurchaseOffer;if(!offer)return;
+  const maximum=marketPurchaseCapacity(offer),reason=marketPurchaseBlockReason(offer);
+  marketPurchaseQuantity=Math.max(1,Math.min(marketPurchaseQuantity,Math.max(1,maximum)));
+  $('#marketPurchaseQuantity').textContent=marketPurchaseQuantity.toLocaleString();
+  $('#marketPurchaseQuantityPanel').classList.toggle('hidden',!offer.quantityEnabled);
+  $('#marketPurchasePrice').innerHTML=`單價：<img src="${offer.currencyImage}" alt="${offer.currencyName}"> ${offer.price.toLocaleString()} ${offer.currencyName}`;
+  const limits=[];
+  if(offer.dailyLimit!=null)limits.push(`每日限購：${marketDailyBought(offer).toLocaleString()} / ${offer.dailyLimit.toLocaleString()}`);
+  if(offer.permanentLimit!=null)limits.push(`永久限購：${marketPermanentBought(offer).toLocaleString()} / ${offer.permanentLimit.toLocaleString()}`);
+  $('#marketPurchaseLimits').textContent=limits.join('　')||'不限購';
+  $('#marketPurchaseTotal').innerHTML=`合計：<img src="${offer.currencyImage}" alt="${offer.currencyName}"> ${(offer.price*marketPurchaseQuantity).toLocaleString()} ${offer.currencyName}`;
+  $('#marketPurchaseReason').textContent=reason;
+  $('#marketPurchaseConfirm').disabled=!!reason||maximum<marketPurchaseQuantity;
+  ['marketPurchaseMinus','marketPurchaseMin'].forEach(id=>$('#'+id).disabled=marketPurchaseQuantity<=1);
+  ['marketPurchasePlus','marketPurchaseMax'].forEach(id=>$('#'+id).disabled=marketPurchaseQuantity>=maximum);
+}
+function openMarketPurchase(id){
+  const offer=marketOfferForBook(id);if(!offer)return;
+  marketPurchaseOffer=offer;marketPurchaseQuantity=1;
+  $('#marketPurchaseImage').src=offer.image;$('#marketPurchaseImage').alt=offer.name;$('#marketPurchaseName').textContent=offer.name;$('#marketPurchaseDescription').textContent=offer.description;
+  updateMarketPurchaseModal();$('#marketPurchaseModal').classList.remove('hidden');
+}
+function closeMarketPurchase(){$('#marketPurchaseModal').classList.add('hidden');marketPurchaseOffer=null;marketPurchaseQuantity=1}
+function confirmMarketPurchase(){
+  const offer=marketPurchaseOffer,reason=marketPurchaseBlockReason(offer),maximum=marketPurchaseCapacity(offer);if(!offer)return;if(reason)return toast(reason);
+  const quantity=offer.quantityEnabled?Math.min(marketPurchaseQuantity,maximum):1;if(quantity<1)return;
+  state[offer.currencyKey]-=offer.price*quantity;state[offer.item.count]=(state[offer.item.count]||0)+quantity;
+  if(offer.dailyLimit!=null){const daily=marketDailyState();daily.counts[offer.id]=(daily.counts[offer.id]||0)+quantity}
+  if(offer.permanentLimit!=null)state.marketPermanentPurchases[offer.id]=(state.marketPermanentPurchases[offer.id]||0)+quantity;
+  if(offer.item.techniqueBook){const legacy=scriptureDailyState();if(!legacy.ids.includes(offer.id))legacy.ids.push(offer.id)}
+  toast(`購得「${offer.name}」${quantity>1?` × ${quantity}`:''}`);closeMarketPurchase();renderMarket(currentMarketTab);save();
+}
 function renderMarket(tab=currentMarketTab){
   currentMarketTab=tab;
   const data={
@@ -917,7 +1086,7 @@ function renderMarket(tab=currentMarketTab){
   }[tab];
   const hasFloors=tab!=='treasure';
   const floor=hasFloors?(marketFloors[tab]||1):1;
-  const products=hasFloors?data.floors[floor-1]:data.products;
+  const products=tab==='scripture'?scriptureStock(floor):(hasFloors?data.floors[floor-1]:data.products);
   const floorTitle=hasFloors?`${data.title}‧${chineseFloorNames[floor-1]}樓`:data.title;
   const floorControls=hasFloors?`<div class="market-floor-controls">
     ${floor>1?`<button class="market-floor-button market-floor-down" type="button" data-market-floor="down" aria-label="下樓"><img src="assets/qstyle-v2/market-floor-up.png" alt=""><span>下樓</span></button>`:''}
@@ -925,8 +1094,10 @@ function renderMarket(tab=currentMarketTab){
   </div>`:'';
   $$('.market-tabs button').forEach(button=>button.classList.toggle('active',button.dataset.marketTab===tab));
   const currency={stone:['assets/qstyle-v2/spirit-stone.png','靈石'],jade:['assets/qstyle-v2/spirit-jade.png','靈玉'],reputation:['assets/qstyle-v2/reputation.png','聲望']}[data.currency];
-  $('#marketContent').innerHTML=`<div class="market-shop-banner"><small>${data.subtitle}</small><b>${floorTitle}</b></div>${floorControls}<div id="marketFloorNotice" class="market-floor-notice" role="status"></div><div class="market-product-grid">${products.map(([name,image,price])=>`<button class="market-product" type="button" disabled><span class="market-product-image"><img src="${image}" alt="${name}"></span><b>${name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${price.toLocaleString()}</em><small>籌備中</small></button>`).join('')}</div><p class="market-restock">目前尚無商品</p>`;
+  const productHtml=tab==='scripture'?products.map(book=>{const item=itemCatalog[book.id],price=scriptureTierPrices[book.tier-1],offer=marketOfferForBook(book.id),learned=(state.learnedBookIds||[]).includes(book.id),limited=marketPermanentBought(offer)>=1,tier=['一','二','三','四','五','六','七','八','九'][book.tier-1];return `<button class="market-product${limited?' sold-out':''}" type="button" data-market-purchase="${book.id}"><span class="market-product-image"><img src="${item.image}" alt="${book.name}"></span><b>${book.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${price.toLocaleString()}</em><small>${learned?'已習得':limited?'永久限購已購買':`${book.elementName}行・${tier}階・${artKinds[book.kind].label}+${artBaseEffect(book)}`}</small></button>`}).join(''):products.map(([name,image,price])=>`<button class="market-product" type="button" disabled><span class="market-product-image"><img src="${image}" alt="${name}"></span><b>${name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${price.toLocaleString()}</em><small>籌備中</small></button>`).join('');
+  $('#marketContent').innerHTML=`<div class="market-shop-banner"><small>${data.subtitle}</small><b>${floorTitle}</b></div>${floorControls}<div id="marketFloorNotice" class="market-floor-notice" role="status"></div><div class="market-product-grid">${productHtml}</div><p class="market-restock">${tab==='scripture'?'每日 00:00 自動刷新':'目前尚無商品'}</p>`;
   $$('[data-market-floor]').forEach(button=>button.onclick=()=>changeMarketFloor(button.dataset.marketFloor==='up'?1:-1));
+  $$('[data-market-purchase]').forEach(button=>button.onclick=()=>openMarketPurchase(button.dataset.marketPurchase));
   render();
 }
 function showMarketFloorNotice(text){
@@ -955,10 +1126,12 @@ function changeMarketFloor(direction){
 }
 function openMarket(){
   $('#gameMenu').classList.add('hidden');
+  lastScriptureDayKey=dateKey()||'local';
   renderMarket(currentMarketTab);
   $('#marketModal').classList.remove('hidden');
 }
 function closeMarket(){
+  closeMarketPurchase();
   $('#marketModal').classList.add('hidden');
 }
 
@@ -975,7 +1148,7 @@ $$('.appearance-choice').forEach(b=>b.onclick=()=>{$$('.appearance-choice').forE
 $$('.outfit-choice').forEach(b=>b.onclick=()=>{$$('.outfit-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOutfit=+b.dataset.style;updateCreator()});
 function updateOriginPreview(){$('#originStats').textContent=originDescriptions[createOrigin]}
 $$('.origin-choice').forEach(b=>b.onclick=()=>{$$('.origin-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOrigin=b.dataset.origin;updateOriginPreview()});
-$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,appearance:createAppearance,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now};Object.keys(tribulationPillDefaults).forEach(key=>state[key]=200);startGame();save()};
+$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,appearance:createAppearance,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now};Object.keys(tribulationPillDefaults).forEach(key=>state[key]=200);state.mailbox=[createWelcomeMail(now)];startGame();save()};
 $('#spiritUp').onclick=()=>upgrade('spirit'); $('#swordUp').onclick=()=>upgrade('sword'); $('#bodyUp').onclick=()=>upgrade('body');
 $('#tribConfirm').onclick=tribulate; $('#tribCancel').onclick=()=>$('#tribulationModal').classList.add('hidden');
 $('#tribPillMinus').onclick=()=>adjustTribulationPills(-1);$('#tribPillPlus').onclick=()=>adjustTribulationPills(1);
@@ -986,9 +1159,26 @@ $('#helpBtn').onclick=openHelp;
 $('#settingsCloseBtn').onclick=()=>$('#settingsModal').classList.add('hidden');
 $('#helpCloseBtn').onclick=()=>$('#helpModal').classList.add('hidden');
 $('#marketButton').onclick=openMarket;
+$('#mailButton').onclick=openMailbox;
+$('#mailboxCloseBtn').onclick=closeMailbox;
+$('#mailDetailCloseBtn').onclick=closeMailDetail;
+$('#mailClaimBtn').onclick=claimMailAttachments;
+$('#mailDeleteBtn').onclick=deleteCurrentMail;
 $('#marketCloseBtn').onclick=closeMarket;
 $$('[data-market-tab]').forEach(button=>button.onclick=()=>renderMarket(button.dataset.marketTab));
+$('#marketPurchaseCancel').onclick=closeMarketPurchase;
+$('#marketPurchaseConfirm').onclick=confirmMarketPurchase;
+$('#marketPurchaseMin').onclick=()=>{marketPurchaseQuantity=1;updateMarketPurchaseModal()};
+$('#marketPurchaseMinus').onclick=()=>{marketPurchaseQuantity--;updateMarketPurchaseModal()};
+$('#marketPurchasePlus').onclick=()=>{marketPurchaseQuantity++;updateMarketPurchaseModal()};
+$('#marketPurchaseMax').onclick=()=>{marketPurchaseQuantity=Math.max(1,marketPurchaseCapacity(marketPurchaseOffer));updateMarketPurchaseModal()};
 $('#itemModalClose').onclick=closeItemModal;
+$('#sellCancelBtn').onclick=closeSellModal;
+$('#sellMinBtn').onclick=()=>{sellItemQuantity=1;updateSellModal()};
+$('#sellMinusBtn').onclick=()=>{sellItemQuantity--;updateSellModal()};
+$('#sellPlusBtn').onclick=()=>{sellItemQuantity++;updateSellModal()};
+$('#sellMaxBtn').onclick=()=>{const item=itemCatalog[sellItemKey];if(item)sellItemQuantity=state[item.count]||1;updateSellModal()};
+$('#sellConfirmBtn').onclick=confirmSellItem;
 $('#offlineModalClose').onclick=()=>$('#offlineModal').classList.add('hidden');
 $('#confirmModalCancel').onclick=()=>closeGameConfirm(false);
 $('#confirmModalAccept').onclick=()=>closeGameConfirm(true);
@@ -1000,7 +1190,8 @@ $('#deleteVerifyBtn').onclick=()=>{
 };
 $('#deleteBackBtn').onclick=()=>showSettingsSection('#deleteStepOne');
 $('#deleteFinalBtn').onclick=()=>{suppressSave=true;sessionOnline=false;clearTimeout(battleTimer);battle=null;stopAllBgm();localStorage.removeItem(saveKey);localStorage.removeItem('wendao-idle-v1');state={...defaults,name:'',bornAt:null,lastSave:gameNow()};location.reload()};
-$('#backToTitle').onclick=()=>{save();$('#gameMenu').classList.add('hidden');$('#settingsModal').classList.add('hidden');$('#helpModal').classList.add('hidden');$('#marketModal').classList.add('hidden');$('#titleHint').textContent='點擊螢幕繼續修煉';show('#titleScreen');startBgm('title')};
+$('#backToTitle').onclick=()=>{save();$('#gameMenu').classList.add('hidden');$('#settingsModal').classList.add('hidden');$('#helpModal').classList.add('hidden');$('#marketModal').classList.add('hidden');$('#marketPurchaseModal').classList.add('hidden');$('#titleHint').textContent='點擊螢幕繼續修煉';show('#titleScreen');startBgm('title')};
+$('#backToTitle').addEventListener('click',()=>{$('#mailboxModal').classList.add('hidden');$('#mailDetailModal').classList.add('hidden');currentMailId=null});
 $('#muteBtn').onclick=()=>{state.muted=!state.muted;updateBgmVolume();render();save()};
 $('#battleExitBtn').onclick=forceEndBattle;
 $('#battleResultClose').onclick=closeBattle;
@@ -1009,6 +1200,7 @@ setInterval(()=>{if($('#gameScreen').classList.contains('active')){if(state.cult
 setInterval(()=>{if($('#gameScreen').classList.contains('active'))$('#tickBar').style.width=Math.min(100,(gameNow()-tickStart)/50)+'%'},50);
 setInterval(()=>{if($('#gameScreen').classList.contains('active'))$('#yearsElapsed').textContent=`${experiencedYears().toLocaleString()} 年`},1000);
 setInterval(updatePracticeTimers,1000);
+setInterval(()=>{const today=dateKey()||'local';if(today!==lastScriptureDayKey){lastScriptureDayKey=today;if(!$('#marketModal').classList.contains('hidden')&&currentMarketTab==='scripture')renderMarket('scripture')}},1000);
 setInterval(()=>{if(sessionOnline&&!document.hidden)syncTrustedTime()},600000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)forceOffline();else finishPause()});
 window.addEventListener('blur',forceOffline);window.addEventListener('focus',finishPause);window.addEventListener('pagehide',forceOffline);
