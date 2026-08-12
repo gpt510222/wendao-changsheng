@@ -1126,6 +1126,7 @@ function changeMarketFloor(direction){
 }
 function openMarket(){
   $('#gameMenu').classList.add('hidden');
+  Object.keys(marketFloors).forEach(tab=>marketFloors[tab]=1);
   lastScriptureDayKey=dateKey()||'local';
   renderMarket(currentMarketTab);
   $('#marketModal').classList.remove('hidden');
