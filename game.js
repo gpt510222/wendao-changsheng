@@ -232,8 +232,8 @@ function auraRate() { return Math.max(1,Math.floor(5+(state.spiritPoolLevel-1)*2
 function poolStorageHours() { return Math.min(18,2+(state.spiritPoolLevel-1)*.75); }
 function auraCapacity() { return Math.floor(auraRate()*720*poolStorageHours()); }
 function spiritRootReq(level) { return Math.floor(500*Math.pow(1.38,level)); }
-function poolWoodCost() { return Math.floor(20*Math.pow(1.45,state.spiritPoolLevel-1)); }
-function poolIronCost() { return Math.floor(10*Math.pow(1.5,state.spiritPoolLevel-1)); }
+function poolWoodCost() { return Math.floor(120*Math.pow(state.spiritPoolLevel,1.55)); }
+function poolIronCost() { return Math.floor(50*Math.pow(state.spiritPoolLevel,1.5)); }
 function rootRank(level) { return `${spiritRootRanks[Math.min(Math.floor(level/10),spiritRootRanks.length-1)]}・${level%10+1}階`; }
 function chanceFromRating(rating,cap) { return Math.min(cap,rating/(rating+1000)*100); }
 function save() { if(suppressSave)return;const now=gameNow();state.lastSave=now;if(trustedClockReady)state.lastTrustedTime=Math.max(state.lastTrustedTime||0,now);localStorage.setItem(saveKey,JSON.stringify(state)); }
@@ -244,7 +244,7 @@ function grantTestTribulationPills(){
 function load() {
   try {
     const current=JSON.parse(localStorage.getItem(saveKey));
-    if(current) { const growthVersion=current.attributeGrowthVersion||0,needsPillMigration=!current.tribulationPillMigration,needsTestJadeGrant=!current.testJadeGrantVersion,needsTestPillGrant=!current.testTribulationPillGrantVersion;state={...defaults,...current};if(needsTestJadeGrant){state.spiritJade=Math.max(99999,state.spiritJade||0);state.testJadeGrantVersion=1}if(needsPillMigration)state.tribPill1=(state.tribPill1||0)+Math.max(0,current.pills||0);delete state.pills;state.tribulationPillMigration=1;if(needsTestPillGrant)grantTestTribulationPills();state.learnedArts=Array.isArray(current.learnedArts)?current.learnedArts:[];state.learnedBookIds=Array.isArray(current.learnedBookIds)?current.learnedBookIds:[];state.mailbox=Array.isArray(current.mailbox)?current.mailbox:[];state.scripturePurchases={...defaults.scripturePurchases,...current.scripturePurchases};state.scripturePurchases.ids=Array.isArray(state.scripturePurchases.ids)?state.scripturePurchases.ids:[];state.marketPermanentPurchases=current.marketPermanentPurchases&&typeof current.marketPermanentPurchases==='object'?current.marketPermanentPurchases:{};state.marketDailyPurchases={...defaults.marketDailyPurchases,...current.marketDailyPurchases};state.marketDailyPurchases.counts=state.marketDailyPurchases.counts&&typeof state.marketDailyPurchases.counts==='object'?state.marketDailyPurchases.counts:{};state.sectTokenDaily={...defaults.sectTokenDaily,...current.sectTokenDaily};state.practiceBuff={...defaults.practiceBuff,...current.practiceBuff};state.transmissionBuff={...defaults.transmissionBuff,...current.transmissionBuff};migrateAttributeGrowth(growthVersion);state.bornAt ||= Date.now(); state.npcAffinity||={};state.npcDaily||={};normalizeLearnedArts();migrateSectName(); return state; }
+    if(current) { const growthVersion=current.attributeGrowthVersion||0,needsPillMigration=!current.tribulationPillMigration,needsTestJadeGrant=!current.testJadeGrantVersion,needsTestPillGrant=!current.testTribulationPillGrantVersion;state={...defaults,...current};if(needsTestJadeGrant){state.spiritJade=Math.max(99999,state.spiritJade||0);state.testJadeGrantVersion=1}if(needsPillMigration)state.tribPill1=(state.tribPill1||0)+Math.max(0,current.pills||0);delete state.pills;state.tribulationPillMigration=1;if(needsTestPillGrant)grantTestTribulationPills();state.learnedArts=Array.isArray(current.learnedArts)?current.learnedArts:[];state.learnedBookIds=Array.isArray(current.learnedBookIds)?current.learnedBookIds:[];state.mailbox=Array.isArray(current.mailbox)?current.mailbox:[];state.scripturePurchases={...defaults.scripturePurchases,...current.scripturePurchases};state.scripturePurchases.ids=Array.isArray(state.scripturePurchases.ids)?state.scripturePurchases.ids:[];state.marketPermanentPurchases=current.marketPermanentPurchases&&typeof current.marketPermanentPurchases==='object'?current.marketPermanentPurchases:{};state.marketDailyPurchases={...defaults.marketDailyPurchases,...current.marketDailyPurchases};state.marketDailyPurchases.counts=state.marketDailyPurchases.counts&&typeof state.marketDailyPurchases.counts==='object'?state.marketDailyPurchases.counts:{};state.sectTokenDaily={...defaults.sectTokenDaily,...current.sectTokenDaily};state.practiceBuff={...defaults.practiceBuff,...current.practiceBuff};state.transmissionBuff={...defaults.transmissionBuff,...current.transmissionBuff};migrateAttributeGrowth(growthVersion);state.bornAt ||= Date.now(); state.npcAffinity||={};state.npcDaily||={};normalizeLearnedArts();normalizeCaveWorkers();migrateSectName(); return state; }
     const old=JSON.parse(localStorage.getItem('wendao-idle-v1'));
     if(old) { state={...defaults,...old,free:(old.free||0)+(old.spiritQi||0)+(old.bodyQi||0),spiritJade:99999,testJadeGrantVersion:1,tribPill1:Math.max(0,old.pills||0),tribulationPillMigration:1};delete state.pills;grantTestTribulationPills();state.bornAt ||= Date.now(); }
   } catch {}
@@ -886,17 +886,18 @@ async function challengeMaster(){
 }
 
 const caveAreas = {
-  spiritStone:{label:'靈石',value:'spiritStone',worker:'workerSpiritStone',level:'spiritStoneAreaLevel',icon:'assets/qstyle-v2/spirit-stone.png',baseCap:100,foodCost:10,upgradeBase:60,upgradeGrowth:1.34},
-  food:{label:'食物',value:'food',worker:'workerFood',level:'foodAreaLevel',icon:'assets/qstyle-v2/food-cutout.png',baseCap:1000,foodCost:0,upgradeBase:40,upgradeGrowth:1.32},
-  wood:{label:'木材',value:'wood',worker:'workerWood',level:'woodAreaLevel',icon:'assets/qstyle-v2/wood-cutout.png',baseCap:800,foodCost:2,upgradeBase:50,upgradeGrowth:1.33},
-  meteorIron:{label:'隕鐵',value:'meteorIron',worker:'workerMeteorIron',level:'meteorIronAreaLevel',icon:'assets/qstyle-v2/meteor-iron-cutout.png',baseCap:300,foodCost:4,upgradeBase:70,upgradeGrowth:1.35}
+  spiritStone:{label:'靈石',value:'spiritStone',worker:'workerSpiritStone',level:'spiritStoneAreaLevel',icon:'assets/qstyle-v2/spirit-stone.png',baseCap:150,output:1,foodCost:3,upgradeBase:180},
+  food:{label:'食物',value:'food',worker:'workerFood',level:'foodAreaLevel',icon:'assets/qstyle-v2/food-cutout.png',baseCap:1000,output:4,foodCost:0,upgradeBase:100},
+  wood:{label:'木材',value:'wood',worker:'workerWood',level:'woodAreaLevel',icon:'assets/qstyle-v2/wood-cutout.png',baseCap:800,output:2,foodCost:1,upgradeBase:140},
+  meteorIron:{label:'隕鐵',value:'meteorIron',worker:'workerMeteorIron',level:'meteorIronAreaLevel',icon:'assets/qstyle-v2/meteor-iron-cutout.png',baseCap:300,output:1,foodCost:2,upgradeBase:220}
 };
-function areaCapacity(area){const growth=area.value==='spiritStone'?1.75:1.35;return Math.floor(area.baseCap*Math.pow(growth,state[area.level]-1))}
-function areaWorkerMax(area){return state[area.level]*2}
-function areaUpgradeCost(area){return Math.floor(area.upgradeBase*Math.pow(area.upgradeGrowth,state[area.level]-1))}
+function areaCapacity(area){return Math.floor(area.baseCap*Math.pow(state[area.level],1.45))}
+function areaWorkerMax(area){return state[area.level]}
+function areaUpgradeCost(area){return Math.floor(area.upgradeBase*Math.pow(state[area.level],1.45))}
+function normalizeCaveWorkers(){Object.values(caveAreas).forEach(area=>state[area.worker]=Math.max(0,Math.min(Math.floor(state[area.worker]||0),areaWorkerMax(area))))}
 function assignedChildren(){return Object.values(caveAreas).reduce((sum,a)=>sum+state[a.worker],0)}
 function availableChildren(){return Math.max(0,state.daoChildTotal-assignedChildren())}
-function daoChildCost(){return Math.floor(50*Math.pow(1.5,state.daoChildBought))}
+function daoChildCost(){return Math.floor(100*Math.pow(state.daoChildBought+1,1.45))}
 function renderCavePanel(view='dwelling'){
   currentCaveView=view;
   const tabs=[['dwelling','洞府'],['study','書房'],['alchemy','丹房'],['forge','器室'],['brew','仙釀'],['partner','道侶']];
@@ -912,7 +913,7 @@ function renderCaveView(view){
     const names={study:'書房',alchemy:'丹房',forge:'器室',brew:'仙釀',partner:'道侶'};
     inner.innerHTML=`<div class="cave-placeholder"><b>${names[view]}</b><small>相關內容將於後續版本開放</small></div>`;return;
   }
-  const cards=Object.entries(caveAreas).map(([key,a])=>{const cap=areaCapacity(a),max=areaWorkerMax(a),upgrade=areaUpgradeCost(a);return `<article class="resource-area"><img src="${a.icon}" alt="${a.label}"><div class="resource-copy"><b>${a.label}・${state[a.level]}級</b><strong>${Math.floor(state[a.value]).toLocaleString()} / ${cap.toLocaleString()}</strong><small>1道童 = 1 ${a.label}／5秒${a.foodCost?`・消耗${a.foodCost}食物`:''}</small></div><div class="worker-stepper"><button data-worker="${key}" data-change="-1">−</button><span>${state[a.worker]} / ${max}</span><button data-worker="${key}" data-change="1">＋</button></div><button class="area-upgrade" data-upgrade-area="${key}" ${state.wood>=upgrade?'':'disabled'}>升級・木材 ${upgrade}</button></article>`}).join('');
+  const cards=Object.entries(caveAreas).map(([key,a])=>{const cap=areaCapacity(a),max=areaWorkerMax(a),upgrade=areaUpgradeCost(a);return `<article class="resource-area"><img src="${a.icon}" alt="${a.label}"><div class="resource-copy"><b>${a.label}・${state[a.level]}級</b><strong>${Math.floor(state[a.value]).toLocaleString()} / ${cap.toLocaleString()}</strong><small>1道童 = ${a.output} ${a.label}／5秒${a.foodCost?`・消耗${a.foodCost}食物`:''}</small></div><div class="worker-stepper"><button data-worker="${key}" data-change="-1">−</button><span>${state[a.worker]} / ${max}</span><button data-worker="${key}" data-change="1">＋</button></div><button class="area-upgrade" data-upgrade-area="${key}" ${state.wood>=upgrade?'':'disabled'}>升級・木材 ${upgrade.toLocaleString()}</button></article>`}).join('');
   const cost=daoChildCost();
   inner.innerHTML=`<section class="dao-child-yard"><img src="assets/qstyle-v2/dao-child.png" alt="道童"><div><small>可用道童</small><b>${availableChildren()} / ${state.daoChildTotal}</b><em>未安排的道童會在此等候</em></div><button id="buyDaoChild" ${state.food>=cost?'':'disabled'}>招募<br>食物 ${cost}</button></section><div class="resource-area-grid">${cards}</div>`;
   $$('.worker-stepper button').forEach(b=>b.onclick=()=>assignWorker(b.dataset.worker,+b.dataset.change));
@@ -924,11 +925,11 @@ function buyDaoChild(){const cost=daoChildCost();if(state.food<cost)return toast
 function upgradeCaveArea(key){const a=caveAreas[key],cost=areaUpgradeCost(a);if(state.wood<cost)return toast('木材不足');state.wood-=cost;state[a.level]++;toast(`${a.label}區域提升至${state[a.level]}級`);renderCaveView('dwelling');save()}
 function runSettlementTick(ticks=1){
   for(let i=0;i<ticks;i++){
-    const foodArea=caveAreas.food;state.food=Math.min(areaCapacity(foodArea),state.food+state.workerFood);
+    const foodArea=caveAreas.food,foodWorkers=Math.min(state.workerFood,areaWorkerMax(foodArea));state.food=Math.min(areaCapacity(foodArea),state.food+foodWorkers*foodArea.output);
     for(const key of ['spiritStone','wood','meteorIron']){
-      const a=caveAreas[key],room=Math.max(0,areaCapacity(a)-state[a.value]);
-      const possible=Math.min(state[a.worker],room,a.foodCost?Math.floor(state.food/a.foodCost):state[a.worker]);
-      if(possible>0){state.food-=possible*a.foodCost;state[a.value]+=possible}
+      const a=caveAreas[key],room=Math.max(0,areaCapacity(a)-state[a.value]),workers=Math.min(state[a.worker],areaWorkerMax(a));
+      const possible=Math.min(workers,Math.floor(room/a.output),a.foodCost?Math.floor(state.food/a.foodCost):workers);
+      if(possible>0){state.food-=possible*a.foodCost;state[a.value]+=possible*a.output}
     }
   }
 }
