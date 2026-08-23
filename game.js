@@ -1243,16 +1243,19 @@ function changeMarketFloor(direction){
   marketFloors[currentMarketTab]=next;
   renderMarket(currentMarketTab);
 }
+function resetMarketNavigation(){currentMarketTab='market';Object.keys(marketFloors).forEach(tab=>marketFloors[tab]=1)}
+function switchMarketTab(tab){if(Object.prototype.hasOwnProperty.call(marketFloors,tab))marketFloors[tab]=1;renderMarket(tab)}
 function openMarket(){
   $('#gameMenu').classList.add('hidden');
-  Object.keys(marketFloors).forEach(tab=>marketFloors[tab]=1);
+  resetMarketNavigation();
   lastScriptureDayKey=dateKey()||'local';
-  renderMarket(currentMarketTab);
+  renderMarket('market');
   $('#marketModal').classList.remove('hidden');
 }
 function closeMarket(){
   closeMarketPurchase();
   $('#marketModal').classList.add('hidden');
+  resetMarketNavigation();
 }
 
 load();
@@ -1288,7 +1291,7 @@ $('#mailDetailCloseBtn').onclick=closeMailDetail;
 $('#mailClaimBtn').onclick=claimMailAttachments;
 $('#mailDeleteBtn').onclick=deleteCurrentMail;
 $('#marketCloseBtn').onclick=closeMarket;
-$$('[data-market-tab]').forEach(button=>button.onclick=()=>renderMarket(button.dataset.marketTab));
+$$('[data-market-tab]').forEach(button=>button.onclick=()=>switchMarketTab(button.dataset.marketTab));
 $('#marketPurchaseCancel').onclick=closeMarketPurchase;
 $('#marketPurchaseConfirm').onclick=confirmMarketPurchase;
 $('#marketPurchaseMin').onclick=()=>{marketPurchaseQuantity=1;updateMarketPurchaseModal()};
