@@ -1318,6 +1318,8 @@ $('#backToTitle').addEventListener('click',()=>{$('#mailboxModal').classList.add
 $('#muteBtn').onclick=()=>{state.muted=!state.muted;updateBgmVolume();render();save()};
 $('#battleExitBtn').onclick=forceEndBattle;
 $('#battleResultClose').onclick=closeBattle;
+document.addEventListener('contextmenu',event=>{if(event.target.closest?.('img'))event.preventDefault()});
+document.addEventListener('dragstart',event=>{if(event.target.closest?.('img'))event.preventDefault()});
 $('#manualCultivateBtn').onclick=beginManualCultivation;
 setInterval(()=>{if($('#gameScreen').classList.contains('active')){if(state.cultivationAwakened){addAura(auraRate());runSettlementTick();processSectYears();addCultivation(rate())}if(currentFeature==='root')renderSpiritRootView(currentRootView);if(currentFeature==='cave'&&state.spiritLevel>=10)renderCavePanel(currentCaveView);if(currentFeature==='sect'&&currentSectView!=='npcs')renderSectPanel(currentSectView);if(currentFeature==='arts')updateArtsLive();tickStart=gameNow()}},5000);
 setInterval(()=>{if($('#gameScreen').classList.contains('active'))$('#tickBar').style.width=Math.min(100,(gameNow()-tickStart)/50)+'%'},50);
