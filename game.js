@@ -771,10 +771,10 @@ function confirmSellItem(){
   if(currentFeature==='bag')renderBagView('bag');render();save();toast(`已售出 ${item.name} ×${quantity}・靈石+${earned}`);
 }
 function promoteSect(){const cost=sectPromotionCosts[state.sectRank];if(state.sectContribution<cost)return;state.sectContribution-=cost;state.sectRank++;toast(`晉升為${sectRanks[state.sectRank]}`);renderSectView('home');save()}
-function npcDailyState(index){const key=String(sectNpcs()[index].id),record=state.npcDaily[key],today=dateKey();if(!today)return record||{date:'',chat:3,gift:3};if(!record||record.date!==today)state.npcDaily[key]={date:today,chat:0,gift:0};return state.npcDaily[key]}
+function npcDailyState(index){const key=String(sectNpcs()[index].id),record=state.npcDaily[key],today=dateKey();if(!today)return record||{date:'',chat:3,gift:3,sparWon:true};if(!record||record.date!==today)state.npcDaily[key]={date:today,chat:0,gift:0,sparWon:false};else if(typeof record.sparWon!=='boolean')record.sparWon=false;return state.npcDaily[key]}
 function availableGiftItem(){return Object.entries(itemCatalog).find(([,item])=>item.giftable&&(state[item.count]||0)>0)}
-function renderNpcDetail(index){const n=sectNpcs()[index],npcStats=battleEnemyStats(n),aff=state.npcAffinity[n.id]||0,daily=npcDailyState(index),gift=availableGiftItem(),master=index===0,elder=index===1,offering=index===2,challengeDisabled=master&&(state.sectRank<2||state.prestige<200||state.actingLeader),combatLabel=master?(state.actingLeader?'已是代理掌門':state.sectRank<2?'挑戰掌門・需親傳弟子':state.prestige>=200?'挑戰掌門':'挑戰掌門・需200聲望'):'切磋';$('#npcDetail').innerHTML=`<b>${n.title}・${n.name}</b><span>戰力 ${formatCombatPower(npcStats.combatPower)}・好感 ${aff} / 100</span><div><button data-npc-action="chat" ${daily.chat>=3||aff>=100?'disabled':''}>聊天 ${daily.chat}/3</button><button data-npc-action="gift" ${daily.gift>=3||aff>=100||!gift?'disabled':''}>${gift?`送禮 ${daily.gift}/3`:'送禮・無道具'}</button><button data-npc-action="${master?'challenge':'spar'}" ${challengeDisabled?'disabled':''}>${combatLabel}</button>${master?'<button data-npc-action="greet">請安</button>':''}${elder?'<button data-npc-action="arts">學習功法</button>':''}${offering?'<button data-npc-action="shop">物資兌換</button>':''}</div>`;$$('[data-npc-action]').forEach(b=>b.onclick=()=>npcAction(index,b.dataset.npcAction))}
-function npcAction(index,action){const n=sectNpcs()[index],daily=npcDailyState(index),aff=state.npcAffinity[n.id]||0;if(['chat','gift','greet'].includes(action)&&!requireTrustedTime())return;if(action==='chat'){if(daily.chat>=3||aff>=100)return;daily.chat++;state.npcAffinity[n.id]=Math.min(100,aff+1);toast('交談甚歡・好感+1')}else if(action==='gift'){const gift=availableGiftItem();if(!gift)return toast('身上沒有可贈送的道具');if(daily.gift>=3||aff>=100)return;const [,item]=gift;state[item.count]--;daily.gift++;state.npcAffinity[n.id]=Math.min(100,aff+5);toast(`送出${item.name}・好感+5`)}else if(action==='spar'){startNpcBattle(n);return}else if(action==='challenge'){challengeMaster();return}else if(action==='greet'){if(state.lastGreetingDay===dateKey())return toast('今日已向掌門請安');state.lastGreetingDay=dateKey();state.sectContribution+=100;toast('掌門頷首嘉許・門派貢獻+100')}else if(action==='arts'){renderSectLearning();return}else if(action==='shop'){renderSectPanel('shop');return}renderNpcDetail(index);save()}
+function renderNpcDetail(index){const n=sectNpcs()[index],npcStats=battleEnemyStats(n),aff=state.npcAffinity[n.id]||0,daily=npcDailyState(index),gift=availableGiftItem(),master=index===0,elder=index===1,offering=index===2,challengeDisabled=master?(state.sectRank<2||state.prestige<200||state.actingLeader):daily.sparWon,combatLabel=master?(state.actingLeader?'已是代理掌門':state.sectRank<2?'挑戰掌門・需親傳弟子':state.prestige>=200?'挑戰掌門':'挑戰掌門・需200聲望'):(daily.sparWon?'今日切磋已勝':'切磋');$('#npcDetail').innerHTML=`<b>${n.title}・${n.name}</b><span>戰力 ${formatCombatPower(npcStats.combatPower)}・好感 ${aff} / 100</span><div><button data-npc-action="chat" ${daily.chat>=3||aff>=100?'disabled':''}>聊天 ${daily.chat}/3</button><button data-npc-action="gift" ${daily.gift>=3||aff>=100||!gift?'disabled':''}>${gift?`送禮 ${daily.gift}/3`:'送禮・無道具'}</button><button data-npc-action="${master?'challenge':'spar'}" ${challengeDisabled?'disabled':''}>${combatLabel}</button>${master?'<button data-npc-action="greet">請安</button>':''}${elder?'<button data-npc-action="arts">學習功法</button>':''}${offering?'<button data-npc-action="shop">物資兌換</button>':''}</div>`;$$('[data-npc-action]').forEach(b=>b.onclick=()=>npcAction(index,b.dataset.npcAction))}
+function npcAction(index,action){const n=sectNpcs()[index],daily=npcDailyState(index),aff=state.npcAffinity[n.id]||0;if(['chat','gift','greet','spar'].includes(action)&&!requireTrustedTime())return;if(action==='chat'){if(daily.chat>=3||aff>=100)return;daily.chat++;state.npcAffinity[n.id]=Math.min(100,aff+1);toast('交談甚歡・好感+1')}else if(action==='gift'){const gift=availableGiftItem();if(!gift)return toast('身上沒有可贈送的道具');if(daily.gift>=3||aff>=100)return;const [,item]=gift;state[item.count]--;daily.gift++;state.npcAffinity[n.id]=Math.min(100,aff+5);toast(`送出${item.name}・好感+5`)}else if(action==='spar'){if(daily.sparWon)return toast('今日已切磋勝利，明日再來');startNpcBattle(n);return}else if(action==='challenge'){challengeMaster();return}else if(action==='greet'){if(state.lastGreetingDay===dateKey())return toast('今日已向掌門請安');state.lastGreetingDay=dateKey();state.sectContribution+=100;toast('掌門頷首嘉許・門派貢獻+100')}else if(action==='arts'){renderSectLearning();return}else if(action==='shop'){renderSectPanel('shop');return}renderNpcDetail(index);save()}
 
 function combatHealth(rootBone){return Math.max(125,120+Math.max(0,rootBone)*5)}
 function battlePlayerStats(){
@@ -786,11 +786,11 @@ function battlePlayerStats(){
   };
 }
 function validSectNpcSnapshot(snapshot=state.sectNpcSnapshot){
-  if(!state.sect||!snapshot||snapshot.version!==3||snapshot.sect!==state.sect||!snapshot.stats)return false;
+  if(!state.sect||!snapshot||snapshot.version!==4||snapshot.sect!==state.sect||!snapshot.stats)return false;
   return sectNpcs().every(n=>{const stats=snapshot.stats[String(n.id)];return stats&&Number.isFinite(stats.combatPower)&&stats.core&&Object.keys(combatPowerWeights).every(key=>Number.isInteger(stats.core[key]))&&['maxHp','attack','defense','dodge','crit'].every(key=>Number.isFinite(stats[key]))});
 }
 function npcCoreFromPower(rawPower,n){
-  const keys=Object.keys(combatPowerWeights),costs=keys.map(key=>combatPowerWeights[key]/5),profiles=[[1,1,1,1,1],[2.7,.75,1.25,.8,.7],[.75,2.7,.8,.85,1.2],[1.1,.75,2.7,.7,.75],[.75,.85,.7,2.7,1.1],[.7,1.1,.75,1.15,2.7]],seed=textSeed(`${state.sect}・${n.id}・${state.sectJoinedAt||0}・屬性`);
+  const keys=Object.keys(combatPowerWeights),costs=keys.map(key=>combatPowerWeights[key]/5),profiles=[[1,1,1,1,1],[2,.85,1.2,.9,.85],[.85,2,.9,.95,1.2],[1.15,.85,2,.85,.9],[.85,.95,.85,2,1.15],[.85,1.15,.9,1.2,2]],seed=textSeed(`${state.sect}・${n.id}・${state.sectJoinedAt||0}・屬性`);
   let target=Math.max(100,Math.ceil(rawPower/5)*5);while(target/5-20===1)target+=5;
   let randomState=seed||1;const random=()=>{randomState=(Math.imul(randomState,1664525)+1013904223)>>>0;return randomState/4294967296},profile=profiles[seed%profiles.length],weights=profile.map(value=>value*(.85+random()*.3)),weightTotal=weights.reduce((sum,value)=>sum+value,0),cores=Object.fromEntries(keys.map(key=>[key,1])),budget=target/5-20;
   let spent=0;keys.forEach((key,index)=>{const points=Math.floor(budget*(weights[index]/weightTotal)/costs[index]);cores[key]+=points;spent+=points*costs[index]});
@@ -800,7 +800,7 @@ function npcCoreFromPower(rawPower,n){
 }
 function createSectNpcSnapshot(){
   if(!state.sect)return null;
-  const player=battlePlayerStats(),playerPower=combatPower(),masterPower=(1.75+Math.max(1,state.sectStar||1)*.2)*1.25,rolePower=[masterPower,1.18,1.05,.92,.8],stats={};
+  const player=battlePlayerStats(),playerPower=combatPower(),star=Math.max(1,state.sectStar||1),starPower=1+(star-1)*.06,masterPower=(1.75+star*.2)*1.25,rolePower=[masterPower,2.2*starPower,1.8*starPower,1.4*starPower,1*starPower],stats={};
   sectNpcs().forEach((n,index)=>{
     const generated=npcCoreFromPower(Math.ceil(playerPower*(rolePower[index]||1)),n),core=generated.core,dodgeRating=core.agility*3,critRating=core.spiritualPower*3;
     stats[String(n.id)]={
@@ -809,7 +809,7 @@ function createSectNpcSnapshot(){
       dodge:Math.min(.35,dodgeRating/(dodgeRating+1000)),crit:Math.min(.45,critRating/(critRating+1000))
     };
   });
-  return {version:3,sect:state.sect,joinedAt:state.sectJoinedAt||gameNow(),createdAt:gameNow(),player:{...player,combatPower:playerPower},stats};
+  return {version:4,sect:state.sect,joinedAt:state.sectJoinedAt||gameNow(),createdAt:gameNow(),player:{...player,combatPower:playerPower},stats};
 }
 function battleEnemyStats(n){
   if(!validSectNpcSnapshot()){state.sectNpcSnapshot=createSectNpcSnapshot();save()}
@@ -899,12 +899,12 @@ function finishBattle(won,reason){
   if(!battle||battle.resolved)return;clearTimeout(battleTimer);battle.active=false;battle.resolved=true;battle.won=won;
   let reward='';
   if(won&&battle.mode==='master'){state.actingLeader=true;reward=' 已取得代理掌門身分。'}
-  else if(won){state.prestige+=5;reward=' 聲望+5。'}
+  else if(won){const index=sectNpcs().findIndex(n=>n.id===battle.enemy.npc?.id);if(index>=0)npcDailyState(index).sparWon=true;state.prestige+=5;reward=' 聲望+5；今日無法再與此人切磋。'}
   save();render();
   $('#battleStage').classList.add('hidden');$('#battleResult').classList.remove('hidden');$('#battleResultSeal').textContent=won?'勝':'敗';$('#battleResultSeal').classList.toggle('defeat',!won);
   $('#battleResultTitle').textContent=won?'戰鬥勝利':'戰鬥失敗';$('#battleResultText').textContent=`${reason}${reward}`;
 }
-function closeBattle(){const mode=battle?.mode;clearTimeout(battleTimer);battle=null;$('#battleModal').classList.add('hidden');startBgm('main');if(mode==='master'&&currentFeature==='sect'){renderSectPanel('npcs');renderNpcDetail(0)}}
+function closeBattle(){const npcId=battle?.enemy?.npc?.id;clearTimeout(battleTimer);battle=null;$('#battleModal').classList.add('hidden');startBgm('main');if(currentFeature==='sect'&&npcId!=null){const index=sectNpcs().findIndex(n=>n.id===npcId);renderSectPanel('npcs');if(index>=0)renderNpcDetail(index)}}
 function updatePracticeTimers(){
   if(currentFeature!=='sect'||currentSectView!=='practice')return;
   for(const [key,prefix] of [['practiceBuff','practice'],['transmissionBuff','transmission']]){const bar=$(`#${prefix}TimerBar`),text=$(`#${prefix}TimerText`);if(!bar||!text)continue;const active=buffActive(key);bar.style.width=`${buffPercent(key)}%`;text.textContent=active?buffClock(key):'未開啟';if(!active&&text.closest('.buff-timer')?.classList.contains('active')){renderSectView('practice');render();break}}
