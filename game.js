@@ -76,7 +76,7 @@ spiritRealms.slice(1).forEach((realm,index)=>{
   itemCatalog[key]={name:`${realm}丹`,image:`assets/qstyle-v2/tribulation-pills/pill-${String(realmIndex).padStart(2,'0')}.png`,description:`蘊含${realm}境道韻的渡劫丹藥。僅在突破${realm}境層次時使用，每顆可增加 5% 渡劫成功率。`,count:key,usable:false,giftable:false,sellPrice:1};
 });
 const artKinds={secret:{tab:'玄錄',attribute:'trueQi',label:'元息'},formula:{tab:'命篇',attribute:'rootBone',label:'命骨'},sutra:{tab:'體典',attribute:'physique',label:'玄軀'},escape:{tab:'行章',attribute:'agility',label:'游影'},ultimate:{tab:'悟卷',attribute:'comprehension',label:'道悟'},fragment:{tab:'天箋',attribute:'fortune',label:'天契'}};
-const artTabs=[['sect','門派技能'],['secret','玄錄'],['formula','命篇'],['sutra','體典'],['escape','行章'],['ultimate','悟卷'],['fragment','天箋'],['moves','招式']];
+const artTabs=[['sect','門派技能'],['secret','玄錄'],['formula','命篇'],['sutra','體典'],['escape','行章'],['ultimate','悟卷'],['fragment','天箋']];
 const artElements=[['metal','金','metalRoot'],['wood','木','woodRoot'],['water','水','waterRoot'],['fire','火','fireRoot'],['earth','土','earthRoot']];
 const artTierMax=[120,260,520,900,1400,2050,2933,3352,4800];
 const techniqueBookKinds={secret:'xuanlu',formula:'mingpian',sutra:'tidian',escape:'xingzhang'};
@@ -99,8 +99,8 @@ const startingTechniques=[
   {id:'flow',name:'流光御鋒',kind:'sword',min:.8,max:1.5,description:'引元息淬成流光劍芒，破空而行，直取對手氣機。'}
 ];
 const swordTechniqueCatalog=[...startingTechniques,
-  {id:'mountain',name:'斷嶽沉鋒',kind:'sword',min:1,max:1.65,description:'凝聚劍勢後重斬而下，傷害起伏較大，適合追求爆發。'},
-  {id:'echo',name:'回風疊刃',kind:'sword',min:1.05,max:1.28,description:'劍勢首尾相接，輸出較為穩定，適合作為連續追擊。'}
+  {id:'mountain',name:'斷嶽沉鋒',kind:'mountain',min:1,max:1.65,description:'凝聚劍勢後重斬而下，傷害起伏較大，適合追求爆發。'},
+  {id:'echo',name:'回風疊刃',kind:'echo',min:1.05,max:1.28,description:'劍勢首尾相接，輸出較為穩定，適合作為連續追擊。'}
 ];
 const swordEmbryos={
   heavy:{name:'重鋒劍胚',short:'重鋒',description:'劍勢沉凝，養劍時主要增長命骨與玄軀。'},
@@ -111,6 +111,11 @@ const swordIntents={
   break:{name:'破軍劍意',description:'重攻破勢，主要增長元息與玄軀。'},
   light:{name:'流光劍意',description:'迅疾連斬，主要增長游影與銳識。'},
   origin:{name:'歸元劍意',description:'守中歸一，主要增長命骨與玄軀。'}
+};
+const bodyInjuries={
+  scratch:{name:'擦傷',severity:1,duration:900000,description:'鍛體所得淬鍊度降低10%。'},
+  internal:{name:'內傷',severity:2,duration:1800000,description:'戰鬥氣血上限降低15%。'},
+  tendon:{name:'筋傷',severity:3,duration:2700000,description:'游影降低15%，且無法進行極限鍛體。'}
 };
 const wardrobeOutfits={
   女:[
@@ -127,7 +132,7 @@ const trueFormCatalog=[
   {id:'taixu-sword',name:'太虛劍相',image:'assets/qstyle-v2/true-form-sword-v2.png',description:'八方虛靈古劍結成劍陣，隨吐納明滅共鳴。'},
   {id:'jiuxiao-wings',name:'九霄靈翼',image:'assets/qstyle-v2/true-form-wings.png',description:'以清靈元息凝成的光翼，非羽非骨，如雲霞舒展。'}
 ];
-const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, swordPathVersion:1,swordEmbryo:'',swordName:'',swordNurtureLevel:0,swordIntent:0,swordInsight:0,swordIntentType:'',swordMoves:['origin','flow'],swordTrialWins:0,testTemporaryItemsMailVersion:0,testCultivationPillCount:0,testSpiritStoneTenMillionCount:0, ...tribulationPillDefaults, ...techniqueBookDefaults, tribulationPillMigration:1, testTribulationPillGrantVersion:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],learnedBookIds:[],mailbox:[],scripturePurchases:{date:'',ids:[]},marketPermanentPurchases:{},marketDailyPurchases:{date:'',counts:{}},artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:99999, testJadeGrantVersion:1, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0,workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, sectNpcSnapshot:null, righteousness:0, evilQi:0, prestige:0, actingLeader:false, npcAffinity:{}, npcDaily:{}, sectTokens:0, sectTokenDaily:{date:'',exchanged:0}, practiceBuff:{active:false,until:0,remaining:0,total:0}, transmissionBuff:{active:false,until:0,remaining:0,total:0}, lastGreetingDay:'', lastSalaryDay:'', lastPracticeDay:'', bornAt:null, lastTrustedTime:0, lastSave:Date.now() };
+const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, swordPathVersion:1,swordEmbryo:'',swordName:'',swordNurtureLevel:0,swordIntent:0,swordInsight:0,swordIntentType:'',swordMoves:['origin','flow'],swordTrialWins:0,bodyPathVersion:1,bodyStamina:100,bodyStaminaUpdatedAt:0,bodyTemper:0,bodyInjury:'',bodyInjuryUntil:0,testTemporaryItemsMailVersion:0,testCultivationPillCount:0,testSpiritStoneTenMillionCount:0, ...tribulationPillDefaults, ...techniqueBookDefaults, tribulationPillMigration:1, testTribulationPillGrantVersion:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],learnedBookIds:[],mailbox:[],scripturePurchases:{date:'',ids:[]},marketPermanentPurchases:{},marketDailyPurchases:{date:'',counts:{}},artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:99999, testJadeGrantVersion:1, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0,workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, sectNpcSnapshot:null, righteousness:0, evilQi:0, prestige:0, actingLeader:false, npcAffinity:{},npcDaily:{},sectTokens:0,sectTokenDaily:{date:'',exchanged:0},practiceBuff:{active:false,until:0,remaining:0,total:0},transmissionBuff:{active:false,until:0,remaining:0,total:0},lastGreetingDay:'',lastSalaryDay:'',lastPracticeDay:'',bornAt:null,lastTrustedTime:0,lastSave:Date.now() };
 defaults.cultivationAwakened=false;
 let state = { ...defaults }, tickStart = Date.now(), manualCultivationStartedAt=0, manualCultivationTimer=null, breakthroughInProgress=false;
 const saveKey = 'wendao-idle-v2';
@@ -220,6 +225,26 @@ function normalizeSwordPath(){
   if(!swordIntents[state.swordIntentType])state.swordIntentType='';
   const moves=Array.isArray(state.swordMoves)?state.swordMoves.filter(id=>swordTechniqueCatalog.some(move=>move.id===id)):[];state.swordMoves=Array.from(new Set(moves)).slice(0,2);while(state.swordMoves.length<2)state.swordMoves.push(state.swordMoves.includes('origin')?'flow':'origin');state.swordPathVersion=1;
 }
+function activeBodyInjury(){return bodyInjuries[state.bodyInjury]&&(state.bodyInjuryUntil||0)>gameNow()?state.bodyInjury:''}
+function refreshBodyState(){
+  const now=gameNow();state.bodyStamina=Math.max(0,Math.min(100,Number(state.bodyStamina)||0));if(!state.bodyStaminaUpdatedAt)state.bodyStaminaUpdatedAt=now;const recovered=Math.floor(Math.max(0,now-state.bodyStaminaUpdatedAt)/180000);if(recovered>0){state.bodyStamina=Math.min(100,state.bodyStamina+recovered);state.bodyStaminaUpdatedAt=state.bodyStamina>=100?now:state.bodyStaminaUpdatedAt+recovered*180000}if(state.bodyInjury&&!activeBodyInjury()){state.bodyInjury='';state.bodyInjuryUntil=0}return state.bodyStamina;
+}
+function normalizeBodyPath(){const stamina=Number(state.bodyStamina);state.bodyStamina=Number.isFinite(stamina)?Math.max(0,Math.min(100,stamina)):100;state.bodyStaminaUpdatedAt=Number(state.bodyStaminaUpdatedAt)||gameNow();state.bodyTemper=Math.max(0,Math.floor(state.bodyTemper||0));if(!bodyInjuries[state.bodyInjury]){state.bodyInjury='';state.bodyInjuryUntil=0}state.bodyPathVersion=1;refreshBodyState()}
+function bodyTemperNeed(level=state.bodyLevel){return Math.max(100,Math.round(100*Math.pow(level+1,1.2)))}
+function bodyTemperGain(base){return Math.max(1,Math.round(base*(activeBodyInjury()==='scratch'?.9:1)))}
+function bodyTrainingOptions(){const realm=Math.floor((state.bodyLevel||0)/10)+1,need=bodyTemperNeed();return {
+  basic:{name:'基礎鍛體',stamina:10,food:40*realm,wood:0,stone:0,gain:bodyTemperGain(need*.12),risk:0,description:'循序打磨筋骨，進度穩定且不會受傷。'},
+  bath:{name:'藥浴鍛體',stamina:20,food:70*realm,wood:25*realm,stone:100*realm,gain:bodyTemperGain(need*.26),risk:0,description:'以洞府物資溫養肉身，並可治癒擦傷。'},
+  extreme:{name:'極限鍛體',stamina:30,food:120*realm,wood:0,stone:0,gain:bodyTemperGain(need*.45),risk:30,description:'強行逼迫肉身突破極限，進度最快但可能受傷。'}
+}}
+function inflictBodyInjury(id){const injury=bodyInjuries[id];if(!injury)return;const current=bodyInjuries[activeBodyInjury()];if(!current||injury.severity>=current.severity){state.bodyInjury=id;state.bodyInjuryUntil=gameNow()+injury.duration}}
+function trainBody(kind){
+  refreshBodyState();const option=bodyTrainingOptions()[kind];if(!option)return;if(kind==='extreme'&&activeBodyInjury()==='tendon')return toast('筋傷未癒，無法進行極限鍛體');if(state.bodyStamina<option.stamina)return toast('體力不足');if(state.food<option.food||state.wood<option.wood||state.spiritStone<option.stone)return toast('鍛體所需資源不足');
+  state.bodyStamina-=option.stamina;state.bodyStaminaUpdatedAt=gameNow();state.food-=option.food;state.wood-=option.wood;state.spiritStone-=option.stone;state.bodyTemper+=option.gain;if(kind==='bath'&&activeBodyInjury()==='scratch'){state.bodyInjury='';state.bodyInjuryUntil=0}if(option.risk&&Math.random()*100<option.risk){const roll=Math.random();inflictBodyInjury(roll<.5?'scratch':roll<.82?'internal':'tendon');toast(`${option.name}完成・淬鍊度+${option.gain}，但留下${bodyInjuries[state.bodyInjury].name}`)}else toast(`${option.name}完成・淬鍊度+${option.gain}`);renderExperiencePanel('training');render();save();
+}
+function healBodyInjury(){const id=activeBodyInjury();if(!id)return toast('目前沒有傷勢');const costs={scratch:{food:100,wood:20,stone:100},internal:{food:300,wood:60,stone:500},tendon:{food:500,wood:120,stone:1000}}[id];if(state.food<costs.food||state.wood<costs.wood||state.spiritStone<costs.stone)return toast('療傷所需資源不足');state.food-=costs.food;state.wood-=costs.wood;state.spiritStone-=costs.stone;state.bodyInjury='';state.bodyInjuryUntil=0;toast('傷勢已痊癒');renderExperiencePanel('body');render();save()}
+function bodyHealCost(id=activeBodyInjury()){return {scratch:{food:100,wood:20,stone:100},internal:{food:300,wood:60,stone:500},tendon:{food:500,wood:120,stone:1000}}[id]}
+function formatDuration(ms){const minutes=Math.max(0,Math.ceil(ms/60000));return minutes>=60?`${Math.floor(minutes/60)}時${minutes%60}分`:`${minutes}分`}
 function hasMindEmbodiment() { return state.spiritLevel>=40; }
 function setTribulationLock(locked){
   tribulationLocked=locked;
@@ -252,7 +277,7 @@ function artBaseEffect(art){return Math.round(artTierMax[art.tier-1]*(art.level/
 function artRootEffect(art){return Math.round((state[`${art.element}Art`]||0)*art.tier*art.level)}
 function artTotalEffect(art){return artBaseEffect(art)+artRootEffect(art)}
 function artBonusFor(attribute){return (state.learnedArts||[]).filter(art=>artKinds[art.kind]?.attribute===attribute).reduce((sum,art)=>sum+artTotalEffect(art),0)}
-function effectiveCore(attribute){return (state[attribute]||0)+artBonusFor(attribute)+swordPathBonus(attribute)}
+function effectiveCore(attribute){const total=(state[attribute]||0)+artBonusFor(attribute)+swordPathBonus(attribute);return attribute==='agility'&&activeBodyInjury()==='tendon'?total*.85:total}
 const combatPowerWeights={rootBone:10,trueQi:25,physique:20,agility:15,spiritualPower:30};
 function combatPower(){return Math.round(Object.entries(combatPowerWeights).reduce((sum,[key,weight])=>sum+Math.max(0,effectiveCore(key))*weight,0))}
 function formatCombatPower(value){
@@ -455,10 +480,11 @@ function render() {
   $('#bodyRealm').textContent=realmName(state.bodyLevel,bodyRealms);
   $('#swordRealm').textContent=realmName(state.swordLevel||0,swordRealms);
   $('#spiritCost').textContent=spiritMax?'已達最高境界':`提升需 ${formatLargeNumber(spiritCost)}`;
-  $('#bodyCost').textContent=bodyMax?'已達最高境界':bodyBlocked?'需提升練氣境界':`提升需 ${formatLargeNumber(bodyCost)}`;
+  const temperNeed=bodyTemperNeed(),bodyTrialReady=(state.bodyLevel+1)%10===0;
+  $('#bodyCost').textContent=bodyMax?'已達最高境界':bodyBlocked?'需提升練氣境界':state.bodyTemper<temperNeed?`淬鍊 ${state.bodyTemper.toLocaleString()} / ${temperNeed.toLocaleString()}`:bodyTrialReady?'前往歷練・肉身試煉':`提升需 ${formatLargeNumber(bodyCost)}`;
   $('#swordCost').textContent=swordMax?'已達最高境界':swordBlocked?'需提升練氣境界':`提升需 ${formatLargeNumber(swordCost)}`;
   $('#spiritUp').classList.toggle('ready',!spiritMax&&free>=spiritCost);
-  $('#bodyUp').classList.toggle('ready',!bodyMax&&!bodyBlocked&&free>=bodyCost);
+  $('#bodyUp').classList.toggle('ready',!bodyMax&&!bodyBlocked&&!bodyTrialReady&&state.bodyTemper>=temperNeed&&free>=bodyCost);
   $('#swordUp').classList.toggle('ready',!swordMax&&!swordBlocked&&free>=swordCost);
   $('#heroCharacterHotspot').disabled=!hasMindEmbodiment();
   $('#muteBtn').textContent=state.muted?'♫ 開啟音效':'♪ 靜音';
@@ -470,13 +496,15 @@ function upgrade(type) {
   if((spirit&&state.spiritLevel>=maxSpiritLevel)||(sword&&(state.swordLevel||0)>=maxSwordLevel)||(!spirit&&!sword&&state.bodyLevel>=maxBodyLevel))return toast('已達此道最高境界');
   if(sword&&swordPathBlocked())return toast(`淬劍境界不得超過練氣・${spiritRealms[swordRealmLimit()]}`);
   if(!spirit&&!sword&&bodyPathBlocked())return toast(`目前練氣境界僅能支撐${bodyRealms[bodyRealmLimit()]}境肉身`);
+  if(!spirit&&!sword&&state.bodyTemper<bodyTemperNeed())return toast(`肉身淬鍊度不足，尚缺 ${(bodyTemperNeed()-state.bodyTemper).toLocaleString()}`);
+  if(!spirit&&!sword&&(state.bodyLevel+1)%10===0){openExperienceView('bodyTrial');return toast('大境界需通過歷練中的肉身試煉')}
   if(state.free<cost) return toast(`尚缺 ${(cost-state.free).toFixed(0)} 修為`);
   if(spirit && state.spiritLevel+1>10) return openTrib();
   state.free-=cost;
   if(spirit) { const gain=spiritAttributeGain(state.spiritLevel+1);state.spiritLevel++;applyAttributeGain(gain);toast(`已提升至${realmName(state.spiritLevel,spiritRealms)}`); }
   else if(sword){const gain=swordAttributeGain((state.swordLevel||0)+1);state.swordLevel=(state.swordLevel||0)+1;applyAttributeGain(gain);toast(`已提升至${realmName(state.swordLevel,swordRealms)}`)}
   else {
-    const gain=bodyAttributeGain(state.bodyLevel+1); state.bodyLevel++;applyAttributeGain(gain);
+    const need=bodyTemperNeed(),gain=bodyAttributeGain(state.bodyLevel+1);state.bodyTemper=Math.max(0,state.bodyTemper-need);state.bodyLevel++;applyAttributeGain(gain);
     toast(`已提升至${realmName(state.bodyLevel,bodyRealms)}`);
   }
   render(); save();
@@ -609,8 +637,21 @@ async function chooseSwordIntent(id){
 function setSwordMove(id,slot){
   if(!swordTechniqueCatalog.some(move=>move.id===id)||slot<0||slot>1)return;state.swordMoves=[...(state.swordMoves||['origin','flow'])];const other=slot===0?1:0;if(state.swordMoves[other]===id)return toast('同一劍招不能重複裝配');state.swordMoves[slot]=id;toast(`${swordTechniqueCatalog.find(move=>move.id===id).name}已設為第${slot+1}式`);renderExperiencePanel('moves');save();
 }
+function openExperienceView(view='sword'){
+  const button=$('.feature-tab[data-page="experience"]');currentFeature='experience';$$('.feature-tab').forEach(item=>item.classList.toggle('active',item===button));$('#featurePanel').classList.remove('hidden','feature-locked');$('#gameScreen').classList.add('feature-open');renderExperiencePanel(view);
+}
+function renderBodyExperienceView(view,inner){
+  refreshBodyState();const need=bodyTemperNeed(),injuryId=activeBodyInjury(),injury=bodyInjuries[injuryId],nextIsRealm=(state.bodyLevel+1)%10===0,cost=bodyReq(state.bodyLevel);
+  if(view==='body'){
+    const heal=bodyHealCost(injuryId);inner.innerHTML=`<section class="body-dashboard"><div class="body-seal">體</div><div><small>當前肉身</small><h2>${realmName(state.bodyLevel,bodyRealms)}</h2><p>先以鍛體累積淬鍊度；小層可直接突破，大境界必須撐過肉身試煉。</p></div><div class="body-meter"><span>體力 <b>${Math.floor(state.bodyStamina)} / 100</b></span><i><em style="width:${state.bodyStamina}%"></em></i><small>每3分鐘恢復1點</small></div><div class="body-meter temper"><span>淬鍊度 <b>${state.bodyTemper.toLocaleString()} / ${need.toLocaleString()}</b></span><i><em style="width:${Math.min(100,state.bodyTemper/need*100)}%"></em></i></div><div class="body-condition ${injury?'injured':''}"><b>${injury?injury.name:'肉身無傷'}</b><small>${injury?`${injury.description}・剩餘 ${formatDuration(state.bodyInjuryUntil-gameNow())}`:'目前可進行所有鍛體方式。'}</small>${injury?`<button id="healBodyBtn">療傷・食物 ${heal.food}／木材 ${heal.wood}／靈石 ${heal.stone}</button>`:''}</div><button id="goBodyAction" class="jade-button">${state.bodyTemper<need?'前往鍛體':nextIsRealm?'前往肉身試煉':`突破至${realmName(state.bodyLevel+1,bodyRealms)}・修為 ${formatLargeNumber(cost)}`}</button></section>`;if(injury)$('#healBodyBtn').onclick=healBodyInjury;$('#goBodyAction').onclick=()=>state.bodyTemper<need?renderExperiencePanel('training'):nextIsRealm?renderExperiencePanel('bodyTrial'):upgrade('body');return;
+  }
+  if(view==='training'){
+    const options=bodyTrainingOptions();inner.innerHTML=`<section class="body-training-head"><h2>鍛體場</h2><p>體力不足時可等待自然恢復；受傷會暫時削弱鍛體或戰鬥能力。</p><strong>體力 ${Math.floor(state.bodyStamina)} / 100・淬鍊 ${state.bodyTemper.toLocaleString()} / ${need.toLocaleString()}</strong></section><div class="body-training-grid">${Object.entries(options).map(([id,item])=>`<article><h3>${item.name}</h3><p>${item.description}</p><small>消耗：體力 ${item.stamina}・食物 ${item.food}${item.wood?`・木材 ${item.wood}`:''}${item.stone?`・靈石 ${item.stone}`:''}</small><b>淬鍊度 +${item.gain.toLocaleString()}${item.risk?`・受傷率 ${item.risk}%`:''}</b><button data-body-training="${id}" ${state.bodyStamina<item.stamina||state.food<item.food||state.wood<item.wood||state.spiritStone<item.stone||id==='extreme'&&injuryId==='tendon'?'disabled':''}>開始鍛體</button></article>`).join('')}</div>`;$$('[data-body-training]').forEach(button=>button.onclick=()=>trainBody(button.dataset.bodyTraining));return;
+  }
+  const target=5+Math.floor((state.bodyLevel+1)/20),blocked=bodyPathBlocked();inner.innerHTML=`<section class="body-trial-card"><div class="trial-orb body-orb">守</div><h2>${nextIsRealm?`${realmName(state.bodyLevel+1,bodyRealms)}・肉身試煉`:'尚未抵達大境界關口'}</h2><p>${nextIsRealm?`不求擊倒試煉化身，只需在猛烈攻勢下撐過 ${target} 回合。失敗將留下傷勢，但可再次挑戰。`:'此處僅用於每十層的大境界突破；小層請在肉身頁直接突破。'}</p><strong>${blocked?'練氣境界不足':state.bodyTemper<need?`淬鍊度尚缺 ${(need-state.bodyTemper).toLocaleString()}`:state.free<cost?`修為尚缺 ${Math.ceil(cost-state.free).toLocaleString()}`:`已具備試煉資格・需修為 ${formatLargeNumber(cost)}`}</strong><button id="startBodyTrial" class="jade-button" ${!nextIsRealm||blocked||state.bodyTemper<need||state.free<cost?'disabled':''}>承受試煉</button></section>`;$('#startBodyTrial').onclick=startBodyTrial;
+}
 function renderExperiencePanel(view='sword'){
-  currentExperienceView=view;const tabs=[['sword','本命劍'],['moves','劍招'],['trial','試劍境']];$('#featureDescription').innerHTML=`<div class="experience-tabs">${tabs.map(([id,label])=>`<button data-experience-view="${id}" class="${id===view?'active':''}">${label}</button>`).join('')}</div><div id="experienceInner"></div>`;$$('[data-experience-view]').forEach(button=>button.onclick=()=>renderExperiencePanel(button.dataset.experienceView));const inner=$('#experienceInner');
+  currentExperienceView=view;const bodyMode=['body','training','bodyTrial'].includes(view),tabs=bodyMode?[['body','肉身'],['training','鍛體'],['bodyTrial','試煉']]:[['sword','本命劍'],['moves','劍招'],['trial','試劍境']];$('#featureDescription').innerHTML=`<div class="experience-road-tabs"><button data-road="sword" class="${bodyMode?'':'active'}">淬劍之路</button><button data-road="body" class="${bodyMode?'active':''}">煉體之路</button></div><div class="experience-tabs">${tabs.map(([id,label])=>`<button data-experience-view="${id}" class="${id===view?'active':''}">${label}</button>`).join('')}</div><div id="experienceInner"></div>`;$$('[data-road]').forEach(button=>button.onclick=()=>renderExperiencePanel(button.dataset.road));$$('[data-experience-view]').forEach(button=>button.onclick=()=>renderExperiencePanel(button.dataset.experienceView));const inner=$('#experienceInner');if(bodyMode){renderBodyExperienceView(view,inner);return}
   if(!swordPathUnlocked()){inner.innerHTML=`<div class="realm-lock"><b>凝曜境開啟本命劍</b><small>當前境界：${realmName(state.spiritLevel,spiritRealms)}</small></div>`;return}
   if(view==='sword'){
     if(!state.swordEmbryo){inner.innerHTML=`<section class="sword-intro"><h2>凝聚本命劍</h2><p>選擇一枚劍胚，讓它隨你一同養成。第一版本選定後無法更換。</p><div class="sword-choice-grid">${Object.entries(swordEmbryos).map(([id,item])=>`<button data-sword-embryo="${id}"><b>${item.name}</b><span>${item.description}</span></button>`).join('')}</div></section>`;$$('[data-sword-embryo]').forEach(button=>button.onclick=()=>chooseSwordEmbryo(button.dataset.swordEmbryo));return}
@@ -625,6 +666,10 @@ function renderExperiencePanel(view='sword'){
 function startSwordTrial(){
   if(!state.swordEmbryo)return;clearTimeout(battleTimer);startBgm('battle');const player=battlePlayerStats(),factor=1.15+state.swordTrialWins*.1,generated=npcCoreFromPower(Math.ceil(combatPower()*factor),{id:900000+state.swordTrialWins}),core=generated.core,dodgeRating=core.agility*3,critRating=core.spiritualPower*3,enemy={combatPower:generated.combatPower,core,maxHp:combatHealth(core.rootBone),attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),dodge:Math.min(.35,dodgeRating/(dodgeRating+1000)),crit:Math.min(.45,critRating/(critRating+1000))};
   battle={active:true,resolved:false,mode:'swordTrial',round:1,completedRounds:0,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'劍道幻影',npc:{id:`sword-trial-${state.swordTrialWins}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='劍道幻影';$('#battleLog').innerHTML=`<p><b>${state.name}</b>執起本命劍「${state.swordName}」，劍道幻影應念而生。</p>`;updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
+}
+function startBodyTrial(){
+  refreshBodyState();const need=bodyTemperNeed(),cost=bodyReq(state.bodyLevel),nextIsRealm=(state.bodyLevel+1)%10===0;if(!nextIsRealm||bodyPathBlocked()||state.bodyTemper<need||state.free<cost)return toast('尚未具備肉身試煉資格');clearTimeout(battleTimer);startBgm('battle');const player=battlePlayerStats(),targetRounds=5+Math.floor((state.bodyLevel+1)/20),factor=1.05+(state.bodyLevel+1)/10*.08,generated=npcCoreFromPower(Math.ceil(combatPower()*factor),{id:910000+state.bodyLevel}),core=generated.core,dodgeRating=core.agility*3,critRating=core.spiritualPower*3,enemy={combatPower:generated.combatPower,core,maxHp:combatHealth(core.rootBone)*8,attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),dodge:Math.min(.25,dodgeRating/(dodgeRating+1300)),crit:Math.min(.35,critRating/(critRating+1300))};
+  battle={active:true,resolved:false,mode:'bodyTrial',round:1,completedRounds:0,targetRounds,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'煉體試煉化身',npc:{id:`body-trial-${state.bodyLevel}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='煉體試煉化身';$('#battleLog').innerHTML=`<p><b>${state.name}</b>踏入試煉，必須以肉身撐過 ${targetRounds} 回合。</p>`;updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
 }
 
 function toggleFeature(button) {
@@ -684,8 +729,7 @@ function renderArtsPanel(view='sect'){
   const wallet=`<div class="arts-wallet"><span id="artsAuraAmount">當前靈氣 ${Math.floor(state.aura).toLocaleString()}</span>${view==='sect'?`<span>門派技能 ${sectLearned.length} / ${cap}</span>${cap<40?`<button id="expandArtsBtn" ${state.spiritStone>=expand?'':'disabled'}>擴充一格・${expand.toLocaleString()}靈石</button>`:'<b>已達40格上限</b>'}`:''}</div>`;
   $('#featureDescription').innerHTML=`<div class="arts-tabs">${artTabs.map(([key,label])=>`<button data-art-view="${key}" class="${key===view?'active':''}">${label}</button>`).join('')}</div>${wallet}<div id="artsInner"></div>`;
   $$('.arts-tabs button').forEach(button=>button.onclick=()=>renderArtsPanel(button.dataset.artView));if(view==='sect'&&cap<40)$('#expandArtsBtn').onclick=expandArtsCapacity;
-  const inner=$('#artsInner');if(view==='moves'){inner.innerHTML=`<div class="art-list">${startingTechniques.map((move,index)=>`<article class="art-card move-card ${index?'element-metal':'element-water'}"><span class="art-element">${index?'劍':'元'}</span><div class="move-copy"><b>${move.name}（1級）</b><p>${move.description}</p><em>基礎傷害：${Math.round(move.min*100)}～${Math.round(move.max*100)}%</em></div><strong class="move-status">初始習得</strong></article>`).join('')}</div>`;return}
-  const list=view==='sect'?sectLearned:sortLearnedArts(learned.filter(art=>!art.sourceSect&&art.kind===view));inner.innerHTML=list.length?`<div class="art-list">${list.map(artCard).join('')}</div>${view==='sect'?`<div class="arts-total">門派技能總計：${Object.values(artKinds).map(kind=>`${kind.label}+${sectLearned.filter(art=>artKinds[art.kind].attribute===kind.attribute).reduce((sum,art)=>sum+artTotalEffect(art),0).toLocaleString()}`).join('・')}</div>`:''}`:`<div class="arts-empty"><b>${artTabs.find(([key])=>key===view)[1]}尚無功法</b><small>${view==='sect'?'可向目前門派的大長老學習功法。':'可於藏經閣購得相應功法書，並在儲物袋中使用習得。'}</small></div>`;
+  const inner=$('#artsInner'),list=view==='sect'?sectLearned:sortLearnedArts(learned.filter(art=>!art.sourceSect&&art.kind===view));inner.innerHTML=list.length?`<div class="art-list">${list.map(artCard).join('')}</div>${view==='sect'?`<div class="arts-total">門派技能總計：${Object.values(artKinds).map(kind=>`${kind.label}+${sectLearned.filter(art=>artKinds[art.kind].attribute===kind.attribute).reduce((sum,art)=>sum+artTotalEffect(art),0).toLocaleString()}`).join('・')}</div>`:''}`:`<div class="arts-empty"><b>${artTabs.find(([key])=>key===view)[1]}尚無功法</b><small>${view==='sect'?'可向目前門派的大長老學習功法。':'可於藏經閣購得相應功法書，並在儲物袋中使用習得。'}</small></div>`;
   $$('[data-art-upgrade]').forEach(button=>button.onclick=()=>upgradeArt(button.dataset.artUpgrade,view));$$('[data-art-forget]').forEach(button=>button.onclick=()=>forgetArt(button.dataset.artForget,view));
 }
 function upgradeArt(id,view){const art=state.learnedArts.find(item=>item.id===id);if(!art||art.level>=10)return;const cost=artUpgradeCost(art);if(state.aura<cost)return toast('靈氣不足');state.aura-=cost;art.level++;toast(`${art.name}提升至${art.level}級`);renderArtsPanel(view);render();save()}
@@ -862,7 +906,7 @@ function battlePlayerStats(){
   const rootBone=effectiveCore('rootBone'),trueQi=effectiveCore('trueQi'),physique=effectiveCore('physique'),agility=effectiveCore('agility'),dodgeRating=agility*3,critRating=state.spiritualPower*3;
   const swordPower=1+(state.swordLevel||0)*.008;
   return {
-    maxHp:combatHealth(rootBone),attack:Math.max(12,trueQi*5)*swordPower,defense:Math.max(0,physique*20),
+    maxHp:Math.round(combatHealth(rootBone)*(activeBodyInjury()==='internal'?.85:1)),attack:Math.max(12,trueQi*5)*swordPower,defense:Math.max(0,physique*20),
     dodge:Math.min(.35,dodgeRating/(dodgeRating+1000)),crit:Math.min(.45,critRating/(critRating+1000))
   };
 }
@@ -952,7 +996,7 @@ function appendBattleLog(text,side='player'){
 }
 function playerBattleTurn(){
   if(!battle?.active)return;const moves=state.swordEmbryo?equippedSwordTechniques():startingTechniques,technique=moves[battle.playerMoveIndex%moves.length]||startingTechniques[0];battle.playerMoveIndex++;const mult=technique.min+Math.random()*(technique.max-technique.min),hit=damageRoll(battle.player,battle.enemy,mult);
-  battle.enemy.hp=Math.max(0,battle.enemy.hp-hit.damage);animateBattleStrike('#playerSilhouette','#enemySilhouette',hit,technique);
+  battle.enemy.hp=Math.max(battle.mode==='bodyTrial'?1:0,battle.enemy.hp-hit.damage);animateBattleStrike('#playerSilhouette','#enemySilhouette',hit,technique);
   appendBattleLog(hit.dodged?`${battle.enemy.name}看破招式來勢，避開了${state.name}的${technique.name}。`:`${state.name}${technique.kind==='sword'?'引氣淬鋒':'凝神引元'}，使出${technique.name}，對${battle.enemy.name}造成了${hit.damage}傷害。`,'player');updateBattleUi();
   if(battle.enemy.hp<=0)return setTimeout(()=>finishBattle(true,'對手氣息已散，無力再戰。'),650);
   battleTimer=setTimeout(enemyBattleTurn,850);
@@ -962,17 +1006,18 @@ function enemyBattleTurn(){
   battle.player.hp=Math.max(0,battle.player.hp-hit.damage);animateBattleStrike('#enemySilhouette','#playerSilhouette',hit,technique);
   appendBattleLog(hit.dodged?`${state.name}踏影側身，避開了${battle.enemy.name}的${technique.name}。`:`${battle.enemy.name}${technique.kind==='sword'?'引氣淬鋒':'凝神引元'}，使出${technique.name}，對${state.name}造成了${hit.damage}傷害。`,'enemy');
   battle.completedRounds++;updateBattleUi();
-  if(battle.player.hp<=0)return setTimeout(()=>finishBattle(false,battle.mode==='master'?'你氣力不支，本次掌門挑戰落敗。':battle.mode==='swordTrial'?'劍道幻影破去招式，本次試劍落敗。':'你氣力不支，本次切磋落敗。'),650);
+  if(battle.player.hp<=0)return setTimeout(()=>finishBattle(false,battle.mode==='master'?'你氣力不支，本次掌門挑戰落敗。':battle.mode==='swordTrial'?'劍道幻影破去招式，本次試劍落敗。':battle.mode==='bodyTrial'?'肉身未能撐住試煉化身的攻勢。':'你氣力不支，本次切磋落敗。'),650);
+  if(battle.mode==='bodyTrial'&&battle.completedRounds>=battle.targetRounds)return setTimeout(()=>finishBattle(true,`你以肉身承受猛攻，成功撐過 ${battle.targetRounds} 回合。`),650);
   battle.round++;updateBattleUi();battleTimer=setTimeout(playerBattleTurn,900);
 }
 function updateBattleUi(){
-  if(!battle)return;$('#battleTurn').textContent=`第${['一','二','三','四','五','六','七','八','九','十'][Math.min(9,battle.round-1)]||battle.round}回合`;
+  if(!battle)return;$('#battleTurn').textContent=battle.mode==='bodyTrial'?`第 ${Math.min(battle.round,battle.targetRounds)} / ${battle.targetRounds} 回合`:`第${['一','二','三','四','五','六','七','八','九','十'][Math.min(9,battle.round-1)]||battle.round}回合`;
   $('#playerHealthBar').style.width=`${Math.max(0,battle.player.hp/battle.player.maxHp*100)}%`;$('#enemyHealthBar').style.width=`${Math.max(0,battle.enemy.hp/battle.enemy.maxHp*100)}%`;
   const exit=$('#battleExitBtn'),ready=battle.completedRounds>=3;exit.disabled=!ready;exit.textContent=battle.mode==='spar'?'退出':'認輸';
 }
 function forceEndBattle(){
   if(!battle?.active||battle.completedRounds<3)return;
-  if(battle.mode!=='spar')return finishBattle(false,battle.mode==='master'?'你中途認輸，本次掌門挑戰落敗。':'你收劍退出，本次試劍落敗。');
+  if(battle.mode!=='spar')return finishBattle(false,battle.mode==='master'?'你中途認輸，本次掌門挑戰落敗。':battle.mode==='bodyTrial'?'你中途退出，本次肉身試煉落敗。':'你收劍退出，本次試劍落敗。');
   const playerRate=battle.player.hp/battle.player.maxHp,enemyRate=battle.enemy.hp/battle.enemy.maxHp;
   finishBattle(playerRate>=enemyRate,`三回合後終止${battle.mode==='master'?'掌門挑戰':'切磋'}，以剩餘氣血比例判定${playerRate>=enemyRate?'勝出':'落敗'}。`);
 }
@@ -981,13 +1026,14 @@ function finishBattle(won,reason){
   let reward='';
   if(won&&battle.mode==='master'){state.actingLeader=true;reward=' 已取得代理掌門身分。'}
   else if(battle.mode==='swordTrial'){if(won){const gained=5+state.swordTrialWins*2;state.swordIntent+=gained;state.swordTrialWins++;reward=` 劍意+${gained}。`}else{state.swordInsight++;reward=' 戰鬥感悟+1，可調整劍招後再戰。'}}
+  else if(battle.mode==='bodyTrial'){if(won){const need=bodyTemperNeed(),cost=bodyReq(state.bodyLevel);if(state.bodyTemper>=need&&state.free>=cost){state.bodyTemper-=need;state.free-=cost;state.bodyLevel++;applyAttributeGain(bodyAttributeGain(state.bodyLevel));reward=` 肉身突破至${realmName(state.bodyLevel,bodyRealms)}。`}else reward=' 試煉資格已失效，未完成突破。'}else{const injury=Math.random()<.6?'internal':'tendon';inflictBodyInjury(injury);reward=` 留下${bodyInjuries[injury].name}，療傷後可再次挑戰。`}}
   else if(battle.mode==='spar'&&won){const index=sectNpcs().findIndex(n=>n.id===battle.enemy.npc?.id),intentGain=[0,6,4,2,1][index]||0;if(index>=0)npcDailyState(index).sparWon=true;state.prestige+=5;if(state.swordEmbryo&&intentGain)state.swordIntent+=intentGain;reward=` 聲望+5${state.swordEmbryo&&intentGain?`、劍意+${intentGain}`:''}；今日無法再與此人切磋。`}
   else if(battle.mode==='spar'&&!won&&state.swordEmbryo){state.swordInsight++;reward=' 戰鬥感悟+1。'}
   save();render();
   $('#battleStage').classList.add('hidden');$('#battleResult').classList.remove('hidden');$('#battleResultSeal').textContent=won?'勝':'敗';$('#battleResultSeal').classList.toggle('defeat',!won);
   $('#battleResultTitle').textContent=won?'戰鬥勝利':'戰鬥失敗';$('#battleResultText').textContent=`${reason}${reward}`;
 }
-function closeBattle(){const npcId=battle?.enemy?.npc?.id,mode=battle?.mode;clearTimeout(battleTimer);battle=null;$('#battleModal').classList.add('hidden');startBgm('main');if(currentFeature==='sect'&&npcId!=null){const index=sectNpcs().findIndex(n=>n.id===npcId);renderSectPanel('npcs');if(index>=0)renderNpcDetail(index)}else if(currentFeature==='experience'&&mode==='swordTrial')renderExperiencePanel('trial')}
+function closeBattle(){const npcId=battle?.enemy?.npc?.id,mode=battle?.mode;clearTimeout(battleTimer);battle=null;$('#battleModal').classList.add('hidden');startBgm('main');if(currentFeature==='sect'&&npcId!=null){const index=sectNpcs().findIndex(n=>n.id===npcId);renderSectPanel('npcs');if(index>=0)renderNpcDetail(index)}else if(currentFeature==='experience'&&mode==='swordTrial')renderExperiencePanel('trial');else if(currentFeature==='experience'&&mode==='bodyTrial')renderExperiencePanel('bodyTrial')}
 function updatePracticeTimers(){
   if(currentFeature!=='sect'||currentSectView!=='practice')return;
   for(const [key,prefix] of [['practiceBuff','practice'],['transmissionBuff','transmission']]){const bar=$(`#${prefix}TimerBar`),text=$(`#${prefix}TimerText`);if(!bar||!text)continue;const active=buffActive(key);bar.style.width=`${buffPercent(key)}%`;text.textContent=active?buffClock(key):'未開啟';if(!active&&text.closest('.buff-timer')?.classList.contains('active')){renderSectView('practice');render();break}}
@@ -1342,7 +1388,7 @@ function closeMarket(){
   resetMarketNavigation();
 }
 
-load();normalizeSwordPath();ensureTestTemporaryItemsMail();
+load();normalizeSwordPath();normalizeBodyPath();ensureTestTemporaryItemsMail();
 try{const existing=JSON.parse(localStorage.getItem(saveKey));if(state.name&&(!existing||!Object.prototype.hasOwnProperty.call(existing,'cultivationAwakened')))state.cultivationAwakened=true}catch{}
 setClockAnchor(state.lastTrustedTime||Math.min(state.lastSave||Date.now(),Date.now()),location.protocol==='file:');
 if(state.sect&&!validSectNpcSnapshot()){state.sectNpcSnapshot=createSectNpcSnapshot();save()}
