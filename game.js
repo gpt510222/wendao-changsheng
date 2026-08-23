@@ -54,6 +54,19 @@ const itemCatalog = {
   sectToken:{name:'門派令牌',image:'assets/qstyle-v2/sect-token-cutout.png',description:'門派授予弟子的信物，令牌內留有宗門印記。使用後可增加 100 點門派貢獻。',count:'sectTokens',usable:true,giftable:false},
   mendingSilk:{name:'補天絲',image:'assets/qstyle-v2/mending-silk-cutout.png',description:'傳說由天穹裂隙中凝成的仙絲，纖韌無比，是提升儲物袋品階的稀世材料。',count:'mendingSilk',usable:false,giftable:false}
 };
+const sectInvitationItems=[];
+sectCatalog.forEach(group=>[...group.good.map(name=>({name,faction:'正'})),...group.evil.map(name=>({name,faction:'邪'}))].forEach(entry=>{
+  const index=sectInvitationItems.length+1,id=`sectInvitation${index}`,count=`sectInvitationCount${index}`,tier=['一','二','三','四','五','六','七','八','九'][group.star-1];
+  const item={name:`${entry.name}信物`,image:'assets/qstyle-v2/sect-invitation-token.png',description:`${tier}星門派・${entry.name}所授信物。當你無門無派時使用，可消耗一枚信物直接拜入${tier}星門派・${entry.name}。`,count,usable:true,giftable:false,sellPrice:1,sectInvitation:{name:entry.name,faction:entry.faction,star:group.star}};
+  itemCatalog[id]=item;sectInvitationItems.push({id,item,...item.sectInvitation});
+}));
+const reputationResourceItems=[];
+[[100,1,2],[1000,3,4],[10000,5,5]].forEach(([amount,minFloor,maxFloor])=>[
+  ['spiritStone','靈石','assets/qstyle-v2/spirit-stone.png'],['wood','木材','assets/qstyle-v2/wood-cutout.png'],['meteorIron','隕鐵','assets/qstyle-v2/meteor-iron-cutout.png']
+].forEach(([resource,label,image])=>{
+  const amountName={100:'一百',1000:'一千',10000:'一萬'}[amount],id=`reputation${resource}${amount}`,count=`${id}Count`,item={name:`${amountName}${label}`,image,description:`凝練封存的${label}物資。使用後立即獲得 ${amount.toLocaleString()} ${label}。`,count,usable:true,giftable:false,sellPrice:1,resourceBundle:{resource,label,amount}};
+  itemCatalog[id]=item;reputationResourceItems.push({id,item,minFloor,maxFloor});
+}));
 const tribulationPillDefaults={};
 spiritRealms.slice(1).forEach((realm,index)=>{
   const realmIndex=index+1,key=`tribPill${realmIndex}`;
@@ -628,10 +641,14 @@ function sectDescription(){
   return `${state.sect}立於${places[index%places.length]}，${practices[(index*3+Math.floor(index/places.length))%practices.length]}。${path}`;
 }
 function allEligibleSects(){return sectCatalog.filter(g=>state.spiritLevel>=g.need).flatMap(g=>[...g.good.map(name=>({name,faction:'正',star:g.star})),...g.evil.map(name=>({name,faction:'邪',star:g.star}))])}
+function joinSect(pick){
+  if(!pick||state.sect)return false;
+  state.sect=pick.name;state.sectFaction=pick.faction;state.sectStar=pick.star;state.sectContribution=0;state.sectRank=0;state.sectTask='';state.sectJoinedAt=gameNow();state.sectYearsProcessed=0;state.actingLeader=false;state.npcAffinity={};state.npcDaily={};state.sectNpcSnapshot=createSectNpcSnapshot();
+  toast(`拜入${['一','二','三','四','五','六','七','八','九'][pick.star-1]}星門派・${pick.name}`);render();if(currentFeature==='sect')renderSectPanel('home');save();return true;
+}
 function joinRandomSect(){
   const pool=allEligibleSects(),pick=pool[Math.floor(Math.random()*pool.length)];if(!pick)return;
-  state.sect=pick.name;state.sectFaction=pick.faction;state.sectStar=pick.star;state.sectContribution=0;state.sectRank=0;state.sectTask='';state.sectJoinedAt=gameNow();state.sectYearsProcessed=0;state.actingLeader=false;state.npcAffinity={};state.sectNpcSnapshot=createSectNpcSnapshot();
-  toast(`拜入${['一','二','三','四','五','六','七','八','九'][pick.star-1]}星門派・${pick.name}`);render();renderSectPanel('home');save();
+  joinSect(pick);
 }
 async function leaveSect(){
   if(state.prestige<200)return toast('脫離門派需要200聲望');
@@ -701,10 +718,11 @@ function useSectToken(){
 function openItemModal(key){
   const item=itemCatalog[key];if(!item)return;const count=state[item.count]||0;
   const learned=!!item.techniqueBook&&(state.learnedBookIds||[]).includes(item.techniqueBook.id);
-  $('#itemModalImage').src=item.image;$('#itemModalImage').alt=item.name;$('#itemModalName').textContent=item.name;$('#itemModalDescription').textContent=item.description+(learned?'\n\n此功法已習得，本書只能售出。':'');$('#itemModalCount').textContent=`持有數量：${count}`;
+  const sectBlocked=!!item.sectInvitation&&!!state.sect;
+  $('#itemModalImage').src=item.image;$('#itemModalImage').alt=item.name;$('#itemModalName').textContent=item.name;$('#itemModalDescription').textContent=item.description+(learned?'\n\n此功法已習得，本書只能售出。':'')+(sectBlocked?'\n\n你目前已有門派，必須先脫離門派才能使用此信物。':'');$('#itemModalCount').textContent=`持有數量：${count}`;
   const sell=$('#itemModalSell');sell.disabled=count<1;sell.onclick=()=>openSellModal(key);
-  const canUse=item.usable&&!learned;const use=$('#itemModalUse');use.classList.toggle('hidden',!canUse);use.disabled=!canUse||count<1;use.onclick=canUse?()=>useItem(key):null;
-  $('#itemModalActions').classList.toggle('no-use',!canUse);$('#itemModal').classList.remove('hidden');
+  const showUse=item.usable&&!learned,canUse=showUse&&!sectBlocked;const use=$('#itemModalUse');use.classList.toggle('hidden',!showUse);use.disabled=!canUse||count<1;use.onclick=canUse?()=>useItem(key):null;
+  $('#itemModalActions').classList.toggle('no-use',!showUse);$('#itemModal').classList.remove('hidden');
 }
 function closeItemModal(){$('#itemModal').classList.add('hidden')}
 function useTechniqueBook(key){
@@ -714,7 +732,16 @@ function useTechniqueBook(key){
   state[item.count]--;state.learnedBookIds.push(book.id);state.learnedArts.push({...book,level:1});
   toast(`習得「${book.name}」・${artKinds[book.kind].label}+${artBaseEffect(book)}`);render();save();return true;
 }
-function useItem(key){let used=false;if(key==='sectToken')used=useSectToken();else if(itemCatalog[key]?.techniqueBook)used=useTechniqueBook(key);if(used){closeItemModal();if(currentFeature==='bag')renderBagView('bag')}}
+function useSectInvitation(key){
+  const item=itemCatalog[key],invitation=item?.sectInvitation;if(!invitation)return false;
+  if(state.sect){toast('已有門派時無法使用門派信物');return false}if((state[item.count]||0)<1)return false;
+  state[item.count]--;return joinSect(invitation);
+}
+function useResourceBundle(key){
+  const item=itemCatalog[key],bundle=item?.resourceBundle;if(!bundle||(state[item.count]||0)<1)return false;
+  state[item.count]--;state[bundle.resource]=(state[bundle.resource]||0)+bundle.amount;toast(`使用${item.name}・${bundle.label}+${bundle.amount.toLocaleString()}`);render();save();return true;
+}
+function useItem(key){let used=false;const item=itemCatalog[key];if(key==='sectToken')used=useSectToken();else if(item?.techniqueBook)used=useTechniqueBook(key);else if(item?.sectInvitation)used=useSectInvitation(key);else if(item?.resourceBundle)used=useResourceBundle(key);if(used){closeItemModal();if(currentFeature==='bag')renderBagView('bag')}}
 function itemSellPrice(item){return Math.max(1,Math.floor(Number(item.sellPrice)||1))}
 function updateSellModal(){
   const item=itemCatalog[sellItemKey];if(!item)return;
@@ -1068,12 +1095,21 @@ function renderHelpRealms(){
 }
 const scriptureFloorTiers=[[1,2],[3,4],[5,6],[7,8],[9]];
 const scriptureTierPrices=[200,600,1800,5400,16000,48000,145000,435000,1300000];
+const reputationFloorStars=[[1,2],[3,4],[5,6],[7,8],[9]];
+const sectInvitationPrices=[150,250,450,700,1000,1400,1900,2500,3300];
+const reputationResourcePrices={100:{spiritStone:25,wood:10,meteorIron:18},1000:{spiritStone:180,wood:80,meteorIron:130},10000:{spiritStone:1200,wood:600,meteorIron:900}};
 function seededRandom(seedText){let seed=[...seedText].reduce((value,char)=>(value*31+char.charCodeAt(0))>>>0,2166136261);return()=>{seed+=0x6D2B79F5;let value=seed;value=Math.imul(value^value>>>15,value|1);value^=value+Math.imul(value^value>>>7,value|61);return((value^value>>>14)>>>0)/4294967296}}
 function scriptureDailyState(){const today=dateKey()||'local';if(state.scripturePurchases.date!==today){state.scripturePurchases={date:today,ids:[]};save()}return state.scripturePurchases}
 function scriptureStock(floor){
   const today=dateKey()||'local',tiers=scriptureFloorTiers[floor-1]||[1,2],pool=techniqueBooks.filter(book=>tiers.includes(book.tier)),random=seededRandom(`藏經閣-${today}-${floor}`);
   for(let index=pool.length-1;index>0;index--){const swap=Math.floor(random()*(index+1));[pool[index],pool[swap]]=[pool[swap],pool[index]]}
   return pool.slice(0,9);
+}
+function reputationStock(floor){
+  const today=dateKey()||'local',stars=reputationFloorStars[floor-1]||[1,2],pool=sectInvitationItems.filter(entry=>stars.includes(entry.star)),random=seededRandom(`聲望堂-${today}-${floor}`);
+  for(let index=pool.length-1;index>0;index--){const swap=Math.floor(random()*(index+1));[pool[index],pool[swap]]=[pool[swap],pool[index]]}
+  const resources=reputationResourceItems.filter(entry=>floor>=entry.minFloor&&floor<=entry.maxFloor).map(entry=>entry.id);
+  return [...resources,...pool.slice(0,6).map(entry=>entry.id)];
 }
 function marketDailyState(){
   const today=dateKey()||'local';
@@ -1084,6 +1120,13 @@ function marketOfferForBook(id){
   const book=techniqueBooks.find(entry=>entry.id===id),item=itemCatalog[id];if(!book||!item)return null;
   const tier=['一','二','三','四','五','六','七','八','九'][book.tier-1];
   return {id,item,name:book.name,image:item.image,description:`${item.description}\n功法效果：${artKinds[book.kind].label}+${artBaseEffect(book).toLocaleString()}（${book.elementName}行・${tier}階）`,currencyKey:'spiritStone',currencyName:'靈石',currencyImage:'assets/qstyle-v2/spirit-stone.png',price:scriptureTierPrices[book.tier-1],dailyLimit:null,permanentLimit:1,quantityEnabled:false};
+}
+function marketOfferForItem(id){
+  const bookOffer=marketOfferForBook(id);if(bookOffer)return bookOffer;
+  const item=itemCatalog[id];if(!item)return null;
+  if(item.sectInvitation){const star=item.sectInvitation.star;return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'prestige',currencyName:'聲望',currencyImage:'assets/qstyle-v2/reputation.png',price:sectInvitationPrices[star-1],dailyLimit:1,permanentLimit:null,quantityEnabled:false}}
+  if(item.resourceBundle){const bundle=item.resourceBundle,price=reputationResourcePrices[bundle.amount]?.[bundle.resource];if(!price)return null;return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'prestige',currencyName:'聲望',currencyImage:'assets/qstyle-v2/reputation.png',price,dailyLimit:3,permanentLimit:null,quantityEnabled:true}}
+  return null;
 }
 function marketPermanentBought(offer){
   let count=Number(state.marketPermanentPurchases?.[offer.id]||0);
@@ -1127,7 +1170,7 @@ function updateMarketPurchaseModal(){
   ['marketPurchasePlus','marketPurchaseMax'].forEach(id=>$('#'+id).disabled=marketPurchaseQuantity>=maximum);
 }
 function openMarketPurchase(id){
-  const offer=marketOfferForBook(id);if(!offer)return;
+  const offer=marketOfferForItem(id);if(!offer)return;
   marketPurchaseOffer=offer;marketPurchaseQuantity=1;
   $('#marketPurchaseImage').src=offer.image;$('#marketPurchaseImage').alt=offer.name;$('#marketPurchaseName').textContent=offer.name;$('#marketPurchaseDescription').textContent=offer.description;
   updateMarketPurchaseModal();$('#marketPurchaseModal').classList.remove('hidden');
@@ -1152,7 +1195,7 @@ function renderMarket(tab=currentMarketTab){
   }[tab];
   const hasFloors=tab!=='treasure';
   const floor=hasFloors?(marketFloors[tab]||1):1;
-  const products=tab==='scripture'?scriptureStock(floor):(hasFloors?data.floors[floor-1]:data.products);
+  const products=tab==='scripture'?scriptureStock(floor):tab==='reputation'?reputationStock(floor):(hasFloors?data.floors[floor-1]:data.products);
   const floorTitle=hasFloors?`${data.title}‧${chineseFloorNames[floor-1]}樓`:data.title;
   const floorControls=hasFloors?`<div class="market-floor-controls">
     ${floor>1?`<button class="market-floor-button market-floor-down" type="button" data-market-floor="down" aria-label="下樓"><img src="assets/qstyle-v2/market-floor-up.png" alt=""><span>下樓</span></button>`:''}
@@ -1160,8 +1203,8 @@ function renderMarket(tab=currentMarketTab){
   </div>`:'';
   $$('.market-tabs button').forEach(button=>button.classList.toggle('active',button.dataset.marketTab===tab));
   const currency={stone:['assets/qstyle-v2/spirit-stone.png','靈石'],jade:['assets/qstyle-v2/spirit-jade.png','靈玉'],reputation:['assets/qstyle-v2/reputation.png','聲望']}[data.currency];
-  const productHtml=tab==='scripture'?products.map(book=>{const item=itemCatalog[book.id],price=scriptureTierPrices[book.tier-1],offer=marketOfferForBook(book.id),learned=(state.learnedBookIds||[]).includes(book.id),limited=marketPermanentBought(offer)>=1,tier=['一','二','三','四','五','六','七','八','九'][book.tier-1],interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${book.id}"`;return `<button class="market-product${limited?' sold-out':''}" type="button"${interaction}><span class="market-product-image"><img src="${item.image}" alt="${book.name}"></span><b>${book.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${price.toLocaleString()}</em><small>${limited?'已購買':learned?'已習得':`${book.elementName}行・${tier}階・${artKinds[book.kind].label}+${artBaseEffect(book)}`}</small></button>`}).join(''):products.map(([name,image,price])=>`<button class="market-product" type="button" disabled><span class="market-product-image"><img src="${image}" alt="${name}"></span><b>${name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${price.toLocaleString()}</em><small>籌備中</small></button>`).join('');
-  $('#marketContent').innerHTML=`<div class="market-shop-banner"><small>${data.subtitle}</small><b>${floorTitle}</b></div>${floorControls}<div id="marketFloorNotice" class="market-floor-notice" role="status"></div><div class="market-product-grid">${productHtml}</div><p class="market-restock">${tab==='scripture'?'每日 00:00 自動刷新':'目前尚無商品'}</p>`;
+  const productHtml=tab==='scripture'?products.map(book=>{const item=itemCatalog[book.id],price=scriptureTierPrices[book.tier-1],offer=marketOfferForBook(book.id),learned=(state.learnedBookIds||[]).includes(book.id),limited=marketPermanentBought(offer)>=1,tier=['一','二','三','四','五','六','七','八','九'][book.tier-1],interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${book.id}"`;return `<button class="market-product${limited?' sold-out':''}" type="button"${interaction}><span class="market-product-image"><img src="${item.image}" alt="${book.name}"></span><b>${book.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${price.toLocaleString()}</em><small>${limited?'已購買':learned?'已習得':`${book.elementName}行・${tier}階・${artKinds[book.kind].label}+${artBaseEffect(book)}`}</small></button>`}).join(''):tab==='reputation'?products.map(id=>{const item=itemCatalog[id],offer=marketOfferForItem(id),bought=marketDailyBought(offer),limited=bought>=offer.dailyLimit,interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${id}"`,detail=item.sectInvitation?`${['一','二','三','四','五','六','七','八','九'][item.sectInvitation.star-1]}星門派`:`今日 ${bought} / ${offer.dailyLimit}`;return `<button class="market-product${limited?' sold-out daily-limit':''}" type="button"${interaction}><span class="market-product-image"><img src="${item.image}" alt="${item.name}"></span><b>${item.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${offer.price.toLocaleString()}</em><small>${limited?'今日已購足':detail}</small></button>`}).join(''):products.map(([name,image,price])=>`<button class="market-product" type="button" disabled><span class="market-product-image"><img src="${image}" alt="${name}"></span><b>${name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${price.toLocaleString()}</em><small>籌備中</small></button>`).join('');
+  $('#marketContent').innerHTML=`<div class="market-shop-banner"><small>${data.subtitle}</small><b>${floorTitle}</b></div>${floorControls}<div id="marketFloorNotice" class="market-floor-notice" role="status"></div><div class="market-product-grid">${productHtml}</div><p class="market-restock">${tab==='scripture'||tab==='reputation'?'每日 00:00 自動刷新':'目前尚無商品'}</p>`;
   $$('[data-market-floor]').forEach(button=>button.onclick=()=>changeMarketFloor(button.dataset.marketFloor==='up'?1:-1));
   $$('[data-market-purchase]').forEach(button=>button.onclick=()=>openMarketPurchase(button.dataset.marketPurchase));
   render();
@@ -1270,7 +1313,7 @@ setInterval(()=>{if($('#gameScreen').classList.contains('active')){if(state.cult
 setInterval(()=>{if($('#gameScreen').classList.contains('active'))$('#tickBar').style.width=Math.min(100,(gameNow()-tickStart)/50)+'%'},50);
 setInterval(()=>{if($('#gameScreen').classList.contains('active'))$('#yearsElapsed').textContent=`${experiencedYears().toLocaleString()} 年`},1000);
 setInterval(updatePracticeTimers,1000);
-setInterval(()=>{const today=dateKey()||'local';if(today!==lastScriptureDayKey){lastScriptureDayKey=today;if(!$('#marketModal').classList.contains('hidden')&&currentMarketTab==='scripture')renderMarket('scripture')}},1000);
+setInterval(()=>{const today=dateKey()||'local';if(today!==lastScriptureDayKey){lastScriptureDayKey=today;if(!$('#marketModal').classList.contains('hidden')&&['scripture','reputation'].includes(currentMarketTab))renderMarket(currentMarketTab)}},1000);
 setInterval(()=>{if(sessionOnline&&!document.hidden)syncTrustedTime()},600000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)forceOffline();else finishPause()});
 window.addEventListener('blur',forceOffline);window.addEventListener('focus',finishPause);window.addEventListener('pagehide',forceOffline);

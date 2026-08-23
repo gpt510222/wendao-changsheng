@@ -343,6 +343,7 @@
 .q-style .market-card>#marketCloseBtn{display:block;margin:14px auto 0;padding:9px 26px}
 .q-style .market-product.sold-out{filter:saturate(.55);opacity:.72}
 .q-style .market-product.sold-out::before{content:"已購買";position:absolute;z-index:7;right:9%;top:13%;padding:2px 5px;border:1px solid #fff0c7;border-radius:10px;background:#315b54e8;color:#fff7df;font-size:7px;font-weight:900;box-shadow:0 2px 5px #1c160f66}
+.q-style .market-product.sold-out.daily-limit::before{content:"今日已購"}
 
 /* Marketplace item details and purchase confirmation. */
 .q-style .market-purchase-modal{z-index:76;background:#123139bf;backdrop-filter:blur(5px)}
