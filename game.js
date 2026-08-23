@@ -203,11 +203,8 @@ function artRootEffect(art){return Math.round((state[`${art.element}Art`]||0)*ar
 function artTotalEffect(art){return artBaseEffect(art)+artRootEffect(art)}
 function artBonusFor(attribute){return (state.learnedArts||[]).filter(art=>artKinds[art.kind]?.attribute===attribute).reduce((sum,art)=>sum+artTotalEffect(art),0)}
 function effectiveCore(attribute){return (state[attribute]||0)+artBonusFor(attribute)}
-function combatPower(){
-  const coreTotal=['rootBone','trueQi','physique','agility','spiritualPower'].reduce((sum,key)=>sum+Math.max(0,effectiveCore(key)),0);
-  const rawPower=.76*Math.pow(coreTotal,2.2),softCeiling=180000000;
-  return Math.max(0,Math.round(softCeiling*(1-Math.exp(-rawPower/softCeiling))));
-}
+const combatPowerWeights={rootBone:10,trueQi:25,physique:20,agility:15,spiritualPower:30};
+function combatPower(){return Math.round(Object.entries(combatPowerWeights).reduce((sum,[key,weight])=>sum+Math.max(0,effectiveCore(key))*weight,0))}
 function formatCombatPower(value){
   const amount=Math.max(0,Math.floor(value));
   if(amount<10000)return amount.toLocaleString();
