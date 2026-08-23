@@ -70,7 +70,7 @@
     <section id="gameScreen" class="screen game-screen scenic">
       <img class="scene-bg" src="assets/qstyle-v2/main-bg.png" alt="洞府修煉場景">
       <div class="back-mist back-mist-a"></div><div class="back-mist back-mist-b"></div>
-      <div id="heroArt" class="hero-stack" aria-label="修士於洞府前修煉"><img id="heroTrueForm" class="hero-true-form true-form-none hidden" alt=""><img id="heroCharacter" class="hero-character" src="assets/qstyle-v2/female-outfit-1.png" alt="完整人物"></div>
+      <div id="heroArt" class="hero-stack" aria-label="修士於洞府前修煉"><img id="heroTrueForm" class="hero-true-form true-form-none hidden" alt=""><img id="heroCharacter" class="hero-character" src="assets/qstyle-v2/female-outfit-1.png" alt="完整人物"><button id="heroCharacterHotspot" class="hero-character-hotspot" type="button" aria-label="查看人物屬性" disabled></button></div>
       <div class="mist mist-a"></div><div class="mist mist-b"></div>
       <div id="lightning" class="lightning" aria-hidden="true">
         <div class="storm-flash"></div>
@@ -82,6 +82,21 @@
           <path class="bolt-branch branch-c" d="M253 180 L337 235 L374 319"/>
         </svg>
       </div>
+      <section id="tribulationScene" class="tribulation-scene" aria-hidden="true">
+        <div class="tribulation-clouds"></div>
+        <div class="tribulation-vortex"></div>
+        <div class="tribulation-stage-ring"></div>
+        <div class="tribulation-avatar-wrap">
+          <div class="tribulation-shield"></div>
+          <img id="tribulationCharacter" class="tribulation-character" src="assets/qstyle-v2/female-outfit-1.png" alt="渡劫中的修士">
+        </div>
+        <svg class="tribulation-bolt bolt-one" viewBox="0 0 300 720" preserveAspectRatio="none" aria-hidden="true"><path d="M176 -20 122 128 169 195 105 306 157 380 91 501 142 558 112 740"/></svg>
+        <svg class="tribulation-bolt bolt-two" viewBox="0 0 300 720" preserveAspectRatio="none" aria-hidden="true"><path d="M137 -20 188 108 142 181 207 267 156 359 218 451 166 527 194 740"/></svg>
+        <svg class="tribulation-bolt bolt-final" viewBox="0 0 300 720" preserveAspectRatio="none" aria-hidden="true"><path d="M165 -20 112 106 174 176 103 262 165 344 83 432 152 512 104 740"/><path class="bolt-fork" d="M105 305 37 376 18 468M159 346 247 415 276 510"/></svg>
+        <div class="tribulation-impact"></div>
+        <div class="tribulation-caption"><small id="tribulationSceneRealm">天劫將臨</small><b id="tribulationSceneText">劫雲匯聚，天威漸盛</b></div>
+        <div id="tribulationResult" class="tribulation-result"><span id="tribulationResultSeal">成</span><b id="tribulationResultTitle">渡劫成功</b><small id="tribulationResultText"></small></div>
+      </section>
 
       <header class="topbar paper-panel">
         <div class="player-identity">
@@ -165,7 +180,7 @@
           <div class="tribulation-pill-option">
             <img id="tribPillImage" src="assets/qstyle-v2/tribulation-pills/pill-01.png" alt="引霞丹">
             <div><b id="tribPillName">引霞丹</b><small>每顆成功率 +5%，最多提升至 100%</small><em id="pillCount">持有 0 顆</em></div>
-            <div class="tribulation-pill-stepper"><button id="tribPillMinus" type="button">−</button><strong id="tribPillUseCount">0</strong><button id="tribPillPlus" type="button">＋</button></div>
+            <div class="tribulation-pill-stepper"><button id="tribPillMinus" type="button">−</button><strong id="tribPillUseCount">0</strong><button id="tribPillPlus" type="button">＋</button><button id="tribPillMax" class="tribulation-pill-max" type="button">最大</button></div>
           </div>
           <div><button id="tribConfirm" class="jade-button">引動天雷</button><button id="tribCancel" class="text-button">暫緩</button></div>
         </div>
