@@ -683,7 +683,7 @@ function renderSectView(view){
     inner.innerHTML=`<section class="sect-home ${state.sectFaction==='邪'?'evil':''}"><div class="sect-heading"><span>${['一','二','三','四','五','六','七','八','九'][state.sectStar-1]}星門派</span><h2>${state.sect}</h2></div><p>${sectDescription()}</p><div class="sect-status"><b>${sectRanks[state.sectRank]}${state.actingLeader?'・代理掌門':''}</b><span>門派貢獻 ${Math.floor(state.sectContribution).toLocaleString()}</span><span>聲望 ${Math.floor(state.prestige).toLocaleString()}</span></div>${next?`<button id="promoteSectBtn" class="jade-button" ${state.sectContribution>=next?'':'disabled'}>晉升${sectRanks[state.sectRank+1]}・需 ${next} 貢獻</button>`:'<strong class="rank-max">已達最高職位・護法</strong>'}<button id="leaveSectBtn" class="text-button danger-text" ${state.prestige>=200?'':'disabled'}>脫離門派・消耗200聲望</button></section>`;
     if(next)$('#promoteSectBtn').onclick=promoteSect;$('#leaveSectBtn').onclick=leaveSect;return;
   }
-  if(view==='npcs'){inner.innerHTML=`<div class="npc-grid">${sectNpcs().map((n,index)=>`<button class="npc-card" data-npc="${index}"><span class="npc-portrait p${n.portrait}" style="--portrait-hue:${n.id%37-18}deg;--portrait-bright:${.92+(n.id%9)*.02}"></span><b>${n.title}</b><strong>${n.name}</strong></button>`).join('')}</div><div id="npcDetail" class="npc-detail">點選一位門人進行互動</div>`;$$('.npc-card').forEach(b=>b.onclick=()=>renderNpcDetail(+b.dataset.npc));return}
+  if(view==='npcs'){if(!validSectNpcSnapshot()){state.sectNpcSnapshot=createSectNpcSnapshot();save()}inner.innerHTML=`<div class="npc-grid">${sectNpcs().map((n,index)=>{const power=state.sectNpcSnapshot.stats[String(n.id)].combatPower;return `<button class="npc-card" data-npc="${index}"><span class="npc-portrait p${n.portrait}" style="--portrait-hue:${n.id%37-18}deg;--portrait-bright:${.92+(n.id%9)*.02}"></span><b>${n.title}</b><strong>${n.name}</strong><small>戰力 ${formatCombatPower(power)}</small></button>`}).join('')}</div><div id="npcDetail" class="npc-detail">點選一位門人進行互動</div>`;$$('.npc-card').forEach(b=>b.onclick=()=>renderNpcDetail(+b.dataset.npc));return}
   if(view==='shop'){renderSectShop();return}
   if(view==='tasks'){inner.innerHTML=`<div class="task-list">${sectTasks.map(t=>`<button data-task="${t.id}" class="task-card ${state.sectTask===t.id?'active':''}" ${state.spiritLevel<t.need?'disabled':''}><b>${t.name}</b><span>每年：貢獻+${t.gain}・靈石+${t.stone}・聲望+${t.prestige}</span><small>${t.desc}</small><em>${state.sectTask===t.id?'已接取':state.spiritLevel>=t.need?'可接取':`需 ${realmName(t.need,spiritRealms)}`}</em></button>`).join('')}</div><p class="sect-note">任務會持續執行；境界提高後不會自動更換。脫離門派時任務立即終止。</p>`;$$('.task-card:not(:disabled)').forEach(b=>b.onclick=()=>{state.sectTask=b.dataset.task;toast(`開始持續任務：${selectedSectTask().name}`);renderSectView('tasks');save()});return}
   if(view==='practice'){
@@ -773,35 +773,43 @@ function confirmSellItem(){
 function promoteSect(){const cost=sectPromotionCosts[state.sectRank];if(state.sectContribution<cost)return;state.sectContribution-=cost;state.sectRank++;toast(`晉升為${sectRanks[state.sectRank]}`);renderSectView('home');save()}
 function npcDailyState(index){const key=String(sectNpcs()[index].id),record=state.npcDaily[key],today=dateKey();if(!today)return record||{date:'',chat:3,gift:3};if(!record||record.date!==today)state.npcDaily[key]={date:today,chat:0,gift:0};return state.npcDaily[key]}
 function availableGiftItem(){return Object.entries(itemCatalog).find(([,item])=>item.giftable&&(state[item.count]||0)>0)}
-function renderNpcDetail(index){const n=sectNpcs()[index],aff=state.npcAffinity[n.id]||0,daily=npcDailyState(index),gift=availableGiftItem(),master=index===0,elder=index===1,offering=index===2,challengeDisabled=master&&(state.sectRank<2||state.prestige<200||state.actingLeader),combatLabel=master?(state.actingLeader?'已是代理掌門':state.sectRank<2?'挑戰掌門・需親傳弟子':state.prestige>=200?'挑戰掌門':'挑戰掌門・需200聲望'):'切磋';$('#npcDetail').innerHTML=`<b>${n.title}・${n.name}</b><span>好感 ${aff} / 100</span><div><button data-npc-action="chat" ${daily.chat>=3||aff>=100?'disabled':''}>聊天 ${daily.chat}/3</button><button data-npc-action="gift" ${daily.gift>=3||aff>=100||!gift?'disabled':''}>${gift?`送禮 ${daily.gift}/3`:'送禮・無道具'}</button><button data-npc-action="${master?'challenge':'spar'}" ${challengeDisabled?'disabled':''}>${combatLabel}</button>${master?'<button data-npc-action="greet">請安</button>':''}${elder?'<button data-npc-action="arts">學習功法</button>':''}${offering?'<button data-npc-action="shop">物資兌換</button>':''}</div>`;$$('[data-npc-action]').forEach(b=>b.onclick=()=>npcAction(index,b.dataset.npcAction))}
+function renderNpcDetail(index){const n=sectNpcs()[index],npcStats=battleEnemyStats(n),aff=state.npcAffinity[n.id]||0,daily=npcDailyState(index),gift=availableGiftItem(),master=index===0,elder=index===1,offering=index===2,challengeDisabled=master&&(state.sectRank<2||state.prestige<200||state.actingLeader),combatLabel=master?(state.actingLeader?'已是代理掌門':state.sectRank<2?'挑戰掌門・需親傳弟子':state.prestige>=200?'挑戰掌門':'挑戰掌門・需200聲望'):'切磋';$('#npcDetail').innerHTML=`<b>${n.title}・${n.name}</b><span>戰力 ${formatCombatPower(npcStats.combatPower)}・好感 ${aff} / 100</span><div><button data-npc-action="chat" ${daily.chat>=3||aff>=100?'disabled':''}>聊天 ${daily.chat}/3</button><button data-npc-action="gift" ${daily.gift>=3||aff>=100||!gift?'disabled':''}>${gift?`送禮 ${daily.gift}/3`:'送禮・無道具'}</button><button data-npc-action="${master?'challenge':'spar'}" ${challengeDisabled?'disabled':''}>${combatLabel}</button>${master?'<button data-npc-action="greet">請安</button>':''}${elder?'<button data-npc-action="arts">學習功法</button>':''}${offering?'<button data-npc-action="shop">物資兌換</button>':''}</div>`;$$('[data-npc-action]').forEach(b=>b.onclick=()=>npcAction(index,b.dataset.npcAction))}
 function npcAction(index,action){const n=sectNpcs()[index],daily=npcDailyState(index),aff=state.npcAffinity[n.id]||0;if(['chat','gift','greet'].includes(action)&&!requireTrustedTime())return;if(action==='chat'){if(daily.chat>=3||aff>=100)return;daily.chat++;state.npcAffinity[n.id]=Math.min(100,aff+1);toast('交談甚歡・好感+1')}else if(action==='gift'){const gift=availableGiftItem();if(!gift)return toast('身上沒有可贈送的道具');if(daily.gift>=3||aff>=100)return;const [,item]=gift;state[item.count]--;daily.gift++;state.npcAffinity[n.id]=Math.min(100,aff+5);toast(`送出${item.name}・好感+5`)}else if(action==='spar'){startNpcBattle(n);return}else if(action==='challenge'){challengeMaster();return}else if(action==='greet'){if(state.lastGreetingDay===dateKey())return toast('今日已向掌門請安');state.lastGreetingDay=dateKey();state.sectContribution+=100;toast('掌門頷首嘉許・門派貢獻+100')}else if(action==='arts'){renderSectLearning();return}else if(action==='shop'){renderSectPanel('shop');return}renderNpcDetail(index);save()}
 
+function combatHealth(rootBone){return Math.max(125,120+Math.max(0,rootBone)*5)}
 function battlePlayerStats(){
   const rootBone=effectiveCore('rootBone'),trueQi=effectiveCore('trueQi'),physique=effectiveCore('physique'),agility=effectiveCore('agility'),dodgeRating=agility*3,critRating=state.spiritualPower*3;
   const swordPower=1+(state.swordLevel||0)*.008;
   return {
-    maxHp:Math.max(240,rootBone*5),attack:Math.max(12,trueQi*5)*swordPower,defense:Math.max(0,physique*20),
+    maxHp:combatHealth(rootBone),attack:Math.max(12,trueQi*5)*swordPower,defense:Math.max(0,physique*20),
     dodge:Math.min(.35,dodgeRating/(dodgeRating+1000)),crit:Math.min(.45,critRating/(critRating+1000))
   };
 }
 function validSectNpcSnapshot(snapshot=state.sectNpcSnapshot){
-  if(!state.sect||!snapshot||snapshot.version!==2||snapshot.sect!==state.sect||!snapshot.stats)return false;
-  return sectNpcs().every(n=>{const stats=snapshot.stats[String(n.id)];return stats&&['maxHp','attack','defense','dodge','crit'].every(key=>Number.isFinite(stats[key]))});
+  if(!state.sect||!snapshot||snapshot.version!==3||snapshot.sect!==state.sect||!snapshot.stats)return false;
+  return sectNpcs().every(n=>{const stats=snapshot.stats[String(n.id)];return stats&&Number.isFinite(stats.combatPower)&&stats.core&&Object.keys(combatPowerWeights).every(key=>Number.isInteger(stats.core[key]))&&['maxHp','attack','defense','dodge','crit'].every(key=>Number.isFinite(stats[key]))});
+}
+function npcCoreFromPower(rawPower,n){
+  const keys=Object.keys(combatPowerWeights),costs=keys.map(key=>combatPowerWeights[key]/5),profiles=[[1,1,1,1,1],[2.7,.75,1.25,.8,.7],[.75,2.7,.8,.85,1.2],[1.1,.75,2.7,.7,.75],[.75,.85,.7,2.7,1.1],[.7,1.1,.75,1.15,2.7]],seed=textSeed(`${state.sect}・${n.id}・${state.sectJoinedAt||0}・屬性`);
+  let target=Math.max(100,Math.ceil(rawPower/5)*5);while(target/5-20===1)target+=5;
+  let randomState=seed||1;const random=()=>{randomState=(Math.imul(randomState,1664525)+1013904223)>>>0;return randomState/4294967296},profile=profiles[seed%profiles.length],weights=profile.map(value=>value*(.85+random()*.3)),weightTotal=weights.reduce((sum,value)=>sum+value,0),cores=Object.fromEntries(keys.map(key=>[key,1])),budget=target/5-20;
+  let spent=0;keys.forEach((key,index)=>{const points=Math.floor(budget*(weights[index]/weightTotal)/costs[index]);cores[key]+=points;spent+=points*costs[index]});
+  let remaining=budget-spent;if(remaining===1){const index=cores[keys[0]]>1?0:cores[keys[1]]>1?1:cores[keys[2]]>1?2:cores[keys[3]]>1?3:4;cores[keys[index]]--;remaining+=costs[index]}
+  while(remaining>0){const candidates=costs.map((cost,index)=>({cost,index})).filter(item=>item.cost<=remaining&&remaining-item.cost!==1),pick=candidates[Math.floor(random()*candidates.length)];cores[keys[pick.index]]++;remaining-=pick.cost}
+  return {combatPower:target,core:cores};
 }
 function createSectNpcSnapshot(){
   if(!state.sect)return null;
-  const player=battlePlayerStats(),masterPower=1.75+Math.max(1,state.sectStar||1)*.2,rolePower=[masterPower,1.18,1.05,.92,.8],stats={};
+  const player=battlePlayerStats(),playerPower=combatPower(),masterPower=(1.75+Math.max(1,state.sectStar||1)*.2)*1.25,rolePower=[masterPower,1.18,1.05,.92,.8],stats={};
   sectNpcs().forEach((n,index)=>{
-    const factor=rolePower[index]||1,bias=n.statBias||{vitality:1,offense:1,guard:1,speed:1,spirit:1};
+    const generated=npcCoreFromPower(Math.ceil(playerPower*(rolePower[index]||1)),n),core=generated.core,dodgeRating=core.agility*3,critRating=core.spiritualPower*3;
     stats[String(n.id)]={
-      maxHp:Math.max(240,Math.round(player.maxHp*factor*bias.vitality)),
-      attack:Math.max(12,Math.round(player.attack*factor*bias.offense)),
-      defense:Math.max(0,Math.round(player.defense*factor*bias.guard)),
-      dodge:Math.min(.32,Math.max(0,player.dodge*factor*bias.speed)),
-      crit:Math.min(.38,Math.max(0,player.crit*factor*bias.spirit))
+      combatPower:generated.combatPower,core,
+      maxHp:combatHealth(core.rootBone),attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),
+      dodge:Math.min(.35,dodgeRating/(dodgeRating+1000)),crit:Math.min(.45,critRating/(critRating+1000))
     };
   });
-  return {version:2,sect:state.sect,joinedAt:state.sectJoinedAt||gameNow(),createdAt:gameNow(),player:{...player},stats};
+  return {version:3,sect:state.sect,joinedAt:state.sectJoinedAt||gameNow(),createdAt:gameNow(),player:{...player,combatPower:playerPower},stats};
 }
 function battleEnemyStats(n){
   if(!validSectNpcSnapshot()){state.sectNpcSnapshot=createSectNpcSnapshot();save()}
@@ -811,7 +819,6 @@ function startNpcBattle(n,mode='spar'){
   clearTimeout(battleTimer);
   startBgm('battle');
   const player=battlePlayerStats(),enemy=battleEnemyStats(n);
-  if(mode==='master'){enemy.maxHp=Math.round(enemy.maxHp*1.3);enemy.attack=Math.round(enemy.attack*1.16);enemy.defense=Math.round(enemy.defense*1.12)}
   battle={active:true,resolved:false,mode,round:1,completedRounds:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:n.name,npc:n,race:'human'},logs:[]};
   $('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');
   $('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;
@@ -1053,7 +1060,7 @@ function renderWardrobeSection(section){
 }
 function showCharacterAttributes() {
   const inner=$('#bagInner');
-  const rootBone=effectiveCore('rootBone'),trueQi=effectiveCore('trueQi'),physique=effectiveCore('physique'),agility=effectiveCore('agility'),comprehension=effectiveCore('comprehension'),fortune=effectiveCore('fortune'),health=rootBone*5,attack=trueQi*5,defense=physique*20,evasion=agility*3,critical=state.spiritualPower*3;
+  const rootBone=effectiveCore('rootBone'),trueQi=effectiveCore('trueQi'),physique=effectiveCore('physique'),agility=effectiveCore('agility'),comprehension=effectiveCore('comprehension'),fortune=effectiveCore('fortune'),health=combatHealth(rootBone),attack=trueQi*5,defense=physique*20,evasion=agility*3,critical=state.spiritualPower*3;
   inner.innerHTML=`<section class="character-sheet"><div class="sheet-header"><div><small>姓名</small><b>${state.name}</b></div><div><small>修煉歲月</small><b>${experiencedYears().toLocaleString()}年</b></div><div><small>練氣境界</small><b>${realmName(state.spiritLevel,spiritRealms)}</b></div><div><small>煉體境界</small><b>${realmName(state.bodyLevel,bodyRealms)}</b></div><div><small>出生</small><b>${state.origin}</b></div><div><small>門派</small><b>${state.sect||'無門無派'}${state.actingLeader?'・代理掌門':''}</b></div></div><div class="sheet-title">屬性</div><div class="sheet-attributes"><div><span>命骨：${rootBone}</span><strong>氣血：${health}</strong></div><div><span>元息：${trueQi}</span><strong>攻擊：${attack}</strong></div><div><span>玄軀：${physique}</span><strong>防禦：${defense}</strong></div><div><span>游影：${agility}</span><strong>閃避：${evasion}</strong></div><div><span>銳識：${state.spiritualPower}</span><strong>暴擊：${critical}</strong></div><div><span>道悟：${comprehension}</span><strong>修練效率：+${cultivationEfficiency()}</strong></div><div><span>天契：${fortune}</span><strong>靈氣獲取：+${auraEfficiency()}</strong></div><div><span>正氣：${Math.floor(state.righteousness)}</span><strong>邪氣：${Math.floor(state.evilQi)}</strong></div></div><div class="five-arts"><b>五系功法屬性</b><span>金 +${state.metalArt}</span><span>木 +${state.woodArt}</span><span>水 +${state.waterArt}</span><span>火 +${state.fireArt}</span><span>土 +${state.earthArt}</span></div></section><button id="attributeBackBtn" class="text-button">返回人物</button>`;
   inner.querySelector('.character-sheet').insertAdjacentHTML('afterbegin',`<div class="sheet-combat-power"><small>人物戰力</small><b>${formatCombatPower(combatPower())}</b></div>`);
   inner.querySelector('.sheet-header').insertAdjacentHTML('beforeend',`<div><small>淬劍境界</small><b>${realmName(state.swordLevel||0,swordRealms)}</b></div>`);
