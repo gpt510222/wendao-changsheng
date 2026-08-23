@@ -203,6 +203,20 @@ function artRootEffect(art){return Math.round((state[`${art.element}Art`]||0)*ar
 function artTotalEffect(art){return artBaseEffect(art)+artRootEffect(art)}
 function artBonusFor(attribute){return (state.learnedArts||[]).filter(art=>artKinds[art.kind]?.attribute===attribute).reduce((sum,art)=>sum+artTotalEffect(art),0)}
 function effectiveCore(attribute){return (state[attribute]||0)+artBonusFor(attribute)}
+function combatPower(){
+  const coreTotal=['rootBone','trueQi','physique','agility','spiritualPower'].reduce((sum,key)=>sum+Math.max(0,effectiveCore(key)),0);
+  const rawPower=.76*Math.pow(coreTotal,2.2),softCeiling=180000000;
+  return Math.max(0,Math.round(softCeiling*(1-Math.exp(-rawPower/softCeiling))));
+}
+function formatCombatPower(value){
+  const amount=Math.max(0,Math.floor(value));
+  if(amount<10000)return amount.toLocaleString();
+  const parts=[],yi=Math.floor(amount/100000000),wan=Math.floor(amount%100000000/10000),rest=amount%10000;
+  if(yi)parts.push(`${yi}億`);
+  if(wan||yi)parts.push(`${wan}萬`);
+  if(rest||!parts.length)parts.push(rest.toString());
+  return parts.join(' ');
+}
 function cultivationEfficiency() { return effectiveCore('comprehension')*.5; }
 function auraEfficiency() { return Math.floor(1.25*Math.sqrt(Math.max(0,effectiveCore('fortune')))); }
 function pathEfficiency(level){const realm=Math.min(Math.floor(level/10),realmEfficiencyMultipliers.length-1),layer=level%10;return realmEfficiencyMultipliers[realm]*(1+layer*.035)}
@@ -386,6 +400,7 @@ function render() {
   $('#headerSpiritRealm').textContent=state.cultivationAwakened?realmName(state.spiritLevel,spiritRealms):'尚未入門';
   $('#headerSect').textContent=state.sect||'無門無派';
   $('#yearsElapsed').textContent=`${experiencedYears().toLocaleString()} 年`;
+  $('#headerCombatPower').textContent=formatCombatPower(combatPower());
   $('#rateText').textContent=rate().toLocaleString()+' / 5秒';
   $('#spiritRealm').textContent=realmName(state.spiritLevel,spiritRealms);
   $('#bodyRealm').textContent=realmName(state.bodyLevel,bodyRealms);
@@ -874,14 +889,14 @@ async function challengeMaster(){
 }
 
 const caveAreas = {
-  spiritStone:{label:'靈石',value:'spiritStone',worker:'workerSpiritStone',level:'spiritStoneAreaLevel',icon:'assets/qstyle-v2/spirit-stone.png',baseCap:100,foodCost:10,upgradeBase:60},
-  food:{label:'食物',value:'food',worker:'workerFood',level:'foodAreaLevel',icon:'assets/qstyle-v2/food-cutout.png',baseCap:1000,foodCost:0,upgradeBase:40},
-  wood:{label:'木材',value:'wood',worker:'workerWood',level:'woodAreaLevel',icon:'assets/qstyle-v2/wood-cutout.png',baseCap:800,foodCost:2,upgradeBase:50},
-  meteorIron:{label:'隕鐵',value:'meteorIron',worker:'workerMeteorIron',level:'meteorIronAreaLevel',icon:'assets/qstyle-v2/meteor-iron-cutout.png',baseCap:300,foodCost:4,upgradeBase:70}
+  spiritStone:{label:'靈石',value:'spiritStone',worker:'workerSpiritStone',level:'spiritStoneAreaLevel',icon:'assets/qstyle-v2/spirit-stone.png',baseCap:100,foodCost:10,upgradeBase:60,upgradeGrowth:1.34},
+  food:{label:'食物',value:'food',worker:'workerFood',level:'foodAreaLevel',icon:'assets/qstyle-v2/food-cutout.png',baseCap:1000,foodCost:0,upgradeBase:40,upgradeGrowth:1.32},
+  wood:{label:'木材',value:'wood',worker:'workerWood',level:'woodAreaLevel',icon:'assets/qstyle-v2/wood-cutout.png',baseCap:800,foodCost:2,upgradeBase:50,upgradeGrowth:1.33},
+  meteorIron:{label:'隕鐵',value:'meteorIron',worker:'workerMeteorIron',level:'meteorIronAreaLevel',icon:'assets/qstyle-v2/meteor-iron-cutout.png',baseCap:300,foodCost:4,upgradeBase:70,upgradeGrowth:1.35}
 };
 function areaCapacity(area){const growth=area.value==='spiritStone'?1.75:1.35;return Math.floor(area.baseCap*Math.pow(growth,state[area.level]-1))}
 function areaWorkerMax(area){return state[area.level]*2}
-function areaUpgradeCost(area){return Math.floor(area.upgradeBase*Math.pow(1.65,state[area.level]-1))}
+function areaUpgradeCost(area){return Math.floor(area.upgradeBase*Math.pow(area.upgradeGrowth,state[area.level]-1))}
 function assignedChildren(){return Object.values(caveAreas).reduce((sum,a)=>sum+state[a.worker],0)}
 function availableChildren(){return Math.max(0,state.daoChildTotal-assignedChildren())}
 function daoChildCost(){return Math.floor(50*Math.pow(1.5,state.daoChildBought))}
@@ -1012,6 +1027,7 @@ function showCharacterAttributes() {
   const inner=$('#bagInner');
   const rootBone=effectiveCore('rootBone'),trueQi=effectiveCore('trueQi'),physique=effectiveCore('physique'),agility=effectiveCore('agility'),comprehension=effectiveCore('comprehension'),fortune=effectiveCore('fortune'),health=rootBone*5,attack=trueQi*5,defense=physique*20,evasion=agility*3,critical=state.spiritualPower*3;
   inner.innerHTML=`<section class="character-sheet"><div class="sheet-header"><div><small>姓名</small><b>${state.name}</b></div><div><small>修煉歲月</small><b>${experiencedYears().toLocaleString()}年</b></div><div><small>練氣境界</small><b>${realmName(state.spiritLevel,spiritRealms)}</b></div><div><small>煉體境界</small><b>${realmName(state.bodyLevel,bodyRealms)}</b></div><div><small>出生</small><b>${state.origin}</b></div><div><small>門派</small><b>${state.sect||'無門無派'}${state.actingLeader?'・代理掌門':''}</b></div></div><div class="sheet-title">屬性</div><div class="sheet-attributes"><div><span>命骨：${rootBone}</span><strong>氣血：${health}</strong></div><div><span>元息：${trueQi}</span><strong>攻擊：${attack}</strong></div><div><span>玄軀：${physique}</span><strong>防禦：${defense}</strong></div><div><span>游影：${agility}</span><strong>閃避：${evasion}</strong></div><div><span>銳識：${state.spiritualPower}</span><strong>暴擊：${critical}</strong></div><div><span>道悟：${comprehension}</span><strong>修練效率：+${cultivationEfficiency()}</strong></div><div><span>天契：${fortune}</span><strong>靈氣獲取：+${auraEfficiency()}</strong></div><div><span>正氣：${Math.floor(state.righteousness)}</span><strong>邪氣：${Math.floor(state.evilQi)}</strong></div></div><div class="five-arts"><b>五系功法屬性</b><span>金 +${state.metalArt}</span><span>木 +${state.woodArt}</span><span>水 +${state.waterArt}</span><span>火 +${state.fireArt}</span><span>土 +${state.earthArt}</span></div></section><button id="attributeBackBtn" class="text-button">返回人物</button>`;
+  inner.querySelector('.character-sheet').insertAdjacentHTML('afterbegin',`<div class="sheet-combat-power"><small>人物戰力</small><b>${formatCombatPower(combatPower())}</b></div>`);
   inner.querySelector('.sheet-header').insertAdjacentHTML('beforeend',`<div><small>淬劍境界</small><b>${realmName(state.swordLevel||0,swordRealms)}</b></div>`);
   $('#attributeBackBtn').onclick=()=>renderBagView('character');
 }
