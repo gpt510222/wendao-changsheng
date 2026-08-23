@@ -773,7 +773,7 @@ function confirmSellItem(){
 function promoteSect(){const cost=sectPromotionCosts[state.sectRank];if(state.sectContribution<cost)return;state.sectContribution-=cost;state.sectRank++;toast(`晉升為${sectRanks[state.sectRank]}`);renderSectView('home');save()}
 function npcDailyState(index){const key=String(sectNpcs()[index].id),record=state.npcDaily[key],today=dateKey();if(!today)return record||{date:'',chat:3,gift:3};if(!record||record.date!==today)state.npcDaily[key]={date:today,chat:0,gift:0};return state.npcDaily[key]}
 function availableGiftItem(){return Object.entries(itemCatalog).find(([,item])=>item.giftable&&(state[item.count]||0)>0)}
-function renderNpcDetail(index){const n=sectNpcs()[index],aff=state.npcAffinity[n.id]||0,daily=npcDailyState(index),gift=availableGiftItem(),master=index===0,elder=index===1,offering=index===2,challengeDisabled=master&&(state.prestige<200||state.actingLeader),combatLabel=master?(state.actingLeader?'已是代理掌門':state.prestige>=200?'挑戰掌門':'挑戰掌門・需200聲望'):'切磋';$('#npcDetail').innerHTML=`<b>${n.title}・${n.name}</b><span>好感 ${aff} / 100</span><div><button data-npc-action="chat" ${daily.chat>=3||aff>=100?'disabled':''}>聊天 ${daily.chat}/3</button><button data-npc-action="gift" ${daily.gift>=3||aff>=100||!gift?'disabled':''}>${gift?`送禮 ${daily.gift}/3`:'送禮・無道具'}</button><button data-npc-action="${master?'challenge':'spar'}" ${challengeDisabled?'disabled':''}>${combatLabel}</button>${master?'<button data-npc-action="greet">請安</button>':''}${elder?'<button data-npc-action="arts">學習功法</button>':''}${offering?'<button data-npc-action="shop">物資兌換</button>':''}</div>`;$$('[data-npc-action]').forEach(b=>b.onclick=()=>npcAction(index,b.dataset.npcAction))}
+function renderNpcDetail(index){const n=sectNpcs()[index],aff=state.npcAffinity[n.id]||0,daily=npcDailyState(index),gift=availableGiftItem(),master=index===0,elder=index===1,offering=index===2,challengeDisabled=master&&(state.sectRank<2||state.prestige<200||state.actingLeader),combatLabel=master?(state.actingLeader?'已是代理掌門':state.sectRank<2?'挑戰掌門・需親傳弟子':state.prestige>=200?'挑戰掌門':'挑戰掌門・需200聲望'):'切磋';$('#npcDetail').innerHTML=`<b>${n.title}・${n.name}</b><span>好感 ${aff} / 100</span><div><button data-npc-action="chat" ${daily.chat>=3||aff>=100?'disabled':''}>聊天 ${daily.chat}/3</button><button data-npc-action="gift" ${daily.gift>=3||aff>=100||!gift?'disabled':''}>${gift?`送禮 ${daily.gift}/3`:'送禮・無道具'}</button><button data-npc-action="${master?'challenge':'spar'}" ${challengeDisabled?'disabled':''}>${combatLabel}</button>${master?'<button data-npc-action="greet">請安</button>':''}${elder?'<button data-npc-action="arts">學習功法</button>':''}${offering?'<button data-npc-action="shop">物資兌換</button>':''}</div>`;$$('[data-npc-action]').forEach(b=>b.onclick=()=>npcAction(index,b.dataset.npcAction))}
 function npcAction(index,action){const n=sectNpcs()[index],daily=npcDailyState(index),aff=state.npcAffinity[n.id]||0;if(['chat','gift','greet'].includes(action)&&!requireTrustedTime())return;if(action==='chat'){if(daily.chat>=3||aff>=100)return;daily.chat++;state.npcAffinity[n.id]=Math.min(100,aff+1);toast('交談甚歡・好感+1')}else if(action==='gift'){const gift=availableGiftItem();if(!gift)return toast('身上沒有可贈送的道具');if(daily.gift>=3||aff>=100)return;const [,item]=gift;state[item.count]--;daily.gift++;state.npcAffinity[n.id]=Math.min(100,aff+5);toast(`送出${item.name}・好感+5`)}else if(action==='spar'){startNpcBattle(n);return}else if(action==='challenge'){challengeMaster();return}else if(action==='greet'){if(state.lastGreetingDay===dateKey())return toast('今日已向掌門請安');state.lastGreetingDay=dateKey();state.sectContribution+=100;toast('掌門頷首嘉許・門派貢獻+100')}else if(action==='arts'){renderSectLearning();return}else if(action==='shop'){renderSectPanel('shop');return}renderNpcDetail(index);save()}
 
 function battlePlayerStats(){
@@ -785,12 +785,12 @@ function battlePlayerStats(){
   };
 }
 function validSectNpcSnapshot(snapshot=state.sectNpcSnapshot){
-  if(!state.sect||!snapshot||snapshot.version!==1||snapshot.sect!==state.sect||!snapshot.stats)return false;
+  if(!state.sect||!snapshot||snapshot.version!==2||snapshot.sect!==state.sect||!snapshot.stats)return false;
   return sectNpcs().every(n=>{const stats=snapshot.stats[String(n.id)];return stats&&['maxHp','attack','defense','dodge','crit'].every(key=>Number.isFinite(stats[key]))});
 }
 function createSectNpcSnapshot(){
   if(!state.sect)return null;
-  const player=battlePlayerStats(),rolePower=[1.35,1.18,1.05,.92,.8],stats={};
+  const player=battlePlayerStats(),masterPower=1.75+Math.max(1,state.sectStar||1)*.2,rolePower=[masterPower,1.18,1.05,.92,.8],stats={};
   sectNpcs().forEach((n,index)=>{
     const factor=rolePower[index]||1,bias=n.statBias||{vitality:1,offense:1,guard:1,speed:1,spirit:1};
     stats[String(n.id)]={
@@ -801,7 +801,7 @@ function createSectNpcSnapshot(){
       crit:Math.min(.38,Math.max(0,player.crit*factor*bias.spirit))
     };
   });
-  return {version:1,sect:state.sect,joinedAt:state.sectJoinedAt||gameNow(),createdAt:gameNow(),player:{...player},stats};
+  return {version:2,sect:state.sect,joinedAt:state.sectJoinedAt||gameNow(),createdAt:gameNow(),player:{...player},stats};
 }
 function battleEnemyStats(n){
   if(!validSectNpcSnapshot()){state.sectNpcSnapshot=createSectNpcSnapshot();save()}
@@ -880,10 +880,12 @@ function enemyBattleTurn(){
 function updateBattleUi(){
   if(!battle)return;$('#battleTurn').textContent=`第${['一','二','三','四','五','六','七','八','九','十'][Math.min(9,battle.round-1)]||battle.round}回合`;
   $('#playerHealthBar').style.width=`${Math.max(0,battle.player.hp/battle.player.maxHp*100)}%`;$('#enemyHealthBar').style.width=`${Math.max(0,battle.enemy.hp/battle.enemy.maxHp*100)}%`;
-  const exit=$('#battleExitBtn'),ready=battle.completedRounds>=3;exit.disabled=!ready;exit.textContent='退出';
+  const exit=$('#battleExitBtn'),ready=battle.completedRounds>=3;exit.disabled=!ready;exit.textContent=battle.mode==='master'?'認輸':'退出';
 }
 function forceEndBattle(){
-  if(!battle?.active||battle.completedRounds<3)return;const playerRate=battle.player.hp/battle.player.maxHp,enemyRate=battle.enemy.hp/battle.enemy.maxHp;
+  if(!battle?.active||battle.completedRounds<3)return;
+  if(battle.mode==='master')return finishBattle(false,'你中途認輸，本次掌門挑戰落敗。');
+  const playerRate=battle.player.hp/battle.player.maxHp,enemyRate=battle.enemy.hp/battle.enemy.maxHp;
   finishBattle(playerRate>=enemyRate,`三回合後終止${battle.mode==='master'?'掌門挑戰':'切磋'}，以剩餘氣血比例判定${playerRate>=enemyRate?'勝出':'落敗'}。`);
 }
 function finishBattle(won,reason){
@@ -905,6 +907,7 @@ function masterTransmission(times,cost){if(state.sectRank<1)return toast('需晉
 function claimSalary(){if(!requireTrustedTime())return;if(state.lastSalaryDay===dateKey())return;const amount=sectSalary[state.sectRank];state.spiritStone+=amount;state.lastSalaryDay=dateKey();toast(`俸祿・靈石+${amount}`);renderSectView('salary');render();save()}
 async function challengeMaster(){
   if(state.actingLeader)return toast('你已是代理掌門');
+  if(state.sectRank<2)return toast('需晉升親傳弟子，才有資格挑戰掌門');
   if(state.prestige<200)return toast('挑戰掌門需要200聲望');
   const confirmed=await gameConfirm('此戰將消耗 200 聲望。\n戰勝掌門可取得代理掌門身分；若挑戰失敗，聲望不予退還。\n\n是否確認挑戰？',{title:'挑戰掌門',confirmText:'消耗200聲望挑戰',danger:true});
   if(!confirmed||state.actingLeader)return;
