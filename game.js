@@ -1095,7 +1095,8 @@ function buyDaoChild(){const cost=daoChildCost();if(state.food<cost)return toast
 function upgradeCaveArea(key){const a=caveAreas[key],cost=areaUpgradeCost(a);if(state.wood<cost)return toast('木材不足');state.wood-=cost;state[a.level]++;toast(`${a.label}區域提升至${state[a.level]}級`);renderCaveView('dwelling');save()}
 function runSettlementTick(ticks=1){
   for(let i=0;i<ticks;i++){
-    const foodArea=caveAreas.food,foodWorkers=Math.min(state.workerFood,areaWorkerMax(foodArea));state.food=Math.min(areaCapacity(foodArea),state.food+foodWorkers*foodArea.output);
+    const foodArea=caveAreas.food,foodWorkers=Math.min(state.workerFood,areaWorkerMax(foodArea)),foodCapacity=areaCapacity(foodArea);
+    if(state.food<foodCapacity)state.food=Math.min(foodCapacity,state.food+foodWorkers*foodArea.output);
     for(const key of ['spiritStone','wood','meteorIron']){
       const a=caveAreas[key],room=Math.max(0,areaCapacity(a)-state[a.value]),workers=Math.min(state[a.worker],areaWorkerMax(a));
       const possible=Math.min(workers,Math.floor(room/a.output),a.foodCost?Math.floor(state.food/a.foodCost):workers);
