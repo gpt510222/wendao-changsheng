@@ -132,7 +132,7 @@ const trueFormCatalog=[
   {id:'taixu-sword',name:'太虛劍相',image:'assets/qstyle-v2/true-form-sword-v2.png',description:'八方虛靈古劍結成劍陣，隨吐納明滅共鳴。'},
   {id:'jiuxiao-wings',name:'九霄靈翼',image:'assets/qstyle-v2/true-form-wings.png',description:'以清靈元息凝成的光翼，非羽非骨，如雲霞舒展。'}
 ];
-const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, swordPathVersion:1,swordEmbryo:'',swordName:'',swordNurtureLevel:0,swordIntent:0,swordInsight:0,swordIntentType:'',swordMoves:['origin','flow'],swordTrialWins:0,bodyPathVersion:1,bodyStamina:100,bodyStaminaUpdatedAt:0,bodyTemper:0,bodyInjury:'',bodyInjuryUntil:0,testTemporaryItemsMailVersion:0,testResourceSupplyMailVersion:0,testCultivationPillCount:0,testSpiritStoneTenMillionCount:0, ...tribulationPillDefaults, ...techniqueBookDefaults, tribulationPillMigration:1, testTribulationPillGrantVersion:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],learnedBookIds:[],mailbox:[],scripturePurchases:{date:'',ids:[]},marketPermanentPurchases:{},marketDailyPurchases:{date:'',counts:{}},artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:99999, testJadeGrantVersion:1, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0,workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, sectNpcSnapshot:null, righteousness:0, evilQi:0, prestige:0, actingLeader:false, npcAffinity:{},npcDaily:{},sectTokens:0,sectTokenDaily:{date:'',exchanged:0},practiceBuff:{active:false,until:0,remaining:0,total:0},transmissionBuff:{active:false,until:0,remaining:0,total:0},lastGreetingDay:'',lastSalaryDay:'',lastPracticeDay:'',bornAt:null,lastTrustedTime:0,lastSave:Date.now() };
+const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, swordPathVersion:1,swordEmbryo:'',swordName:'',swordNurtureLevel:0,swordIntent:0,swordInsight:0,swordIntentType:'',swordMoves:['origin','flow'],swordTrialWins:0,bodyPathVersion:1,bodyStamina:100,bodyStaminaUpdatedAt:0,bodyTemper:0,bodyInjury:'',bodyInjuryUntil:0,testTemporaryItemsMailVersion:0,testResourceSupplyMailVersion:0,testFoodAuraSupplyMailVersion:0,testCultivationPillCount:0,testSpiritStoneTenMillionCount:0, ...tribulationPillDefaults, ...techniqueBookDefaults, tribulationPillMigration:1, testTribulationPillGrantVersion:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],learnedBookIds:[],mailbox:[],scripturePurchases:{date:'',ids:[]},marketPermanentPurchases:{},marketDailyPurchases:{date:'',counts:{}},artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:99999, testJadeGrantVersion:1, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0,workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, sectNpcSnapshot:null, righteousness:0, evilQi:0, prestige:0, actingLeader:false, npcAffinity:{},npcDaily:{},sectTokens:0,sectTokenDaily:{date:'',exchanged:0},practiceBuff:{active:false,until:0,remaining:0,total:0},transmissionBuff:{active:false,until:0,remaining:0,total:0},lastGreetingDay:'',lastSalaryDay:'',lastPracticeDay:'',bornAt:null,lastTrustedTime:0,lastSave:Date.now() };
 defaults.cultivationAwakened=false;
 let state = { ...defaults }, tickStart = Date.now(), manualCultivationStartedAt=0, manualCultivationTimer=null, breakthroughInProgress=false;
 const saveKey = 'wendao-idle-v2';
@@ -252,6 +252,7 @@ function setTribulationLock(locked){
 }
 function blockDuringTribulation(event){
   if(!tribulationLocked)return;
+  if(event.target.closest?.('#tribulationExit'))return;
   event.preventDefault();event.stopImmediatePropagation();
 }
 ['click','dblclick','pointerdown','pointerup','touchstart','touchend','keydown','keyup'].forEach(type=>document.addEventListener(type,blockDuringTribulation,true));
@@ -362,6 +363,8 @@ function createTestTemporaryItemsMail(now){return {id:'test-temporary-items-v1',
 function ensureTestTemporaryItemsMail(){if(!state.name||state.testTemporaryItemsMailVersion>=1)return;if(!mailbox().some(mail=>mail.id==='test-temporary-items-v1'))mailbox().push(createTestTemporaryItemsMail(gameNow()));state.testTemporaryItemsMailVersion=1}
 function createTestResourceSupplyMail(now){return {id:'test-resource-supply-v1',subject:'測試用資源補給',sender:'問道長生・測試',body:'為方便測試洞府、坊市與門派系統，隨信發放一批測試資源。',sentAt:now,read:false,claimed:false,attachments:[{type:'currency',key:'wood',name:'木材',image:'assets/qstyle-v2/wood-cutout.png',amount:10000000},{type:'currency',key:'meteorIron',name:'隕鐵',image:'assets/qstyle-v2/meteor-iron-cutout.png',amount:10000000},{type:'currency',key:'food',name:'食物',image:'assets/qstyle-v2/food-cutout.png',amount:10000000},{type:'currency',key:'prestige',name:'聲望',image:'assets/qstyle-v2/reputation.png',amount:10000000}]}}
 function ensureTestResourceSupplyMail(){if(!state.name||state.testResourceSupplyMailVersion>=1)return;if(!mailbox().some(mail=>mail.id==='test-resource-supply-v1'))mailbox().push(createTestResourceSupplyMail(gameNow()));state.testResourceSupplyMailVersion=1}
+function createTestFoodAuraSupplyMail(now){return {id:'test-resource-supply-v2',subject:'測試用資源補給',sender:'問道長生・測試',body:'為方便後續測試，隨信補發食物與靈氣。',sentAt:now,read:false,claimed:false,attachments:[{type:'currency',key:'food',name:'食物',image:'assets/qstyle-v2/food-cutout.png',amount:10000000},{type:'currency',key:'aura',name:'靈氣',image:'assets/qstyle-v2/spirit-pool.png',amount:10000000}]}}
+function ensureTestFoodAuraSupplyMail(){if(!state.name||state.testFoodAuraSupplyMailVersion>=1)return;if(!mailbox().some(mail=>mail.id==='test-resource-supply-v2'))mailbox().push(createTestFoodAuraSupplyMail(gameNow()));state.testFoodAuraSupplyMailVersion=1}
 function mailbox(){return Array.isArray(state.mailbox)?state.mailbox:(state.mailbox=[])}
 function unreadMailCount(){return mailbox().filter(mail=>!mail.read).length}
 function mailDate(value){return new Intl.DateTimeFormat('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(value||Date.now()))}
@@ -452,20 +455,20 @@ function playTone() {
   try { audioContext ||= new (window.AudioContext||window.webkitAudioContext)(); const o=audioContext.createOscillator(),g=audioContext.createGain();o.frequency.value=520;g.gain.setValueAtTime(.035,audioContext.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+.35);o.connect(g).connect(audioContext.destination);o.start();o.stop(audioContext.currentTime+.35); } catch {}
 }
 function updateBgmVolume() {
-  ['#titleBgm','#mainBgm','#battleBgm'].forEach(id=>{const track=$(id);track.muted=state.muted;track.volume=id==='#battleBgm'?.48:.42});
+  ['#titleBgm','#mainBgm','#battleBgm','#tribulationSuccessBgm','#tribulationFailureBgm'].forEach(id=>{const track=$(id);track.muted=state.muted;track.volume=id==='#battleBgm'?.48:id.startsWith('#tribulation')?.55:.42});
 }
 function startBgm(theme) {
-  const tracks={title:$('#titleBgm'),main:$('#mainBgm'),battle:$('#battleBgm')}, next=tracks[theme];
+  const tracks={title:$('#titleBgm'),main:$('#mainBgm'),battle:$('#battleBgm'),tribulationSuccess:$('#tribulationSuccessBgm'),tribulationFailure:$('#tribulationFailureBgm')}, next=tracks[theme];
   Object.entries(tracks).forEach(([name,track])=>{if(name!==theme){track.pause();track.currentTime=0}});
   bgmTheme=theme; updateBgmVolume();
   next.play().catch(()=>{});
 }
 function stopAllBgm() {
-  ['#titleBgm','#mainBgm','#battleBgm'].forEach(id=>{const track=$(id);track.pause();track.currentTime=0});
+  ['#titleBgm','#mainBgm','#battleBgm','#tribulationSuccessBgm','#tribulationFailureBgm'].forEach(id=>{const track=$(id);track.pause();track.currentTime=0});
   bgmTheme=null;
 }
 function render() {
-  const spiritMax=state.spiritLevel>=maxSpiritLevel,bodyMax=state.bodyLevel>=maxBodyLevel,swordMax=(state.swordLevel||0)>=maxSwordLevel,bodyBlocked=!bodyMax&&bodyPathBlocked(),swordBlocked=!swordMax&&swordPathBlocked(),spiritCost=spiritMax?Infinity:req(state.spiritLevel),bodyCost=bodyMax?Infinity:bodyReq(state.bodyLevel),swordCost=swordMax?Infinity:swordReq(state.swordLevel||0),free=Math.floor(state.free);
+  const spiritMax=state.spiritLevel>=maxSpiritLevel,swordMax=(state.swordLevel||0)>=maxSwordLevel,swordBlocked=!swordMax&&swordPathBlocked(),spiritCost=spiritMax?Infinity:req(state.spiritLevel),swordCost=swordMax?Infinity:swordReq(state.swordLevel||0),free=Math.floor(state.free);
   $('#playerName').textContent=state.name; $('#totalQi').textContent=free.toLocaleString();
   $('#spiritStoneAmount').textContent=Math.floor(state.spiritStone).toLocaleString();
   $('#spiritJadeAmount').textContent=Math.floor(state.spiritJade).toLocaleString();
@@ -482,11 +485,11 @@ function render() {
   $('#bodyRealm').textContent=realmName(state.bodyLevel,bodyRealms);
   $('#swordRealm').textContent=realmName(state.swordLevel||0,swordRealms);
   $('#spiritCost').textContent=spiritMax?'已達最高境界':`提升需 ${formatLargeNumber(spiritCost)}`;
-  const temperNeed=bodyTemperNeed(),bodyTrialReady=(state.bodyLevel+1)%10===0;
-  $('#bodyCost').textContent=bodyMax?'已達最高境界':bodyBlocked?'需提升練氣境界':state.bodyTemper<temperNeed?`淬鍊 ${state.bodyTemper.toLocaleString()} / ${temperNeed.toLocaleString()}`:bodyTrialReady?'前往歷練・肉身試煉':`提升需 ${formatLargeNumber(bodyCost)}`;
+  const temperNeed=bodyTemperNeed();
+  $('#bodyCost').textContent=`淬鍊 ${state.bodyTemper.toLocaleString()} / ${temperNeed.toLocaleString()}`;
   $('#swordCost').textContent=swordMax?'已達最高境界':swordBlocked?'需提升練氣境界':`提升需 ${formatLargeNumber(swordCost)}`;
   $('#spiritUp').classList.toggle('ready',!spiritMax&&free>=spiritCost);
-  $('#bodyUp').classList.toggle('ready',!bodyMax&&!bodyBlocked&&!bodyTrialReady&&state.bodyTemper>=temperNeed&&free>=bodyCost);
+  $('#bodyUp').classList.remove('ready');
   $('#swordUp').classList.toggle('ready',!swordMax&&!swordBlocked&&free>=swordCost);
   $('#heroCharacterHotspot').disabled=!hasMindEmbodiment();
   $('#muteBtn').textContent=state.muted?'♫ 開啟音效':'♪ 靜音';
@@ -538,21 +541,16 @@ function cleanupTribulationScene(){
   const scene=$('#tribulationScene');scene.className='tribulation-scene';scene.setAttribute('aria-hidden','true');
   setTribulationLock(false);
 }
-function playTribulationSound(){
-  if(state.muted)return;
-  try{
-    audioContext=audioContext||new (window.AudioContext||window.webkitAudioContext)();audioContext.resume?.();
-    const now=audioContext.currentTime,output=audioContext.createGain();output.gain.value=.32;output.connect(audioContext.destination);
-    const rumble=audioContext.createOscillator(),rumbleGain=audioContext.createGain();rumble.type='sawtooth';rumble.frequency.setValueAtTime(58,now);rumble.frequency.exponentialRampToValueAtTime(31,now+5.2);rumbleGain.gain.setValueAtTime(.0001,now);rumbleGain.gain.exponentialRampToValueAtTime(.11,now+.5);rumbleGain.gain.exponentialRampToValueAtTime(.0001,now+5.8);rumble.connect(rumbleGain).connect(output);rumble.start(now);rumble.stop(now+5.9);
-    [1.15,2.45,3.9,4.55].forEach((delay,index)=>{const strike=audioContext.createOscillator(),gain=audioContext.createGain();strike.type=index===3?'square':'sawtooth';strike.frequency.setValueAtTime(index===3?190:145,now+delay);strike.frequency.exponentialRampToValueAtTime(34,now+delay+.62);gain.gain.setValueAtTime(.0001,now);gain.gain.setValueAtTime(index===3?.42:.24,now+delay);gain.gain.exponentialRampToValueAtTime(.0001,now+delay+.68);strike.connect(gain).connect(output);strike.start(now+delay);strike.stop(now+delay+.7)});
-  }catch{}
+function exitTribulationResult(){
+  if(!$('#tribulationScene').classList.contains('show-result'))return;
+  cleanupTribulationScene();startBgm('main');
 }
 function tribulate() {
   if(tribulationLocked)return;
   const {realmIndex,key,count}=currentTribulationPill(),base=tribulationBaseChance(realmIndex),maxPills=Math.ceil((100-base)/5),used=Math.min(tribulationPillUseCount,count,maxPills),chance=Math.min(100,base+used*5);
   state[key]=count-used;tribulationPillUseCount=0;$('#tribulationModal').classList.add('hidden');
   const cost=req(state.spiritLevel),success=Math.random()*100<chance,scene=$('#tribulationScene'),nextRealm=realmName(state.spiritLevel+1,spiritRealms);
-  setTribulationLock(true);scene.className='tribulation-scene active gathering';scene.setAttribute('aria-hidden','false');$('#tribulationCharacter').src=characterAsset();$('#tribulationSceneRealm').textContent=`${nextRealm}・天劫`;$('#tribulationSceneText').textContent='劫雲匯聚，天威漸盛';playTribulationSound();
+  setTribulationLock(true);scene.className='tribulation-scene active gathering';scene.setAttribute('aria-hidden','false');$('#tribulationCharacter').src=characterAsset();$('#tribulationSceneRealm').textContent=`${nextRealm}・天劫`;$('#tribulationSceneText').textContent='劫雲匯聚，天威漸盛';startBgm(success?'tribulationSuccess':'tribulationFailure');
   scheduleTribulation(()=>{scene.classList.add('strike-one');$('#tribulationSceneText').textContent='第一道天雷・守住道心'},1100);
   scheduleTribulation(()=>{scene.classList.add('strike-two');$('#tribulationSceneText').textContent='雷威再臨・護住周身經脈'},2400);
   scheduleTribulation(()=>{scene.classList.add('final-strike');$('#tribulationSceneText').textContent='九霄震怒・最後一道天雷'},3750);
@@ -568,7 +566,6 @@ function tribulate() {
     }
     render();save();
   },5150);
-  scheduleTribulation(cleanupTribulationScene,6900);
 }
 
 function openHeroCharacterAttributes(){
@@ -1390,7 +1387,7 @@ function closeMarket(){
   resetMarketNavigation();
 }
 
-load();normalizeSwordPath();normalizeBodyPath();ensureTestTemporaryItemsMail();ensureTestResourceSupplyMail();
+load();normalizeSwordPath();normalizeBodyPath();ensureTestTemporaryItemsMail();ensureTestResourceSupplyMail();ensureTestFoodAuraSupplyMail();
 try{const existing=JSON.parse(localStorage.getItem(saveKey));if(state.name&&(!existing||!Object.prototype.hasOwnProperty.call(existing,'cultivationAwakened')))state.cultivationAwakened=true}catch{}
 setClockAnchor(state.lastTrustedTime||Math.min(state.lastSave||Date.now(),Date.now()),location.protocol==='file:');
 if(state.sect&&!validSectNpcSnapshot()){state.sectNpcSnapshot=createSectNpcSnapshot();save()}
@@ -1405,9 +1402,10 @@ $$('.appearance-choice').forEach(b=>b.onclick=()=>{$$('.appearance-choice').forE
 $$('.outfit-choice').forEach(b=>b.onclick=()=>{$$('.outfit-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOutfit=+b.dataset.style;updateCreator()});
 function updateOriginPreview(){$('#originStats').textContent=originDescriptions[createOrigin]}
 $$('.origin-choice').forEach(b=>b.onclick=()=>{$$('.origin-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOrigin=b.dataset.origin;updateOriginPreview()});
-$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,appearance:createAppearance,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now};Object.keys(tribulationPillDefaults).forEach(key=>state[key]=200);state.mailbox=[createWelcomeMail(now)];ensureTestTemporaryItemsMail();ensureTestResourceSupplyMail();startGame();save()};
-$('#spiritUp').onclick=()=>upgrade('spirit'); $('#swordUp').onclick=()=>upgrade('sword'); $('#bodyUp').onclick=()=>upgrade('body');
+$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,appearance:createAppearance,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now};Object.keys(tribulationPillDefaults).forEach(key=>state[key]=200);state.mailbox=[createWelcomeMail(now)];ensureTestTemporaryItemsMail();ensureTestResourceSupplyMail();ensureTestFoodAuraSupplyMail();startGame();save()};
+$('#spiritUp').onclick=()=>upgrade('spirit'); $('#swordUp').onclick=()=>upgrade('sword'); $('#bodyUp').onclick=()=>openExperienceView('body');
 $('#tribConfirm').onclick=tribulate; $('#tribCancel').onclick=()=>$('#tribulationModal').classList.add('hidden');
+$('#tribulationExit').onclick=exitTribulationResult;
 $('#tribPillMinus').onclick=()=>adjustTribulationPills(-1);$('#tribPillPlus').onclick=()=>adjustTribulationPills(1);$('#tribPillMax').onclick=maximizeTribulationPills;
 $('#heroCharacterHotspot').onclick=openHeroCharacterAttributes;
 $$('.feature-tab').forEach(b=>b.onclick=()=>toggleFeature(b));
