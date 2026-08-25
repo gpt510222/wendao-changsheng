@@ -666,11 +666,11 @@ function renderExperiencePanel(view='sword'){
 }
 
 function startSwordTrial(){
-  if(!state.swordEmbryo)return;clearTimeout(battleTimer);startBgm('battle');const player=battlePlayerStats(),factor=1.15+state.swordTrialWins*.1,generated=npcCoreFromPower(Math.ceil(combatPower()*factor),{id:900000+state.swordTrialWins}),core=generated.core,dodgeRating=core.agility*3,critRating=core.spiritualPower*3,enemy={combatPower:generated.combatPower,core,maxHp:combatHealth(core.rootBone),attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),dodge:Math.min(.35,dodgeRating/(dodgeRating+1000)),crit:Math.min(.45,critRating/(critRating+1000))};
+  if(!state.swordEmbryo)return;clearTimeout(battleTimer);startBgm('battle');const player=battlePlayerStats(),factor=1.15+state.swordTrialWins*.1,generated=npcCoreFromPower(Math.ceil(combatPower()*factor),{id:900000+state.swordTrialWins}),core=generated.core,enemy={combatPower:generated.combatPower,core,maxHp:combatHealth(core.rootBone),attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),evasion:combatEvasion(core.agility),accuracy:combatAccuracy(core.spiritualPower),crit:combatCritical(core.spiritualPower)};
   battle={active:true,resolved:false,mode:'swordTrial',round:1,completedRounds:0,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'劍道幻影',npc:{id:`sword-trial-${state.swordTrialWins}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='劍道幻影';$('#battleLog').innerHTML=`<p><b>${state.name}</b>執起本命劍「${state.swordName}」，劍道幻影應念而生。</p>`;updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
 }
 function startBodyTrial(){
-  refreshBodyState();const need=bodyTemperNeed(),cost=bodyReq(state.bodyLevel),nextIsRealm=(state.bodyLevel+1)%10===0;if(!nextIsRealm||bodyPathBlocked()||state.bodyTemper<need||state.free<cost)return toast('尚未具備肉身試煉資格');clearTimeout(battleTimer);startBgm('battle');const player=battlePlayerStats(),targetRounds=5+Math.floor((state.bodyLevel+1)/20),factor=1.05+(state.bodyLevel+1)/10*.08,generated=npcCoreFromPower(Math.ceil(combatPower()*factor),{id:910000+state.bodyLevel}),core=generated.core,dodgeRating=core.agility*3,critRating=core.spiritualPower*3,enemy={combatPower:generated.combatPower,core,maxHp:combatHealth(core.rootBone)*8,attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),dodge:Math.min(.25,dodgeRating/(dodgeRating+1300)),crit:Math.min(.35,critRating/(critRating+1300))};
+  refreshBodyState();const need=bodyTemperNeed(),cost=bodyReq(state.bodyLevel),nextIsRealm=(state.bodyLevel+1)%10===0;if(!nextIsRealm||bodyPathBlocked()||state.bodyTemper<need||state.free<cost)return toast('尚未具備肉身試煉資格');clearTimeout(battleTimer);startBgm('battle');const player=battlePlayerStats(),targetRounds=5+Math.floor((state.bodyLevel+1)/20),factor=1.05+(state.bodyLevel+1)/10*.08,generated=npcCoreFromPower(Math.ceil(combatPower()*factor),{id:910000+state.bodyLevel}),core=generated.core,enemy={combatPower:generated.combatPower,core,maxHp:combatHealth(core.rootBone)*8,attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),evasion:combatEvasion(core.agility),accuracy:combatAccuracy(core.spiritualPower),crit:combatCritical(core.spiritualPower)};
   battle={active:true,resolved:false,mode:'bodyTrial',round:1,completedRounds:0,targetRounds,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'煉體試煉化身',npc:{id:`body-trial-${state.bodyLevel}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='煉體試煉化身';$('#battleLog').innerHTML=`<p><b>${state.name}</b>踏入試煉，必須以肉身撐過 ${targetRounds} 回合。</p>`;updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
 }
 
@@ -905,18 +905,22 @@ function availableGiftItem(){return Object.entries(itemCatalog).find(([,item])=>
 function renderNpcDetail(index){const n=sectNpcs()[index],npcStats=battleEnemyStats(n),aff=state.npcAffinity[n.id]||0,daily=npcDailyState(index),gift=availableGiftItem(),master=index===0,elder=index===1,offering=index===2,challengeDisabled=master?(state.sectRank<2||state.prestige<200||state.actingLeader):daily.sparWon,combatLabel=master?(state.actingLeader?'已是代理掌門':state.sectRank<2?'挑戰掌門・需親傳弟子':state.prestige>=200?'挑戰掌門':'挑戰掌門・需200聲望'):(daily.sparWon?'今日切磋已勝':'切磋');$('#npcDetail').innerHTML=`<b>${n.title}・${n.name}</b><span>戰力 ${formatCombatPower(npcStats.combatPower)}・好感 ${aff} / 100</span><div><button data-npc-action="chat" ${daily.chat>=3||aff>=100?'disabled':''}>聊天 ${daily.chat}/3</button><button data-npc-action="gift" ${daily.gift>=3||aff>=100||!gift?'disabled':''}>${gift?`送禮 ${daily.gift}/3`:'送禮・無道具'}</button><button data-npc-action="${master?'challenge':'spar'}" ${challengeDisabled?'disabled':''}>${combatLabel}</button>${master?'<button data-npc-action="greet">請安</button>':''}${elder?'<button data-npc-action="arts">學習功法</button>':''}${offering?'<button data-npc-action="shop">物資兌換</button>':''}</div>`;$$('[data-npc-action]').forEach(b=>b.onclick=()=>npcAction(index,b.dataset.npcAction))}
 function npcAction(index,action){const n=sectNpcs()[index],daily=npcDailyState(index),aff=state.npcAffinity[n.id]||0;if(['chat','gift','greet','spar'].includes(action)&&!requireTrustedTime())return;if(action==='chat'){if(daily.chat>=3||aff>=100)return;daily.chat++;state.npcAffinity[n.id]=Math.min(100,aff+1);toast('交談甚歡・好感+1')}else if(action==='gift'){const gift=availableGiftItem();if(!gift)return toast('身上沒有可贈送的道具');if(daily.gift>=3||aff>=100)return;const [,item]=gift;state[item.count]--;daily.gift++;state.npcAffinity[n.id]=Math.min(100,aff+5);toast(`送出${item.name}・好感+5`)}else if(action==='spar'){if(daily.sparWon)return toast('今日已切磋勝利，明日再來');startNpcBattle(n);return}else if(action==='challenge'){challengeMaster();return}else if(action==='greet'){if(state.lastGreetingDay===dateKey())return toast('今日已向掌門請安');state.lastGreetingDay=dateKey();state.sectContribution+=100;toast('掌門頷首嘉許・門派貢獻+100')}else if(action==='arts'){renderSectLearning();return}else if(action==='shop'){renderSectPanel('shop');return}renderNpcDetail(index);save()}
 
-function combatHealth(rootBone){return Math.max(125,120+Math.max(0,rootBone)*5)}
+function combatHealth(rootBone){return Math.max(125,120+Math.max(0,rootBone)*4)}
+function combatEvasion(agility){return Math.max(0,agility)*3}
+function combatAccuracy(spiritualPower){return Math.max(0,spiritualPower)*3}
+function combatDodgeChance(attacker,defender){const evasion=Math.max(0,defender.evasion||0),accuracy=Math.max(0,attacker.accuracy||0);return Math.min(.5,evasion/(evasion+accuracy*2+1000))}
+function combatCritical(spiritualPower){const rating=Math.max(0,spiritualPower)*3;return Math.min(.45,rating/(rating+3000))}
 function battlePlayerStats(){
-  const rootBone=effectiveCore('rootBone'),trueQi=effectiveCore('trueQi'),physique=effectiveCore('physique'),agility=effectiveCore('agility'),dodgeRating=agility*3,critRating=state.spiritualPower*3;
+  const rootBone=effectiveCore('rootBone'),trueQi=effectiveCore('trueQi'),physique=effectiveCore('physique'),agility=effectiveCore('agility'),spiritualPower=effectiveCore('spiritualPower');
   const swordPower=1+(state.swordLevel||0)*.008;
   return {
     maxHp:Math.round(combatHealth(rootBone)*(activeBodyInjury()==='internal'?.85:1)),attack:Math.max(12,trueQi*5)*swordPower,defense:Math.max(0,physique*20),
-    dodge:Math.min(.35,dodgeRating/(dodgeRating+1000)),crit:Math.min(.45,critRating/(critRating+1000))
+    evasion:combatEvasion(agility),accuracy:combatAccuracy(spiritualPower),crit:combatCritical(spiritualPower)
   };
 }
 function validSectNpcSnapshot(snapshot=state.sectNpcSnapshot){
-  if(!state.sect||!snapshot||snapshot.version!==4||snapshot.sect!==state.sect||!snapshot.stats)return false;
-  return sectNpcs().every(n=>{const stats=snapshot.stats[String(n.id)];return stats&&Number.isFinite(stats.combatPower)&&stats.core&&Object.keys(combatPowerWeights).every(key=>Number.isInteger(stats.core[key]))&&['maxHp','attack','defense','dodge','crit'].every(key=>Number.isFinite(stats[key]))});
+  if(!state.sect||!snapshot||snapshot.version!==5||snapshot.sect!==state.sect||!snapshot.stats)return false;
+  return sectNpcs().every(n=>{const stats=snapshot.stats[String(n.id)];return stats&&Number.isFinite(stats.combatPower)&&stats.core&&Object.keys(combatPowerWeights).every(key=>Number.isInteger(stats.core[key]))&&['maxHp','attack','defense','evasion','accuracy','crit'].every(key=>Number.isFinite(stats[key]))});
 }
 function npcCoreFromPower(rawPower,n){
   const keys=Object.keys(combatPowerWeights),costs=keys.map(key=>combatPowerWeights[key]/5),profiles=[[1,1,1,1,1],[2,.85,1.2,.9,.85],[.85,2,.9,.95,1.2],[1.15,.85,2,.85,.9],[.85,.95,.85,2,1.15],[.85,1.15,.9,1.2,2]],seed=textSeed(`${state.sect}・${n.id}・${state.sectJoinedAt||0}・屬性`);
@@ -931,14 +935,14 @@ function createSectNpcSnapshot(){
   if(!state.sect)return null;
   const player=battlePlayerStats(),playerPower=combatPower(),star=Math.max(1,state.sectStar||1),starPower=1+(star-1)*.06,masterPower=(1.75+star*.2)*1.25,rolePower=[masterPower,2.2*starPower,1.8*starPower,1.4*starPower,1*starPower],stats={};
   sectNpcs().forEach((n,index)=>{
-    const generated=npcCoreFromPower(Math.ceil(playerPower*(rolePower[index]||1)),n),core=generated.core,dodgeRating=core.agility*3,critRating=core.spiritualPower*3;
+    const generated=npcCoreFromPower(Math.ceil(playerPower*(rolePower[index]||1)),n),core=generated.core;
     stats[String(n.id)]={
       combatPower:generated.combatPower,core,
       maxHp:combatHealth(core.rootBone),attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),
-      dodge:Math.min(.35,dodgeRating/(dodgeRating+1000)),crit:Math.min(.45,critRating/(critRating+1000))
+      evasion:combatEvasion(core.agility),accuracy:combatAccuracy(core.spiritualPower),crit:combatCritical(core.spiritualPower)
     };
   });
-  return {version:4,sect:state.sect,joinedAt:state.sectJoinedAt||gameNow(),createdAt:gameNow(),player:{...player,combatPower:playerPower},stats};
+  return {version:5,sect:state.sect,joinedAt:state.sectJoinedAt||gameNow(),createdAt:gameNow(),player:{...player,combatPower:playerPower},stats};
 }
 function battleEnemyStats(n){
   if(!validSectNpcSnapshot()){state.sectNpcSnapshot=createSectNpcSnapshot();save()}
@@ -957,8 +961,8 @@ function startNpcBattle(n,mode='spar'){
   updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
 }
 function damageRoll(attacker,defender,multiplier=1){
-  if(Math.random()<defender.dodge)return {damage:0,dodged:true,crit:false};
-  const crit=Math.random()<attacker.crit,raw=attacker.attack*multiplier*(crit?1.5:1),mitigation=800/(800+defender.defense);
+  if(Math.random()<combatDodgeChance(attacker,defender))return {damage:0,dodged:true,crit:false};
+  const crit=Math.random()<attacker.crit,raw=attacker.attack*multiplier*(crit?1.5:1),offensePressure=Math.max(160,attacker.attack*.8),mitigation=Math.max(.15,offensePressure/(offensePressure+defender.defense));
   return {damage:Math.max(1,Math.round(raw*mitigation)),dodged:false,crit};
 }
 function animateBattleStrike(attacker,target,damage,technique){
@@ -1017,6 +1021,7 @@ function enemyBattleTurn(){
 function updateBattleUi(){
   if(!battle)return;$('#battleTurn').textContent=battle.mode==='bodyTrial'?`第 ${Math.min(battle.round,battle.targetRounds)} / ${battle.targetRounds} 回合`:`第${['一','二','三','四','五','六','七','八','九','十'][Math.min(9,battle.round-1)]||battle.round}回合`;
   $('#playerHealthBar').style.width=`${Math.max(0,battle.player.hp/battle.player.maxHp*100)}%`;$('#enemyHealthBar').style.width=`${Math.max(0,battle.enemy.hp/battle.enemy.maxHp*100)}%`;
+  $('#playerHealthText').textContent=`${Math.ceil(battle.player.hp).toLocaleString()} / ${battle.player.maxHp.toLocaleString()}`;$('#enemyHealthText').textContent=`${Math.ceil(battle.enemy.hp).toLocaleString()} / ${battle.enemy.maxHp.toLocaleString()}`;
   const exit=$('#battleExitBtn'),ready=battle.completedRounds>=3;exit.disabled=!ready;exit.textContent=battle.mode==='spar'?'退出':'認輸';
 }
 function forceEndBattle(){
@@ -1194,8 +1199,8 @@ function renderWardrobeSection(section){
 }
 function showCharacterAttributes() {
   const inner=$('#bagInner');
-  const rootBone=effectiveCore('rootBone'),trueQi=effectiveCore('trueQi'),physique=effectiveCore('physique'),agility=effectiveCore('agility'),comprehension=effectiveCore('comprehension'),fortune=effectiveCore('fortune'),health=combatHealth(rootBone),attack=trueQi*5,defense=physique*20,evasion=agility*3,critical=state.spiritualPower*3;
-  inner.innerHTML=`<section class="character-sheet"><div class="sheet-header"><div><small>姓名</small><b>${state.name}</b></div><div><small>修煉歲月</small><b>${experiencedYears().toLocaleString()}年</b></div><div><small>練氣境界</small><b>${realmName(state.spiritLevel,spiritRealms)}</b></div><div><small>煉體境界</small><b>${realmName(state.bodyLevel,bodyRealms)}</b></div><div><small>出生</small><b>${state.origin}</b></div><div><small>門派</small><b>${state.sect||'無門無派'}${state.actingLeader?'・代理掌門':''}</b></div></div><div class="sheet-title">屬性</div><div class="sheet-attributes"><div><span>命骨：${rootBone}</span><strong>氣血：${health}</strong></div><div><span>元息：${trueQi}</span><strong>攻擊：${attack}</strong></div><div><span>玄軀：${physique}</span><strong>防禦：${defense}</strong></div><div><span>游影：${agility}</span><strong>閃避：${evasion}</strong></div><div><span>銳識：${state.spiritualPower}</span><strong>暴擊：${critical}</strong></div><div><span>道悟：${comprehension}</span><strong>修練效率：+${cultivationEfficiency()}</strong></div><div><span>天契：${fortune}</span><strong>靈氣獲取：+${auraEfficiency()}</strong></div><div><span>正氣：${Math.floor(state.righteousness)}</span><strong>邪氣：${Math.floor(state.evilQi)}</strong></div></div><div class="five-arts"><b>五系功法屬性</b><span>金 +${state.metalArt}</span><span>木 +${state.woodArt}</span><span>水 +${state.waterArt}</span><span>火 +${state.fireArt}</span><span>土 +${state.earthArt}</span></div></section><button id="attributeBackBtn" class="text-button">返回人物</button>`;
+  const rootBone=effectiveCore('rootBone'),trueQi=effectiveCore('trueQi'),physique=effectiveCore('physique'),agility=effectiveCore('agility'),spiritualPower=effectiveCore('spiritualPower'),comprehension=effectiveCore('comprehension'),fortune=effectiveCore('fortune'),health=combatHealth(rootBone),attack=trueQi*5,defense=physique*20,evasion=combatEvasion(agility),critical=(combatCritical(spiritualPower)*100).toFixed(1);
+  inner.innerHTML=`<section class="character-sheet"><div class="sheet-header"><div><small>姓名</small><b>${state.name}</b></div><div><small>修煉歲月</small><b>${experiencedYears().toLocaleString()}年</b></div><div><small>練氣境界</small><b>${realmName(state.spiritLevel,spiritRealms)}</b></div><div><small>煉體境界</small><b>${realmName(state.bodyLevel,bodyRealms)}</b></div><div><small>出生</small><b>${state.origin}</b></div><div><small>門派</small><b>${state.sect||'無門無派'}${state.actingLeader?'・代理掌門':''}</b></div></div><div class="sheet-title">屬性</div><div class="sheet-attributes"><div><span>命骨：${rootBone}</span><strong>氣血：${health}</strong></div><div><span>元息：${trueQi}</span><strong>攻擊：${attack}</strong></div><div><span>玄軀：${physique}</span><strong>防禦：${defense}</strong></div><div><span>游影：${agility}</span><strong>閃避評級：${evasion}</strong></div><div><span>銳識：${spiritualPower}</span><strong>暴擊：${critical}%</strong></div><div><span>道悟：${comprehension}</span><strong>修練效率：+${cultivationEfficiency()}</strong></div><div><span>天契：${fortune}</span><strong>靈氣獲取：+${auraEfficiency()}</strong></div><div><span>正氣：${Math.floor(state.righteousness)}</span><strong>邪氣：${Math.floor(state.evilQi)}</strong></div></div><div class="five-arts"><b>五系功法屬性</b><span>金 +${state.metalArt}</span><span>木 +${state.woodArt}</span><span>水 +${state.waterArt}</span><span>火 +${state.fireArt}</span><span>土 +${state.earthArt}</span></div></section><button id="attributeBackBtn" class="text-button">返回人物</button>`;
   inner.querySelector('.character-sheet').insertAdjacentHTML('afterbegin',`<div class="sheet-combat-power"><small>人物戰力</small><b>${formatCombatPower(combatPower())}</b></div>`);
   inner.querySelector('.sheet-header').insertAdjacentHTML('beforeend',`<div><small>淬劍境界</small><b>${realmName(state.swordLevel||0,swordRealms)}</b></div>`);
   if(state.swordEmbryo)inner.querySelector('.sheet-title').insertAdjacentHTML('beforebegin',`<div class="sheet-sword"><small>本命劍・${swordEmbryos[state.swordEmbryo].name}</small><b>${state.swordName}</b><span>養劍 ${state.swordNurtureLevel} 階${state.swordIntentType?`・${swordIntents[state.swordIntentType].name}`:''}</span></div>`);
