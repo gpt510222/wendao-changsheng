@@ -220,7 +220,7 @@
                 <strong id="battleEnemyName">敵人</strong>
                 <div class="health-bar enemy-health"><i id="enemyHealthBar"></i></div>
               </div>
-              <div id="battleTechniqueFx" class="battle-technique-fx"><i></i><b></b></div>
+              <div id="battleTechniqueFx" class="battle-technique-fx" aria-hidden="true"><i></i><b></b><span class="fx-secondary"></span><span class="fx-tertiary"></span><span class="fx-debris"></span><span class="fx-airwave"></span></div>
             </div>
             <div id="battleLog" class="battle-log"></div>
             <button id="battleExitBtn" class="text-button" disabled>退出</button>
@@ -229,7 +229,10 @@
             <div id="battleResultSeal" class="result-seal">勝</div>
             <h2 id="battleResultTitle">戰鬥勝利</h2>
             <p id="battleResultText"></p>
-            <button id="battleResultClose" class="jade-button">返回</button>
+            <div class="battle-result-actions">
+              <button id="battleResultNext" class="jade-button hidden">下一關・3秒</button>
+              <button id="battleResultClose" class="text-button">返回</button>
+            </div>
           </section>
         </div>
       </div>
