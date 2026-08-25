@@ -10,7 +10,11 @@ for (const file of ["index.html", "q-style-preview.html", "styles.css", "q-style
   await cp(file, `dist/client/${file}`);
 }
 const gameAssets = [
-  "bgm-battle-user-v1.wav", "bgm-main-user-v4.wav", "bgm-title-user-v3.wav",
+  "bgm-battle-user-v1.wav",
+  "bgm-main-user-v4.wav",
+  "bgm-title-user-v3.wav",
+  "bgm-tribulation-success-v1.wav",
+  "bgm-tribulation-failure-v1.wav",
 ];
 for (const asset of gameAssets) {
   await cp(`assets/${asset}`, `dist/client/assets/${asset}`);

@@ -142,7 +142,7 @@ const marketFloors={market:1,scripture:1,reputation:1};
 const marketFloorStars=[1,3,5,7,9];
 const chineseFloorNames=['一','二','三','四','五'];
 let marketFloorNoticeTimer=null,lastScriptureDayKey='',marketPurchaseOffer=null,marketPurchaseQuantity=1,currentMailId=null;
-let bgmTheme=null,battle=null,battleTimer=null,pauseStartedAt=null,sessionOnline=false,confirmResolver=null,prologueTimer=null,tribulationPillUseCount=0,tribulationLocked=false,tribulationTimers=[];
+let bgmTheme=null,battle=null,battleTimer=null,swordTrialAdvanceTimer=null,swordTrialCountdownTimer=null,pauseStartedAt=null,sessionOnline=false,confirmResolver=null,prologueTimer=null,tribulationPillUseCount=0,tribulationLocked=false,tribulationTimers=[];
 let sellItemKey=null,sellItemQuantity=1;
 let clockEpoch=Date.now(),clockPerf=performance.now(),trustedClockReady=location.protocol==='file:',clockSyncPromise=null;
 
@@ -556,10 +556,10 @@ function tribulate() {
   const {realmIndex,key,count}=currentTribulationPill(),base=tribulationBaseChance(realmIndex),maxPills=Math.ceil((100-base)/5),used=Math.min(tribulationPillUseCount,count,maxPills),chance=Math.min(100,base+used*5);
   state[key]=count-used;tribulationPillUseCount=0;$('#tribulationModal').classList.add('hidden');
   const cost=req(state.spiritLevel),success=Math.random()*100<chance,scene=$('#tribulationScene'),nextRealm=realmName(state.spiritLevel+1,spiritRealms);
-  setTribulationLock(true);scene.className='tribulation-scene active gathering';scene.setAttribute('aria-hidden','false');$('#tribulationCharacter').src=characterAsset();$('#tribulationSceneRealm').textContent=`${nextRealm}・天劫`;$('#tribulationSceneText').textContent='劫雲匯聚，天威漸盛';startBgm(success?'tribulationSuccess':'tribulationFailure');
-  scheduleTribulation(()=>{scene.classList.add('strike-one');$('#tribulationSceneText').textContent='第一道天雷・守住道心'},1100);
-  scheduleTribulation(()=>{scene.classList.add('strike-two');$('#tribulationSceneText').textContent='雷威再臨・護住周身經脈'},2400);
-  scheduleTribulation(()=>{scene.classList.add('final-strike');$('#tribulationSceneText').textContent='九霄震怒・最後一道天雷'},3750);
+  setTribulationLock(true);scene.className='tribulation-scene active gathering';scene.setAttribute('aria-hidden','false');$('#tribulationCharacter').src=characterAsset();$('#tribulationCharacter').alt='渡劫中的修士';$('#tribulationSceneRealm').textContent=`${nextRealm}・天劫`;$('#tribulationSceneText').textContent='黑雲壓境・雷霆正在雲層間尋找氣機';startBgm(success?'tribulationSuccess':'tribulationFailure');
+  scheduleTribulation(()=>{scene.classList.add('strike-one');$('#tribulationSceneText').textContent='主雷落地・護住道心'},1100);
+  scheduleTribulation(()=>{scene.classList.add('strike-two');$('#tribulationSceneText').textContent='雷罔擴張・經脈承受天威'},2400);
+  scheduleTribulation(()=>{scene.classList.add('final-strike');$('#tribulationSceneText').textContent='九霄紫電貫穿雲幕・最後一擊'},3750);
   scheduleTribulation(()=>{
     if(!sessionOnline){cleanupTribulationScene();return}
     scene.classList.add('show-result',success?'result-success':'result-failure');
@@ -575,13 +575,14 @@ function tribulate() {
 }
 function startSwordBreakthrough(cost=swordReq(state.swordLevel||0)){
   if(tribulationLocked)return;const next=(state.swordLevel||0)+1;if(next%10!==0||(state.swordTrialWins||0)<next)return toast(`需先通過試劍境第 ${next} 關`);if(state.free<cost)return toast(`尚缺 ${Math.ceil(cost-state.free).toLocaleString()} 修為`);
-  const scene=$('#tribulationScene'),nextRealm=realmName(next,swordRealms);setTribulationLock(true);scene.className='tribulation-scene active sword-breakthrough sword-gathering';scene.setAttribute('aria-hidden','false');$('#tribulationCharacter').src='assets/qstyle-v2/sword-cultivation.png';$('#tribulationCharacter').alt='蛻變中的本命劍';$('#tribulationSceneRealm').textContent=`${nextRealm}・淬劍破境`;$('#tribulationSceneText').textContent='劍意歸爐・本命劍應念而鳴';startBgm('tribulationSuccess');
-  scheduleTribulation(()=>{scene.classList.add('sword-forge-one');$('#tribulationSceneText').textContent='戰鬥感悟匯入劍脊・洗去舊痕'},1050);
-  scheduleTribulation(()=>{scene.classList.add('sword-forge-two');$('#tribulationSceneText').textContent='劍意洗鋒・凡鐵褪盡'},2300);
-  scheduleTribulation(()=>{scene.classList.add('sword-forge-final');$('#tribulationSceneText').textContent='一聲劍鳴震徹識海・新鋒將成'},3500);
+  const scene=$('#tribulationScene'),nextRealm=realmName(next,swordRealms);setTribulationLock(true);scene.className='tribulation-scene active sword-breakthrough sword-still';scene.setAttribute('aria-hidden','false');$('#tribulationCharacter').src=characterAsset();$('#tribulationCharacter').alt='淬劍中的修士';$('#tribulationSceneRealm').textContent=`${nextRealm}・淬劍破境`;$('#tribulationSceneText').textContent='萬籟俱寂・劍候主人一念';startBgm('tribulationSuccess');
+  scheduleTribulation(()=>{scene.classList.remove('sword-still');scene.classList.add('sword-orbit');$('#tribulationSceneText').textContent='劍行周天・一明一滅繞主而行'},900);
+  scheduleTribulation(()=>{scene.classList.remove('sword-orbit');scene.classList.add('sword-temper');$('#tribulationSceneText').textContent='戰鬥感悟匯入劍脊・舊境雜質寸寸剝落'},3200);
+  scheduleTribulation(()=>{scene.classList.remove('sword-temper');scene.classList.add('sword-resonance');$('#tribulationSceneText').textContent='人劍共鳴・一聲劍鳴分開山霧'},5200);
+  scheduleTribulation(()=>{scene.classList.remove('sword-resonance');scene.classList.add('sword-settle');$('#tribulationSceneText').textContent='洗盡凡塵・新鋒歸於主人身側'},6800);
   scheduleTribulation(()=>{
     if(!sessionOnline){cleanupTribulationScene();return}state.free-=cost;state.swordLevel=next;applyAttributeGain(swordAttributeGain(next));scene.classList.add('show-result','result-success');$('#tribulationResultSeal').textContent='鋒';$('#tribulationResultTitle').textContent='淬劍破境';$('#tribulationResultText').textContent=`本命劍「${state.swordName||'無名靈劍'}」完成蛻變，淬劍提升至 ${realmName(state.swordLevel,swordRealms)}`;render();save();
-  },4800);
+  },8000);
 }
 
 function openHeroCharacterAttributes(){
@@ -684,7 +685,16 @@ function renderExperiencePanel(view='sword'){
   if(!state.swordEmbryo){inner.innerHTML='<div class="realm-lock"><b>尚未凝聚本命劍</b><small>凝聚劍胚後方可進入試劍境。</small></div>';return}const stage=state.swordTrialWins+1,power=swordTrialPower(stage),intentReward=swordTrialIntentReward(stage),available=stage<=Math.min(maxSwordLevel+1,(state.swordLevel||0)+1);inner.innerHTML=`<section class="sword-trial-card"><div class="trial-orb">幻</div><h2>劍道幻影・第 ${stage} 關</h2><p>本關為固定戰力，不會隨人物變強。淬劍每提升一層即可開放下一關，每逢十層突破前必須先通關。</p><div class="trial-power">關卡戰力・<b>${formatCombatPower(power)}</b></div><strong>首勝獎勵・戰鬥感悟 1${intentReward?`・劍意 ${intentReward}`:''}</strong><button id="startSwordTrial" class="jade-button" ${available?'':'disabled'}>${available?'進入試劍境':`需先將淬劍提升至 ${stage-1} 層`}</button></section>`;$('#startSwordTrial').onclick=startSwordTrial;
 }
 
+function clearSwordTrialAdvance(){clearTimeout(swordTrialAdvanceTimer);clearInterval(swordTrialCountdownTimer);swordTrialAdvanceTimer=null;swordTrialCountdownTimer=null}
+function canAdvanceSwordTrial(){const next=(state.swordTrialWins||0)+1;return !!state.swordEmbryo&&next<=maxSwordLevel+1&&next<=(state.swordLevel||0)+1}
+function advanceSwordTrial(){if(!battle||battle.mode!=='swordTrial'||!battle.resolved||!battle.won||!canAdvanceSwordTrial())return;clearSwordTrialAdvance();startSwordTrial()}
+function scheduleSwordTrialAdvance(){
+  clearSwordTrialAdvance();const button=$('#battleResultNext');let remaining=3;button.textContent=`下一關・${remaining}秒`;
+  swordTrialCountdownTimer=setInterval(()=>{remaining--;if(remaining>0)button.textContent=`下一關・${remaining}秒`},1000);
+  swordTrialAdvanceTimer=setTimeout(advanceSwordTrial,3000);
+}
 function startSwordTrial(){
+  clearSwordTrialAdvance();
   const stage=(state.swordTrialWins||0)+1;if(!state.swordEmbryo||stage>maxSwordLevel+1||stage>(state.swordLevel||0)+1)return toast('目前淬劍層數尚未開放此關');clearTimeout(battleTimer);startBgm('battle');const player=battlePlayerStats(),generated=npcCoreFromPower(swordTrialPower(stage),{id:900000+stage,seedScope:'sword-trial'}),core=generated.core,enemy={combatPower:generated.combatPower,core,maxHp:combatHealth(core.rootBone),attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),evasion:combatEvasion(core.agility),accuracy:combatAccuracy(core.spiritualPower),crit:combatCritical(core.spiritualPower)};
   battle={active:true,resolved:false,mode:'swordTrial',round:1,completedRounds:0,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'劍道幻影',npc:{id:`sword-trial-${state.swordTrialWins}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='劍道幻影';$('#battleLog').innerHTML=`<p><b>${state.name}</b>執起本命劍「${state.swordName}」，劍道幻影應念而生。</p>`;updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
 }
@@ -992,7 +1002,7 @@ function animateBattleStrike(attacker,target,damage,technique){
   fx.className='battle-technique-fx';void attackEl.offsetWidth;
   attackEl.classList.add('attacking');if(!damage.dodged)targetEl.classList.add('hit');
   arena?.classList.add('clashing',enemyCast?'enemy-strike':'player-strike');
-  fx.classList.add(enemyCast?'enemy-cast':'player-cast',`${technique.kind}-technique`);playTechniqueSound(enemyCast,technique.kind);
+  fx.classList.add(enemyCast?'enemy-cast':'player-cast',`${technique.kind}-technique`,`${technique.id}-move`);playTechniqueSound(enemyCast,technique.kind);
   damageEl.textContent=damage.dodged?'閃避':`-${damage.damage}${damage.crit?' 暴擊':''}`;damageEl.classList.add('show');
   setTimeout(()=>{attackEl.classList.remove('attacking');targetEl.classList.remove('hit');damageEl.classList.remove('show');arena?.classList.remove('clashing','player-strike','enemy-strike');fx.className='battle-technique-fx'},860);
 }
@@ -1026,7 +1036,7 @@ function playerBattleTurn(){
   battle.enemy.hp=Math.max(battle.mode==='bodyTrial'?1:0,battle.enemy.hp-hit.damage);animateBattleStrike('#playerSilhouette','#enemySilhouette',hit,technique);
   appendBattleLog(hit.dodged?`${battle.enemy.name}看破招式來勢，避開了${state.name}的${technique.name}。`:`${state.name}${technique.kind==='sword'?'引氣淬鋒':'凝神引元'}，使出${technique.name}，對${battle.enemy.name}造成了${hit.damage}傷害。`,'player');updateBattleUi();
   if(battle.enemy.hp<=0)return setTimeout(()=>finishBattle(true,'對手氣息已散，無力再戰。'),650);
-  battleTimer=setTimeout(enemyBattleTurn,850);
+  battleTimer=setTimeout(enemyBattleTurn,950);
 }
 function enemyBattleTurn(){
   if(!battle?.active)return;const technique=startingTechniques[Math.floor(Math.random()*startingTechniques.length)],mult=technique.min+Math.random()*(technique.max-technique.min),hit=damageRoll(battle.enemy,battle.player,mult);
@@ -1050,7 +1060,7 @@ function forceEndBattle(){
   finishBattle(playerRate>=enemyRate,`三回合後終止${battle.mode==='master'?'掌門挑戰':'切磋'}，以剩餘氣血比例判定${playerRate>=enemyRate?'勝出':'落敗'}。`);
 }
 function finishBattle(won,reason){
-  if(!battle||battle.resolved)return;clearTimeout(battleTimer);battle.active=false;battle.resolved=true;battle.won=won;
+  if(!battle||battle.resolved)return;clearTimeout(battleTimer);clearSwordTrialAdvance();battle.active=false;battle.resolved=true;battle.won=won;
   let reward='';
   if(won&&battle.mode==='master'){state.actingLeader=true;reward=' 已取得代理掌門身分。'}
   else if(battle.mode==='swordTrial'){if(won){const stage=state.swordTrialWins+1,intent=swordTrialIntentReward(stage);state.swordTrialWins++;state.swordInsight++;state.swordIntent+=intent;reward=` 戰鬥感悟+1${intent?`、劍意+${intent}`:''}。`;}else reward=' 本關沒有消耗挑戰次數，可調整劍招後再戰。'}
@@ -1059,9 +1069,17 @@ function finishBattle(won,reason){
   else if(battle.mode==='spar'&&!won&&state.swordEmbryo){state.swordInsight++;reward=' 戰鬥感悟+1。'}
   save();render();
   $('#battleStage').classList.add('hidden');$('#battleResult').classList.remove('hidden');$('#battleResultSeal').textContent=won?'勝':'敗';$('#battleResultSeal').classList.toggle('defeat',!won);
-  $('#battleResultTitle').textContent=won?'戰鬥勝利':'戰鬥失敗';$('#battleResultText').textContent=`${reason}${reward}`;
+  const nextButton=$('#battleResultNext'),closeButton=$('#battleResultClose');
+  nextButton.classList.add('hidden');closeButton.textContent=battle.mode==='swordTrial'?'退出':'返回';
+  $('#battleResultTitle').textContent=won?'戰鬥勝利':'戰鬥失敗';
+  let resultText=`${reason}${reward}`;
+  if(battle.mode==='swordTrial'&&won){
+    if(canAdvanceSwordTrial()){nextButton.classList.remove('hidden');scheduleSwordTrialAdvance()}
+    else resultText+=' 已達目前淬劍境界可挑戰的上限，完成境界同步後方可繼續。';
+  }
+  $('#battleResultText').textContent=resultText;
 }
-function closeBattle(){const npcId=battle?.enemy?.npc?.id,mode=battle?.mode;clearTimeout(battleTimer);battle=null;$('#battleModal').classList.add('hidden');startBgm('main');if(currentFeature==='sect'&&npcId!=null){const index=sectNpcs().findIndex(n=>n.id===npcId);renderSectPanel('npcs');if(index>=0)renderNpcDetail(index)}else if(currentFeature==='experience'&&mode==='swordTrial')renderExperiencePanel('trial');else if(currentFeature==='experience'&&mode==='bodyTrial')renderExperiencePanel('bodyTrial')}
+function closeBattle(){const npcId=battle?.enemy?.npc?.id,mode=battle?.mode;clearTimeout(battleTimer);clearSwordTrialAdvance();battle=null;$('#battleModal').classList.add('hidden');startBgm('main');if(currentFeature==='sect'&&npcId!=null){const index=sectNpcs().findIndex(n=>n.id===npcId);renderSectPanel('npcs');if(index>=0)renderNpcDetail(index)}else if(currentFeature==='experience'&&mode==='swordTrial')renderExperiencePanel('trial');else if(currentFeature==='experience'&&mode==='bodyTrial')renderExperiencePanel('bodyTrial')}
 function updatePracticeTimers(){
   if(currentFeature!=='sect'||currentSectView!=='practice')return;
   for(const [key,prefix] of [['practiceBuff','practice'],['transmissionBuff','transmission']]){const bar=$(`#${prefix}TimerBar`),text=$(`#${prefix}TimerText`);if(!bar||!text)continue;const active=buffActive(key);bar.style.width=`${buffPercent(key)}%`;text.textContent=active?buffClock(key):'未開啟';if(!active&&text.closest('.buff-timer')?.classList.contains('active')){renderSectView('practice');render();break}}
@@ -1230,7 +1248,7 @@ function finishPause(){
   pauseStartedAt=null;
 }
 function forceOffline(){
-  if(suppressSave||!state.name||pauseStartedAt!==null)return;pauseStartedAt=gameNow();sessionOnline=false;clearTimeout(battleTimer);battle=null;if(tribulationLocked)cleanupTribulationScene();
+  if(suppressSave||!state.name||pauseStartedAt!==null)return;pauseStartedAt=gameNow();sessionOnline=false;clearTimeout(battleTimer);clearSwordTrialAdvance();battle=null;if(tribulationLocked)cleanupTribulationScene();
   $('#mailboxModal').classList.add('hidden');$('#mailDetailModal').classList.add('hidden');
   $('#battleModal').classList.add('hidden');$('#tribulationModal').classList.add('hidden');$('#itemModal').classList.add('hidden');$('#sellModal').classList.add('hidden');$('#offlineModal').classList.add('hidden');$('#marketModal').classList.add('hidden');$('#marketPurchaseModal').classList.add('hidden');$('#gameMenu').classList.add('hidden');$('#settingsModal').classList.add('hidden');$('#helpModal').classList.add('hidden');stopAllBgm();show('#titleScreen');$('#titleHint').textContent='已離線・點擊螢幕重新進入';save();
 }
@@ -1475,11 +1493,12 @@ $('#deleteVerifyBtn').onclick=()=>{
   $('#deleteError').textContent=''; showSettingsSection('#deleteStepTwo');
 };
 $('#deleteBackBtn').onclick=()=>showSettingsSection('#deleteStepOne');
-$('#deleteFinalBtn').onclick=()=>{suppressSave=true;sessionOnline=false;clearTimeout(battleTimer);battle=null;stopAllBgm();localStorage.removeItem(saveKey);localStorage.removeItem('wendao-idle-v1');state={...defaults,name:'',bornAt:null,lastSave:gameNow()};location.reload()};
+$('#deleteFinalBtn').onclick=()=>{suppressSave=true;sessionOnline=false;clearTimeout(battleTimer);clearSwordTrialAdvance();battle=null;stopAllBgm();localStorage.removeItem(saveKey);localStorage.removeItem('wendao-idle-v1');state={...defaults,name:'',bornAt:null,lastSave:gameNow()};location.reload()};
 $('#backToTitle').onclick=()=>{save();$('#gameMenu').classList.add('hidden');$('#settingsModal').classList.add('hidden');$('#helpModal').classList.add('hidden');$('#marketModal').classList.add('hidden');$('#marketPurchaseModal').classList.add('hidden');$('#titleHint').textContent='點擊螢幕繼續修煉';show('#titleScreen');startBgm('title')};
 $('#backToTitle').addEventListener('click',()=>{$('#mailboxModal').classList.add('hidden');$('#mailDetailModal').classList.add('hidden');currentMailId=null});
 $('#muteBtn').onclick=()=>{state.muted=!state.muted;updateBgmVolume();render();save()};
 $('#battleExitBtn').onclick=forceEndBattle;
+$('#battleResultNext').onclick=advanceSwordTrial;
 $('#battleResultClose').onclick=closeBattle;
 document.addEventListener('contextmenu',event=>{if(event.target.closest?.('img'))event.preventDefault()});
 document.addEventListener('dragstart',event=>{if(event.target.closest?.('img'))event.preventDefault()});
