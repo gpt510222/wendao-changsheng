@@ -12,6 +12,7 @@ for (const file of ["index.html", "q-style-preview.html", "styles.css", "q-style
 const gameAssets = [
   "bgm-battle-user-v1.wav",
   "bgm-main-user-v4.wav",
+  "bgm-sword-breakthrough-user-v1.wav",
   "bgm-title-user-v3.wav",
   "bgm-tribulation-success-v1.wav",
   "bgm-tribulation-failure-v1.wav",
