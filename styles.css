@@ -387,6 +387,9 @@
 @keyframes tribQiVeilHitBlue{0%{transform:translateX(-50%) scale(1);opacity:.18;filter:drop-shadow(0 -2px 4px #d8f4ff45)}18%{transform:translateX(-50%) scale(1.04,.92);opacity:.48;filter:drop-shadow(0 -4px 7px #e7faff94) drop-shadow(0 -12px 20px #63a9d05c)}55%{transform:translateX(-50%) scale(.98,1.03);opacity:.27}100%{transform:translateX(-50%) scale(1);opacity:.16}}@keyframes tribQiVeilHitPurple{0%{transform:translateX(-50%) scale(1);opacity:.16}20%{transform:translateX(-50%) scale(1.06,.89);opacity:.5;filter:drop-shadow(0 -4px 7px #f1dcff91) drop-shadow(0 -13px 21px #995cc65f)}58%{transform:translateX(-50%) scale(.97,1.04);opacity:.25}100%{transform:translateX(-50%) scale(1);opacity:.14}}
 @media(max-width:540px){.tribulation-scene.strike-one .bolt-one,.tribulation-scene.strike-two .bolt-two{width:60vw}.tribulation-scene.strike-one .bolt-one{left:47%}.tribulation-scene.strike-two .bolt-two{left:53%}.tribulation-scene.strike-one .tribulation-impact,.tribulation-scene.strike-two .tribulation-impact{width:62vw}}
 
+/* Two remaining tabs after moving sword techniques into Arts. */
+.experience-tabs.two-tabs{grid-template-columns:repeat(2,1fr)}
+
 /* Manual tribulation result exit */
 .game-screen.tribulation-locked::before{pointer-events:none}
 .tribulation-scene.active{pointer-events:auto}
