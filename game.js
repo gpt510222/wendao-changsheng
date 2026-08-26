@@ -575,14 +575,16 @@ function tribulate() {
 }
 function startSwordBreakthrough(cost=swordReq(state.swordLevel||0)){
   if(tribulationLocked)return;const next=(state.swordLevel||0)+1;if(next%10!==0||(state.swordTrialWins||0)<next)return toast(`需先通過試劍境第 ${next} 關`);if(state.free<cost)return toast(`尚缺 ${Math.ceil(cost-state.free).toLocaleString()} 修為`);
-  const scene=$('#tribulationScene'),nextRealm=realmName(next,swordRealms);setTribulationLock(true);scene.className='tribulation-scene active sword-breakthrough sword-still';scene.setAttribute('aria-hidden','false');$('#tribulationCharacter').src=characterAsset();$('#tribulationCharacter').alt='淬劍中的修士';$('#tribulationSceneRealm').textContent=`${nextRealm}・淬劍破境`;$('#tribulationSceneText').textContent='萬籟俱寂・劍候主人一念';startBgm('tribulationSuccess');
-  scheduleTribulation(()=>{scene.classList.remove('sword-still');scene.classList.add('sword-orbit');$('#tribulationSceneText').textContent='劍行周天・一明一滅繞主而行'},900);
-  scheduleTribulation(()=>{scene.classList.remove('sword-orbit');scene.classList.add('sword-temper');$('#tribulationSceneText').textContent='戰鬥感悟匯入劍脊・舊境雜質寸寸剝落'},3200);
-  scheduleTribulation(()=>{scene.classList.remove('sword-temper');scene.classList.add('sword-resonance');$('#tribulationSceneText').textContent='人劍共鳴・一聲劍鳴分開山霧'},5200);
-  scheduleTribulation(()=>{scene.classList.remove('sword-resonance');scene.classList.add('sword-settle');$('#tribulationSceneText').textContent='洗盡凡塵・新鋒歸於主人身側'},6800);
+  const scene=$('#tribulationScene'),nextRealm=realmName(next,swordRealms);setTribulationLock(true);stopAllBgm();scene.className='tribulation-scene active sword-breakthrough sword-still';scene.setAttribute('aria-hidden','false');$('#tribulationCharacter').src=characterAsset();$('#tribulationCharacter').alt='淬劍中的修士';$('#tribulationSceneRealm').textContent=`${nextRealm}・淬劍破境`;$('#tribulationSceneText').textContent='萬籟俱寂・劍候主人一念';$('#swordRealmMarkText').textContent=nextRealm;
+  scheduleTribulation(()=>{scene.classList.remove('sword-still');scene.classList.add('sword-orbit');$('#tribulationSceneText').textContent='劍行周天・一明一滅繞主而行'},1100);
+  scheduleTribulation(()=>{scene.classList.remove('sword-orbit');scene.classList.add('sword-temper');$('#tribulationSceneText').textContent='戰鬥感悟匯入劍脊・舊境雜質寸寸剝落'},3800);
+  scheduleTribulation(()=>{scene.classList.remove('sword-temper');scene.classList.add('sword-resonance');$('#tribulationSceneText').textContent='人劍共鳴・一聲劍鳴分開山霧'},6100);
+  scheduleTribulation(()=>{scene.classList.remove('sword-resonance');scene.classList.add('sword-settle');$('#tribulationSceneText').textContent='鋒芒漸斂・本命劍歸於主人身側'},7900);
+  scheduleTribulation(()=>{scene.classList.remove('sword-settle');scene.classList.add('sword-inscription');$('#tribulationSceneText').textContent='劍域收束・新境烙入本命'},9600);
+  scheduleTribulation(()=>{scene.classList.remove('sword-inscription');scene.classList.add('sword-aftermath');$('#tribulationSceneText').textContent='劍歸其位・心中自有一劍長鳴'},11200);
   scheduleTribulation(()=>{
     if(!sessionOnline){cleanupTribulationScene();return}state.free-=cost;state.swordLevel=next;applyAttributeGain(swordAttributeGain(next));scene.classList.add('show-result','result-success');$('#tribulationResultSeal').textContent='鋒';$('#tribulationResultTitle').textContent='淬劍破境';$('#tribulationResultText').textContent=`本命劍「${state.swordName||'無名靈劍'}」完成蛻變，淬劍提升至 ${realmName(state.swordLevel,swordRealms)}`;render();save();
-  },8000);
+  },12600);
 }
 
 function openHeroCharacterAttributes(){
