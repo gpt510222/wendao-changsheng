@@ -394,6 +394,9 @@
 .body-training-resources .stamina-resource .body-resource-seal{grid-row:1/3}
 .body-training-resources .stamina-resource em{grid-column:1/-1;grid-row:3;margin-top:3px;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
 
+/* Seven cave sections wrap cleanly while keeping the two primary views prominent. */
+.cave-tabs{grid-template-columns:repeat(4,1fr)}
+
 /* Manual tribulation result exit */
 .game-screen.tribulation-locked::before{pointer-events:none}
 .tribulation-scene.active{pointer-events:auto}
