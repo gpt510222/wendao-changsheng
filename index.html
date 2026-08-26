@@ -232,34 +232,32 @@
           <h2 id="itemModalName">道具名稱</h2>
           <p id="itemModalDescription" class="item-description"></p>
           <small id="itemModalCount"></small>
+          <div class="item-quantity-panel">
+            <span>操作數量</span>
+            <div class="item-quantity-controls">
+              <button id="itemMinBtn" type="button">最小</button>
+              <button id="itemMinusBtn" type="button" aria-label="減少數量">−</button>
+              <strong id="itemQuantity">1</strong>
+              <button id="itemPlusBtn" type="button" aria-label="增加數量">＋</button>
+              <button id="itemMaxBtn" type="button">最大</button>
+            </div>
+          </div>
           <div id="itemModalActions" class="item-modal-actions">
+            <button id="itemModalUse" class="jade-button">使用</button>
             <button id="itemModalSell" class="sell-button">售出</button>
             <button id="itemModalClose" class="text-button">退出</button>
-            <button id="itemModalUse" class="jade-button">使用</button>
           </div>
         </div>
       </div>
 
       <div id="sellModal" class="modal hidden">
         <div class="paper-panel modal-card sell-modal-card">
-          <p class="eyebrow">售出道具</p>
-          <img id="sellModalImage" src="" alt="">
-          <h2 id="sellModalName">道具名稱</h2>
+          <p class="eyebrow">確認售出</p>
           <p id="sellModalMessage" class="sell-modal-message"></p>
-          <div class="sell-quantity-panel">
-            <span>售出數量</span>
-            <div class="sell-quantity-controls">
-              <button id="sellMinBtn" type="button">最小</button>
-              <button id="sellMinusBtn" type="button" aria-label="減少數量">−</button>
-              <strong id="sellQuantity">1</strong>
-              <button id="sellPlusBtn" type="button" aria-label="增加數量">＋</button>
-              <button id="sellMaxBtn" type="button">最大</button>
-            </div>
-          </div>
           <p id="sellModalTotal" class="sell-modal-total"></p>
           <div class="sell-modal-actions">
-            <button id="sellCancelBtn" class="text-button">取消</button>
-            <button id="sellConfirmBtn" class="sell-button">確認售出</button>
+            <button id="sellCancelBtn" class="text-button">退出</button>
+            <button id="sellConfirmBtn" class="sell-button">確認</button>
           </div>
         </div>
       </div>

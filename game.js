@@ -143,7 +143,7 @@ const marketFloorStars=[1,3,5,7,9];
 const chineseFloorNames=['一','二','三','四','五'];
 let marketFloorNoticeTimer=null,lastScriptureDayKey='',marketPurchaseOffer=null,marketPurchaseQuantity=1,currentMailId=null;
 let bgmTheme=null,battle=null,battleTimer=null,swordTrialAdvanceTimer=null,swordTrialCountdownTimer=null,pauseStartedAt=null,sessionOnline=false,confirmResolver=null,prologueTimer=null,tribulationPillUseCount=0,tribulationLocked=false,tribulationTimers=[];
-let sellItemKey=null,sellItemQuantity=1;
+let itemModalKey=null,itemModalQuantity=1,sellItemKey=null,sellItemQuantity=1;
 let clockEpoch=Date.now(),clockPerf=performance.now(),trustedClockReady=location.protocol==='file:',clockSyncPromise=null;
 
 function setClockAnchor(epoch,trusted=false){clockEpoch=epoch;clockPerf=performance.now();trustedClockReady=trusted||location.protocol==='file:'}
@@ -874,9 +874,9 @@ function exchangeSectToken(){
   if(!canStoreItem('sectToken'))return toast('儲物袋已滿，無法放入門派令牌');
   state.sectContribution-=200;state.sectTokens=(state.sectTokens||0)+1;daily.exchanged++;toast('兌換門派令牌 ×1');renderSectShop();save();
 }
-function useSectToken(){
+function useSectToken(quantity=1){
   if(!state.sect){toast('目前無門無派，無法使用門派令牌');return false}if((state.sectTokens||0)<1){toast('沒有可使用的門派令牌');return false}
-  state.sectTokens--;state.sectContribution+=100;toast('使用門派令牌・門派貢獻+100');
+  quantity=Math.max(1,Math.min(state.sectTokens,Math.floor(quantity)));state.sectTokens-=quantity;state.sectContribution+=100*quantity;toast(`使用門派令牌 ${formatLargeNumber(quantity)}個・門派貢獻+${formatLargeNumber(100*quantity)}`);
   if(currentFeature==='sect'&&currentSectView==='shop')renderSectShop();else if(currentFeature==='bag')renderBagView('bag');render();save();return true
 }
 function openItemModal(key){
@@ -884,12 +884,14 @@ function openItemModal(key){
   const learned=!!item.techniqueBook&&(state.learnedBookIds||[]).includes(item.techniqueBook.id);
   const sectBlocked=!!item.sectInvitation&&!!state.sect;
   refreshBodyState();
-  $('#itemModalImage').src=item.image;$('#itemModalImage').alt=item.name;$('#itemModalName').textContent=item.name;$('#itemModalDescription').textContent=item.description+(learned?'\n\n此功法已習得，本書只能售出。':'')+(sectBlocked?'\n\n你目前已有門派，必須先脫離門派才能使用此信物。':'');$('#itemModalCount').textContent=`持有數量：${formatLargeNumber(count)}`;
-  const sell=$('#itemModalSell');sell.disabled=count<1;sell.onclick=()=>openSellModal(key);
-  const showUse=item.usable&&!learned,canUse=showUse&&!sectBlocked;const use=$('#itemModalUse');use.classList.toggle('hidden',!showUse);use.disabled=!canUse||count<1;use.onclick=canUse?()=>useItem(key):null;
+  itemModalKey=key;itemModalQuantity=1;$('#itemModalImage').src=item.image;$('#itemModalImage').alt=item.name;$('#itemModalName').textContent=item.name;$('#itemModalDescription').textContent=item.description+(learned?'\n\n此功法已習得，本書只能售出。':'')+(sectBlocked?'\n\n你目前已有門派，必須先脫離門派才能使用此信物。':'');$('#itemModalCount').textContent=`持有數量：${formatLargeNumber(count)}`;
+  const sell=$('#itemModalSell');sell.disabled=count<1;sell.onclick=()=>openSellModal(key,itemModalQuantity);
+  const showUse=item.usable&&!learned,canUse=showUse&&!sectBlocked;const use=$('#itemModalUse');use.classList.toggle('hidden',!showUse);use.disabled=!canUse||count<1;use.onclick=canUse?()=>useItem(key,itemModalQuantity):null;
+  updateItemQuantity();
   $('#itemModalActions').classList.toggle('no-use',!showUse);$('#itemModal').classList.remove('hidden');
 }
-function closeItemModal(){$('#itemModal').classList.add('hidden')}
+function closeItemModal(){$('#itemModal').classList.add('hidden');itemModalKey=null;itemModalQuantity=1}
+function updateItemQuantity(){const item=itemCatalog[itemModalKey];if(!item)return;const owned=Math.max(0,Math.floor(Number(state[item.count])||0));itemModalQuantity=Math.max(1,Math.min(Math.max(1,owned),itemModalQuantity));$('#itemQuantity').textContent=formatLargeNumber(itemModalQuantity);$('#itemMinusBtn').disabled=itemModalQuantity<=1;$('#itemMinBtn').disabled=itemModalQuantity<=1;$('#itemPlusBtn').disabled=itemModalQuantity>=owned;$('#itemMaxBtn').disabled=itemModalQuantity>=owned}
 function useTechniqueBook(key){
   const item=itemCatalog[key],book=item?.techniqueBook;if(!book)return false;
   if((state.learnedBookIds||[]).includes(book.id)){toast('此功法已習得，道具只能售出');return false}
@@ -902,30 +904,26 @@ function useSectInvitation(key){
   if(state.sect){toast('已有門派時無法使用門派信物');return false}if((state[item.count]||0)<1)return false;
   state[item.count]--;return joinSect(invitation);
 }
-function useResourceBundle(key){
+function useResourceBundle(key,quantity=1){
   const item=itemCatalog[key],bundle=item?.resourceBundle;if(!bundle||(state[item.count]||0)<1)return false;
-  state[item.count]--;state[bundle.resource]=(state[bundle.resource]||0)+bundle.amount;toast(`使用${item.name}・${bundle.label}+${formatLargeNumber(bundle.amount)}`);render();save();return true;
+  quantity=Math.max(1,Math.min(state[item.count],Math.floor(quantity)));state[item.count]-=quantity;state[bundle.resource]=(state[bundle.resource]||0)+bundle.amount*quantity;toast(`使用${item.name} ${formatLargeNumber(quantity)}個・${bundle.label}+${formatLargeNumber(bundle.amount*quantity)}`);render();save();return true;
 }
-function useCultivationBundle(key){const item=itemCatalog[key],amount=Number(item?.cultivationBundle)||0;if(amount<=0||(state[item.count]||0)<1)return false;state[item.count]--;state.free+=amount;state.totalEarned+=amount;toast(`使用${item.name}・修為+${formatLargeNumber(amount)}`);render();save();return true}
-function useStaminaMedicine(key){const item=itemCatalog[key],amount=Number(item?.staminaRestore)||0;refreshBodyState();if(amount<=0||(state[item.count]||0)<1)return false;state[item.count]--;state.bodyStamina+=amount;state.bodyStaminaUpdatedAt=gameNow();toast(`使用${item.name}・體力+${Math.floor(amount)}${state.bodyStamina>100?'（已溢出保留）':''}`);render();save();return true}
-function useItem(key){let used=false;const item=itemCatalog[key];if(key==='sectToken')used=useSectToken();else if(item?.techniqueBook)used=useTechniqueBook(key);else if(item?.sectInvitation)used=useSectInvitation(key);else if(item?.cultivationBundle)used=useCultivationBundle(key);else if(item?.resourceBundle)used=useResourceBundle(key);else if(item?.staminaRestore)used=useStaminaMedicine(key);if(used){closeItemModal();if(currentFeature==='bag')renderBagView('bag')}}
+function useCultivationBundle(key,quantity=1){const item=itemCatalog[key],amount=Number(item?.cultivationBundle)||0;if(amount<=0||(state[item.count]||0)<1)return false;quantity=Math.max(1,Math.min(state[item.count],Math.floor(quantity)));state[item.count]-=quantity;state.free+=amount*quantity;state.totalEarned+=amount*quantity;toast(`使用${item.name} ${formatLargeNumber(quantity)}個・修為+${formatLargeNumber(amount*quantity)}`);render();save();return true}
+function useStaminaMedicine(key,quantity=1){const item=itemCatalog[key],amount=Number(item?.staminaRestore)||0;refreshBodyState();if(amount<=0||(state[item.count]||0)<1)return false;quantity=Math.max(1,Math.min(state[item.count],Math.floor(quantity)));state[item.count]-=quantity;state.bodyStamina+=amount*quantity;state.bodyStaminaUpdatedAt=gameNow();toast(`使用${item.name} ${formatLargeNumber(quantity)}個・體力+${formatLargeNumber(amount*quantity)}${state.bodyStamina>100?'（已溢出保留）':''}`);render();save();return true}
+function useItem(key,quantity=1){let used=false;const item=itemCatalog[key];if(key==='sectToken')used=useSectToken(quantity);else if(item?.techniqueBook)used=useTechniqueBook(key);else if(item?.sectInvitation)used=useSectInvitation(key);else if(item?.cultivationBundle)used=useCultivationBundle(key,quantity);else if(item?.resourceBundle)used=useResourceBundle(key,quantity);else if(item?.staminaRestore)used=useStaminaMedicine(key,quantity);if(used){closeItemModal();if(currentFeature==='bag')renderBagView('bag')}}
 function itemSellPrice(item){return Math.max(1,Math.floor(Number(item.sellPrice)||1))}
 function updateSellModal(){
   const item=itemCatalog[sellItemKey];if(!item)return;
   const owned=Math.max(0,Math.floor(Number(state[item.count])||0));
   sellItemQuantity=Math.max(1,Math.min(owned,sellItemQuantity));
-  $('#sellQuantity').textContent=formatLargeNumber(sellItemQuantity);
   $('#sellModalTotal').textContent=`可獲得靈石：${formatLargeNumber(sellItemQuantity*itemSellPrice(item))}`;
-  $('#sellMinusBtn').disabled=sellItemQuantity<=1;$('#sellMinBtn').disabled=sellItemQuantity<=1;
-  $('#sellPlusBtn').disabled=sellItemQuantity>=owned;$('#sellMaxBtn').disabled=sellItemQuantity>=owned;
   $('#sellConfirmBtn').disabled=owned<1;
 }
-function openSellModal(key){
+function openSellModal(key,quantity=1){
   const item=itemCatalog[key];if(!item)return;
   const owned=Math.max(0,Math.floor(Number(state[item.count])||0));if(owned<1)return;
-  sellItemKey=key;sellItemQuantity=1;
-  $('#sellModalImage').src=item.image;$('#sellModalImage').alt=item.name;$('#sellModalName').textContent=item.name;
-  $('#sellModalMessage').textContent=`持有 ${formatLargeNumber(owned)} 個・單價 ${formatLargeNumber(itemSellPrice(item))} 靈石`;
+  sellItemKey=key;sellItemQuantity=Math.max(1,Math.min(owned,Math.floor(quantity)));
+  $('#sellModalMessage').textContent=`確定販售「${item.name}」${formatLargeNumber(sellItemQuantity)}個？`;
   updateSellModal();$('#sellModal').classList.remove('hidden');
 }
 function closeSellModal(){$('#sellModal').classList.add('hidden');sellItemKey=null;sellItemQuantity=1}
@@ -1529,11 +1527,11 @@ $('#marketPurchaseMinus').onclick=()=>{marketPurchaseQuantity--;updateMarketPurc
 $('#marketPurchasePlus').onclick=()=>{marketPurchaseQuantity++;updateMarketPurchaseModal()};
 $('#marketPurchaseMax').onclick=()=>{marketPurchaseQuantity=Math.max(1,marketPurchaseCapacity(marketPurchaseOffer));updateMarketPurchaseModal()};
 $('#itemModalClose').onclick=closeItemModal;
+$('#itemMinBtn').onclick=()=>{itemModalQuantity=1;updateItemQuantity()};
+$('#itemMinusBtn').onclick=()=>{itemModalQuantity--;updateItemQuantity()};
+$('#itemPlusBtn').onclick=()=>{itemModalQuantity++;updateItemQuantity()};
+$('#itemMaxBtn').onclick=()=>{const item=itemCatalog[itemModalKey];if(item)itemModalQuantity=state[item.count]||1;updateItemQuantity()};
 $('#sellCancelBtn').onclick=closeSellModal;
-$('#sellMinBtn').onclick=()=>{sellItemQuantity=1;updateSellModal()};
-$('#sellMinusBtn').onclick=()=>{sellItemQuantity--;updateSellModal()};
-$('#sellPlusBtn').onclick=()=>{sellItemQuantity++;updateSellModal()};
-$('#sellMaxBtn').onclick=()=>{const item=itemCatalog[sellItemKey];if(item)sellItemQuantity=state[item.count]||1;updateSellModal()};
 $('#sellConfirmBtn').onclick=confirmSellItem;
 $('#offlineModalClose').onclick=()=>$('#offlineModal').classList.add('hidden');
 $('#confirmModalCancel').onclick=()=>closeGameConfirm(false);
