@@ -133,7 +133,7 @@ const trueFormCatalog=[
   {id:'taixu-sword',name:'太虛劍相',image:'assets/qstyle-v2/true-form-sword-v2.png',description:'八方虛靈古劍結成劍陣，隨吐納明滅共鳴。'},
   {id:'jiuxiao-wings',name:'九霄靈翼',image:'assets/qstyle-v2/true-form-wings.png',description:'以清靈元息凝成的光翼，非羽非骨，如雲霞舒展。'}
 ];
-const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, swordPathVersion:2,swordEmbryo:'',swordName:'',swordNurtureLevel:0,swordIntent:0,swordInsight:0,swordIntentType:'',swordMoves:['origin','flow'],swordTrialWins:0,bodyPathVersion:1,bodyStamina:100,bodyStaminaUpdatedAt:0,bodyTemper:0,bodyInjury:'',bodyInjuryUntil:0,testTemporaryItemsMailVersion:0,testResourceSupplyMailVersion:0,testFoodAuraSupplyMailVersion:0,testSpiritMedicineMailVersion:0,testCultivationPillCount:0,testSpiritStoneTenMillionCount:0,spiritMedicineCount:0, ...tribulationPillDefaults, ...techniqueBookDefaults, tribulationPillMigration:1, testTribulationPillGrantVersion:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],learnedBookIds:[],mailbox:[],scripturePurchases:{date:'',ids:[]},marketPermanentPurchases:{},marketDailyPurchases:{date:'',counts:{}},artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:99999, testJadeGrantVersion:1, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0,workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, sectNpcSnapshot:null, righteousness:0, evilQi:0, prestige:0, actingLeader:false, npcAffinity:{},npcDaily:{},sectTokens:0,sectTokenDaily:{date:'',exchanged:0},practiceBuff:{active:false,until:0,remaining:0,total:0},transmissionBuff:{active:false,until:0,remaining:0,total:0},lastGreetingDay:'',lastSalaryDay:'',lastPracticeDay:'',bornAt:null,lastTrustedTime:0,lastSave:Date.now() };
+const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, swordPathVersion:2,swordEmbryo:'',swordName:'',swordNurtureLevel:0,swordIntent:0,swordInsight:0,swordIntentType:'',swordMoves:['origin','flow'],swordTrialWins:0,bodyPathVersion:1,bodyStamina:100,bodyStaminaUpdatedAt:0,bodyTemper:0,bodyInjury:'',bodyInjuryUntil:0,testTemporaryItemsMailVersion:0,testResourceSupplyMailVersion:0,testFoodAuraSupplyMailVersion:0,testSpiritMedicineMailVersion:0,testCultivationPillCount:0,testSpiritStoneTenMillionCount:0,spiritMedicineCount:0, ...tribulationPillDefaults, ...techniqueBookDefaults, tribulationPillMigration:1, testTribulationPillGrantVersion:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],learnedBookIds:[],mailbox:[],scripturePurchases:{date:'',ids:[]},marketPermanentPurchases:{},marketDailyPurchases:{date:'',counts:{}},artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:99999, testJadeGrantVersion:1, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0,workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1,caveCoreLevel:1,caveCultivationLevel:1,caveSwordLevel:1,caveBodyLevel:1,caveCultivationEnabled:true,caveSwordEnabled:false,caveBodyEnabled:false,caveSwordTicks:0,caveBodyTicks:0, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, sectNpcSnapshot:null, righteousness:0, evilQi:0, prestige:0, actingLeader:false, npcAffinity:{},npcDaily:{},sectTokens:0,sectTokenDaily:{date:'',exchanged:0},practiceBuff:{active:false,until:0,remaining:0,total:0},transmissionBuff:{active:false,until:0,remaining:0,total:0},lastGreetingDay:'',lastSalaryDay:'',lastPracticeDay:'',bornAt:null,lastTrustedTime:0,lastSave:Date.now() };
 defaults.cultivationAwakened=false;
 let state = { ...defaults }, tickStart = Date.now(), manualCultivationStartedAt=0, manualCultivationTimer=null, breakthroughInProgress=false;
 const saveKey = 'wendao-idle-v2';
@@ -298,13 +298,13 @@ function realmEfficiency(){return Math.max(1,pathEfficiency(state.spiritLevel)+p
 function baseRate() { return Math.max(1,Math.floor((10+cultivationEfficiency())*realmEfficiency())); }
 function buffRemaining(key,now=gameNow()){const buff=state[key]||defaults[key];return buff.active?Math.max(0,(buff.until||0)-now):Math.max(0,buff.remaining||0)}
 function buffActive(key,now=gameNow()){return !!state[key]?.active&&buffRemaining(key,now)>0}
-function cultivationMultiplier(now=gameNow()){return 1+(buffActive('practiceBuff',now)?4:0)+(buffActive('transmissionBuff',now)?7:0)}
+function cultivationMultiplier(now=gameNow()){return 1+(buffActive('practiceBuff',now)?4:0)+(buffActive('transmissionBuff',now)?7:0)+caveCultivationBonus()}
 function rate() { return Math.max(1,Math.floor(baseRate()*cultivationMultiplier())); }
 function buffYears(key){return buffRemaining(key)/900000}
 function addCultivationBuff(key,years){const remaining=buffRemaining(key),duration=years*900000,total=remaining+duration;state[key]={active:true,until:gameNow()+total,remaining:0,total}}
 function buffClock(key){const seconds=Math.max(0,Math.ceil(buffRemaining(key)/1000)),hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60),secs=seconds%60;return `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(secs).padStart(2,'0')}`}
 function buffPercent(key){const buff=state[key],total=Math.max(1,buff?.total||buffRemaining(key));return Math.max(0,Math.min(100,buffRemaining(key)/total*100))}
-function offlineCultivationGain(from,to){const base=baseRate(),ticks=Math.max(0,(to-from)/5000);let gain=base*ticks;for(const [key,bonus] of [['practiceBuff',4],['transmissionBuff',7]]){const buff=state[key];if(buff?.active)gain+=base*bonus*Math.max(0,Math.min(to,buff.until||0)-from)/5000}return Math.floor(gain)}
+function offlineCultivationGain(from,to){const base=baseRate(),ticks=Math.max(0,(to-from)/5000);let gain=base*ticks*(1+caveCultivationBonus());for(const [key,bonus] of [['practiceBuff',4],['transmissionBuff',7]]){const buff=state[key];if(buff?.active)gain+=base*bonus*Math.max(0,Math.min(to,buff.until||0)-from)/5000}return Math.floor(gain)}
 function auraRate() { return Math.max(1,Math.floor(5+(state.spiritPoolLevel-1)*2+auraEfficiency())); }
 function poolStorageHours() { return Math.min(18,2+(state.spiritPoolLevel-1)*.75); }
 function auraCapacity() { return Math.floor(auraRate()*720*poolStorageHours()); }
@@ -321,7 +321,7 @@ function grantTestTribulationPills(){
 function load() {
   try {
     const current=JSON.parse(localStorage.getItem(saveKey));
-    if(current) { const growthVersion=current.attributeGrowthVersion||0,needsPillMigration=!current.tribulationPillMigration,needsTestJadeGrant=!current.testJadeGrantVersion,needsTestPillGrant=!current.testTribulationPillGrantVersion;state={...defaults,...current};if(needsTestJadeGrant){state.spiritJade=Math.max(99999,state.spiritJade||0);state.testJadeGrantVersion=1}if(needsPillMigration)state.tribPill1=(state.tribPill1||0)+Math.max(0,current.pills||0);delete state.pills;state.tribulationPillMigration=1;if(needsTestPillGrant)grantTestTribulationPills();state.learnedArts=Array.isArray(current.learnedArts)?current.learnedArts:[];state.learnedBookIds=Array.isArray(current.learnedBookIds)?current.learnedBookIds:[];state.mailbox=Array.isArray(current.mailbox)?current.mailbox:[];state.scripturePurchases={...defaults.scripturePurchases,...current.scripturePurchases};state.scripturePurchases.ids=Array.isArray(state.scripturePurchases.ids)?state.scripturePurchases.ids:[];state.marketPermanentPurchases=current.marketPermanentPurchases&&typeof current.marketPermanentPurchases==='object'?current.marketPermanentPurchases:{};state.marketDailyPurchases={...defaults.marketDailyPurchases,...current.marketDailyPurchases};state.marketDailyPurchases.counts=state.marketDailyPurchases.counts&&typeof state.marketDailyPurchases.counts==='object'?state.marketDailyPurchases.counts:{};state.sectTokenDaily={...defaults.sectTokenDaily,...current.sectTokenDaily};state.practiceBuff={...defaults.practiceBuff,...current.practiceBuff};state.transmissionBuff={...defaults.transmissionBuff,...current.transmissionBuff};migrateAttributeGrowth(growthVersion);state.bornAt ||= Date.now(); state.npcAffinity||={};state.npcDaily||={};normalizeLearnedArts();normalizeCaveWorkers();migrateSectName(); return state; }
+    if(current) { const growthVersion=current.attributeGrowthVersion||0,needsPillMigration=!current.tribulationPillMigration,needsTestJadeGrant=!current.testJadeGrantVersion,needsTestPillGrant=!current.testTribulationPillGrantVersion;state={...defaults,...current};if(needsTestJadeGrant){state.spiritJade=Math.max(99999,state.spiritJade||0);state.testJadeGrantVersion=1}if(needsPillMigration)state.tribPill1=(state.tribPill1||0)+Math.max(0,current.pills||0);delete state.pills;state.tribulationPillMigration=1;if(needsTestPillGrant)grantTestTribulationPills();state.learnedArts=Array.isArray(current.learnedArts)?current.learnedArts:[];state.learnedBookIds=Array.isArray(current.learnedBookIds)?current.learnedBookIds:[];state.mailbox=Array.isArray(current.mailbox)?current.mailbox:[];state.scripturePurchases={...defaults.scripturePurchases,...current.scripturePurchases};state.scripturePurchases.ids=Array.isArray(state.scripturePurchases.ids)?state.scripturePurchases.ids:[];state.marketPermanentPurchases=current.marketPermanentPurchases&&typeof current.marketPermanentPurchases==='object'?current.marketPermanentPurchases:{};state.marketDailyPurchases={...defaults.marketDailyPurchases,...current.marketDailyPurchases};state.marketDailyPurchases.counts=state.marketDailyPurchases.counts&&typeof state.marketDailyPurchases.counts==='object'?state.marketDailyPurchases.counts:{};state.sectTokenDaily={...defaults.sectTokenDaily,...current.sectTokenDaily};state.practiceBuff={...defaults.practiceBuff,...current.practiceBuff};state.transmissionBuff={...defaults.transmissionBuff,...current.transmissionBuff};migrateAttributeGrowth(growthVersion);state.bornAt ||= Date.now(); state.npcAffinity||={};state.npcDaily||={};normalizeLearnedArts();normalizeCaveWorkers();normalizeCaveState();migrateSectName(); return state; }
     const old=JSON.parse(localStorage.getItem('wendao-idle-v1'));
     if(old) { state={...defaults,...old,free:(old.free||0)+(old.spiritQi||0)+(old.bodyQi||0),spiritJade:99999,testJadeGrantVersion:1,tribPill1:Math.max(0,old.pills||0),tribulationPillMigration:1};delete state.pills;grantTestTribulationPills();state.bornAt ||= Date.now(); }
   } catch {}
@@ -595,9 +595,9 @@ function openHeroCharacterAttributes(){
   renderBagPanel('character');
   showCharacterAttributes();
 }
-function rewardSnapshot(){return {free:state.free,aura:state.aura,spiritStone:state.spiritStone,food:state.food,wood:state.wood,meteorIron:state.meteorIron,sectContribution:state.sectContribution,prestige:state.prestige}}
+function rewardSnapshot(){return {free:state.free,aura:state.aura,spiritStone:state.spiritStone,food:state.food,wood:state.wood,meteorIron:state.meteorIron,swordIntent:state.swordIntent,bodyTemper:state.bodyTemper,sectContribution:state.sectContribution,prestige:state.prestige}}
 function showOfflineRewards(before,seconds){
-  const labels={free:'修為',aura:'靈氣',spiritStone:'靈石',food:'食物',wood:'木材',meteorIron:'隕鐵',sectContribution:'門派貢獻',prestige:'聲望'},after=rewardSnapshot(),rows=Object.entries(labels).map(([key,label])=>[label,Math.max(0,Math.floor(after[key]-before[key]))]).filter(([,amount])=>amount>0);
+  const labels={free:'修為',aura:'靈氣',spiritStone:'靈石',food:'食物',wood:'木材',meteorIron:'隕鐵',swordIntent:'劍意',bodyTemper:'淬鍊度',sectContribution:'門派貢獻',prestige:'聲望'},after=rewardSnapshot(),rows=Object.entries(labels).map(([key,label])=>[label,Math.max(0,Math.floor(after[key]-before[key]))]).filter(([,amount])=>amount>0);
   const hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60),secs=seconds%60;$('#offlineDuration').textContent=`離線時間 ${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
   $('#offlineRewardList').innerHTML=rows.length?rows.map(([label,amount])=>`<div><span>${label}</span><b>+${amount.toLocaleString()}</b></div>`).join(''):'<p>本次離線時間不足，尚未產生收益。</p>';$('#offlineModal').classList.remove('hidden');
 }
@@ -1098,15 +1098,39 @@ async function challengeMaster(){
 }
 
 const caveAreas = {
-  spiritStone:{label:'靈石',value:'spiritStone',worker:'workerSpiritStone',level:'spiritStoneAreaLevel',icon:'assets/qstyle-v2/spirit-stone.png',baseCap:150,output:1,foodCost:3,upgradeBase:180},
-  food:{label:'食物',value:'food',worker:'workerFood',level:'foodAreaLevel',icon:'assets/qstyle-v2/food-cutout.png',baseCap:1000,output:4,foodCost:0,upgradeBase:100},
-  wood:{label:'木材',value:'wood',worker:'workerWood',level:'woodAreaLevel',icon:'assets/qstyle-v2/wood-cutout.png',baseCap:800,output:2,foodCost:1,upgradeBase:140},
-  meteorIron:{label:'隕鐵',value:'meteorIron',worker:'workerMeteorIron',level:'meteorIronAreaLevel',icon:'assets/qstyle-v2/meteor-iron-cutout.png',baseCap:300,output:1,foodCost:2,upgradeBase:220}
+  spiritStone:{label:'靈石',value:'spiritStone',worker:'workerSpiritStone',level:'spiritStoneAreaLevel',icon:'assets/qstyle-v2/spirit-stone.png',baseCap:5760,output:1,foodCost:3,upgradeBase:240},
+  food:{label:'食物',value:'food',worker:'workerFood',level:'foodAreaLevel',icon:'assets/qstyle-v2/food-cutout.png',baseCap:34560,output:6,foodCost:0,upgradeBase:180},
+  wood:{label:'木材',value:'wood',worker:'workerWood',level:'woodAreaLevel',icon:'assets/qstyle-v2/wood-cutout.png',baseCap:11520,output:2,foodCost:1,upgradeBase:280},
+  meteorIron:{label:'隕鐵',value:'meteorIron',worker:'workerMeteorIron',level:'meteorIronAreaLevel',icon:'assets/qstyle-v2/meteor-iron-cutout.png',baseCap:5760,output:1,foodCost:2,upgradeBase:360}
+};
+const caveFacilities={
+  cultivation:{label:'聚靈室',seal:'氣',level:'caveCultivationLevel',enabled:'caveCultivationEnabled',description:'引靈入室，持續提高線上與離線修為。'},
+  sword:{label:'洗劍池',seal:'劍',level:'caveSwordLevel',enabled:'caveSwordEnabled',description:'本命劍浸養於靈泉，掛機時緩慢凝聚劍意。'},
+  body:{label:'鍛體室',seal:'體',level:'caveBodyLevel',enabled:'caveBodyEnabled',description:'以地脈溫養筋骨，掛機時緩慢累積淬鍊度。'}
 };
 function areaCapacity(area){return Math.floor(area.baseCap*Math.pow(state[area.level],1.45))}
 function areaWorkerMax(area){return state[area.level]}
 function areaUpgradeCost(area){return Math.floor(area.upgradeBase*Math.pow(state[area.level],1.45))}
 function normalizeCaveWorkers(){Object.values(caveAreas).forEach(area=>state[area.worker]=Math.max(0,Math.min(Math.floor(state[area.worker]||0),areaWorkerMax(area))))}
+function normalizeCaveState(){
+  state.caveCoreLevel=Math.max(1,Math.min(7,Math.floor(state.caveCoreLevel||1)));
+  for(const facility of Object.values(caveFacilities)){state[facility.level]=Math.max(1,Math.min(7,Math.floor(state[facility.level]||1)));state[facility.enabled]=!!state[facility.enabled]}
+  state.caveSwordTicks=Math.max(0,Math.floor(state.caveSwordTicks||0));state.caveBodyTicks=Math.max(0,Math.floor(state.caveBodyTicks||0));
+  while(caveSpiritUsed()>caveSpiritCapacity()){const enabled=Object.values(caveFacilities).reverse().find(f=>state[f.enabled]);if(!enabled)break;state[enabled.enabled]=false}
+}
+function caveSpiritCapacity(){return 4+(state.caveCoreLevel-1)*2}
+function caveFacilityDraw(facility){return 3+Math.floor((state[facility.level]-1)/2)}
+function caveSpiritUsed(){return Object.values(caveFacilities).reduce((sum,facility)=>sum+(state[facility.enabled]?caveFacilityDraw(facility):0),0)}
+function caveCultivationBonus(){return state.caveCultivationEnabled&&state.spiritLevel>=10?.08+state.caveCultivationLevel*.02:0}
+function caveFacilityEffect(key){
+  const level=state[caveFacilities[key].level];
+  if(key==='cultivation')return `修為效率 +${Math.round((.08+level*.02)*100)}%`;
+  if(key==='sword')return `每 ${formatDuration(caveSwordInterval(level)*5000)} 凝聚 1 劍意`;
+  return `每小時獲得需求量 ${(0.25+level*.1).toFixed(2)}% 的淬鍊度`;
+}
+function caveSwordInterval(level){return Math.max(360,1440-(level-1)*180)}
+function caveCoreUpgradeCost(){const level=state.caveCoreLevel;return {stone:Math.floor(1200*Math.pow(level,1.7)),wood:Math.floor(420*Math.pow(level,1.5)),iron:Math.floor(180*Math.pow(level,1.45))}}
+function caveFacilityUpgradeCost(key){const level=state[caveFacilities[key].level],weight={cultivation:1,sword:1.15,body:1.1}[key];return {stone:Math.floor(800*weight*Math.pow(level,1.65)),wood:Math.floor(240*weight*Math.pow(level,1.5)),iron:Math.floor(100*weight*Math.pow(level,1.45))}}
 function assignedChildren(){return Object.values(caveAreas).reduce((sum,a)=>sum+state[a.worker],0)}
 function availableChildren(){return Math.max(0,state.daoChildTotal-assignedChildren())}
 function daoChildCost(){return Math.floor(100*Math.pow(state.daoChildBought+1,1.45))}
@@ -1125,16 +1149,34 @@ function renderCaveView(view){
     const names={study:'書房',alchemy:'丹房',forge:'器室',brew:'仙釀',partner:'道侶'};
     inner.innerHTML=`<div class="cave-placeholder"><b>${names[view]}</b><small>相關內容將於後續版本開放</small></div>`;return;
   }
-  const cards=Object.entries(caveAreas).map(([key,a])=>{const cap=areaCapacity(a),max=areaWorkerMax(a),upgrade=areaUpgradeCost(a);return `<article class="resource-area"><img src="${a.icon}" alt="${a.label}"><div class="resource-copy"><b>${a.label}・${state[a.level]}級</b><strong>${Math.floor(state[a.value]).toLocaleString()} / ${cap.toLocaleString()}</strong><small>1道童 = ${a.output} ${a.label}／5秒${a.foodCost?`・消耗${a.foodCost}食物`:''}</small></div><div class="worker-stepper"><button data-worker="${key}" data-change="-1">−</button><span>${state[a.worker]} / ${max}</span><button data-worker="${key}" data-change="1">＋</button></div><button class="area-upgrade" data-upgrade-area="${key}" ${state.wood>=upgrade?'':'disabled'}>升級・木材 ${upgrade.toLocaleString()}</button></article>`}).join('');
+  const cards=Object.entries(caveAreas).map(([key,a])=>{const cap=areaCapacity(a),max=areaWorkerMax(a),upgrade=areaUpgradeCost(a),stored=Math.floor(state[a.value]),full=stored>=cap;return `<article class="resource-area ${full?'storage-full':''}"><img src="${a.icon}" alt="${a.label}"><div class="resource-copy"><b>${a.label}・${state[a.level]}級</b><strong>${stored.toLocaleString()} / ${cap.toLocaleString()}</strong><small>${full?'倉儲已滿・暫停生產':`1道童 = ${a.output}／5秒${a.foodCost?`・消耗${a.foodCost}食物`:''}`}</small></div><div class="worker-stepper"><button data-worker="${key}" data-change="-1">−</button><span>${state[a.worker]} / ${max}</span><button data-worker="${key}" data-change="1">＋</button></div><button class="area-upgrade" data-upgrade-area="${key}" ${state.wood>=upgrade?'':'disabled'}>擴建倉儲・木材 ${upgrade.toLocaleString()}</button></article>`}).join('');
+  const coreCost=caveCoreUpgradeCost(),coreMax=state.caveCoreLevel>=7,canCore=!coreMax&&state.spiritStone>=coreCost.stone&&state.wood>=coreCost.wood&&state.meteorIron>=coreCost.iron;
+  const facilities=Object.entries(caveFacilities).map(([key,f])=>{const level=state[f.level],enabled=state[f.enabled],draw=caveFacilityDraw(f),cost=caveFacilityUpgradeCost(key),maxed=level>=7,locked=key==='sword'&&!state.swordEmbryo,canUpgrade=!maxed&&state.spiritStone>=cost.stone&&state.wood>=cost.wood&&state.meteorIron>=cost.iron;return `<article class="cave-facility ${enabled?'running':''} ${locked?'facility-locked':''}"><span class="facility-seal">${f.seal}</span><div><small>${enabled?'靈氣流轉中':'目前停用'}・耗用 ${draw}</small><b>${f.label}・${level}級</b><p>${f.description}</p><strong>${caveFacilityEffect(key)}</strong></div><div class="facility-actions"><button data-toggle-facility="${key}" ${locked?'disabled':''}>${locked?'凝聚本命劍後開放':enabled?'停止運轉':'開啟運轉'}</button><button data-upgrade-facility="${key}" ${canUpgrade?'':'disabled'}>${maxed?'已達最高級':`升級・靈石 ${cost.stone.toLocaleString()}／木 ${cost.wood.toLocaleString()}／鐵 ${cost.iron.toLocaleString()}`}</button></div></article>`}).join('');
   const cost=daoChildCost();
-  inner.innerHTML=`<section class="dao-child-yard"><img src="assets/qstyle-v2/dao-child.png" alt="道童"><div><small>可用道童</small><b>${availableChildren()} / ${state.daoChildTotal}</b><em>未安排的道童會在此等候</em></div><button id="buyDaoChild" ${state.food>=cost?'':'disabled'}>招募<br>食物 ${cost}</button></section><div class="resource-area-grid">${cards}</div>`;
+  inner.innerHTML=`<section class="cave-core"><div><small>洞府靈脈・${state.caveCoreLevel}階</small><b>供應 ${caveSpiritUsed()} / ${caveSpiritCapacity()}</b><p>修行房間共用靈氣供應；資源區由道童獨立運作。</p></div><button id="upgradeCaveCore" ${canCore?'':'disabled'}>${coreMax?'靈脈已圓滿':`升階・靈石 ${coreCost.stone.toLocaleString()}／木 ${coreCost.wood.toLocaleString()}／鐵 ${coreCost.iron.toLocaleString()}`}</button></section><section class="cave-section-title"><b>修行布置</b><small>依目前目標啟停房間，離線期間同樣生效</small></section><div class="cave-facility-grid">${facilities}</div><section class="cave-section-title"><b>資源產地</b><small>一級倉儲約可容納單一道童 8 小時產量</small></section><section class="dao-child-yard"><img src="assets/qstyle-v2/dao-child.png" alt="道童"><div><small>可用道童</small><b>${availableChildren()} / ${state.daoChildTotal}</b><em>未安排的道童會在此等候</em></div><button id="buyDaoChild" ${state.food>=cost?'':'disabled'}>招募<br>食物 ${cost}</button></section><div class="resource-area-grid">${cards}</div>`;
   $$('.worker-stepper button').forEach(b=>b.onclick=()=>assignWorker(b.dataset.worker,+b.dataset.change));
   $$('.area-upgrade').forEach(b=>b.onclick=()=>upgradeCaveArea(b.dataset.upgradeArea));
+  $$('[data-toggle-facility]').forEach(b=>b.onclick=()=>toggleCaveFacility(b.dataset.toggleFacility));
+  $$('[data-upgrade-facility]').forEach(b=>b.onclick=()=>upgradeCaveFacility(b.dataset.upgradeFacility));
+  $('#upgradeCaveCore').onclick=upgradeCaveCore;
   $('#buyDaoChild').onclick=buyDaoChild;
 }
 function assignWorker(key,change){const a=caveAreas[key];if(change>0){if(availableChildren()<1)return toast('目前沒有閒置道童');if(state[a.worker]>=areaWorkerMax(a))return toast('此區域已達道童上限')}else if(state[a.worker]<=0)return;state[a.worker]+=change;renderCaveView('dwelling');save()}
 function buyDaoChild(){const cost=daoChildCost();if(state.food<cost)return toast('食物不足');state.food-=cost;state.daoChildTotal++;state.daoChildBought++;toast('新道童前來投效');renderCaveView('dwelling');render();save()}
 function upgradeCaveArea(key){const a=caveAreas[key],cost=areaUpgradeCost(a);if(state.wood<cost)return toast('木材不足');state.wood-=cost;state[a.level]++;toast(`${a.label}區域提升至${state[a.level]}級`);renderCaveView('dwelling');save()}
+function toggleCaveFacility(key){
+  const facility=caveFacilities[key];if(!facility)return;if(key==='sword'&&!state.swordEmbryo)return toast('凝聚本命劍後才能開啟洗劍池');
+  if(state[facility.enabled])state[facility.enabled]=false;
+  else{const next=caveSpiritUsed()+caveFacilityDraw(facility);if(next>caveSpiritCapacity())return toast(`洞府靈氣不足・尚缺 ${next-caveSpiritCapacity()} 點供應`);state[facility.enabled]=true}
+  renderCaveView('dwelling');save();
+}
+function upgradeCaveCore(){const cost=caveCoreUpgradeCost();if(state.caveCoreLevel>=7)return;if(state.spiritStone<cost.stone||state.wood<cost.wood||state.meteorIron<cost.iron)return toast('洞府靈脈升階材料不足');state.spiritStone-=cost.stone;state.wood-=cost.wood;state.meteorIron-=cost.iron;state.caveCoreLevel++;toast(`洞府靈脈提升至${state.caveCoreLevel}階・供應上限增加`);renderCaveView('dwelling');render();save()}
+function upgradeCaveFacility(key){const facility=caveFacilities[key];if(!facility||state[facility.level]>=7)return;const cost=caveFacilityUpgradeCost(key);if(state.spiritStone<cost.stone||state.wood<cost.wood||state.meteorIron<cost.iron)return toast('修行房間升級材料不足');const oldDraw=caveFacilityDraw(facility);state[facility.level]++;const newDraw=caveFacilityDraw(facility);if(state[facility.enabled]&&caveSpiritUsed()>caveSpiritCapacity()){state[facility.level]--;return toast(`升級後需多 ${newDraw-oldDraw} 點靈氣供應，請先提升洞府靈脈`)}state.spiritStone-=cost.stone;state.wood-=cost.wood;state.meteorIron-=cost.iron;toast(`${facility.label}提升至${state[facility.level]}級`);renderCaveView('dwelling');render();save()}
+function runCaveFacilities(ticks){
+  if(ticks<=0||state.spiritLevel<10)return;
+  if(state.caveSwordEnabled&&state.swordEmbryo){state.caveSwordTicks+=ticks;const interval=caveSwordInterval(state.caveSwordLevel),gain=Math.floor(state.caveSwordTicks/interval);if(gain>0){state.caveSwordTicks-=gain*interval;state.swordIntent+=gain}}
+  if(state.caveBodyEnabled){state.caveBodyTicks+=ticks;const cycles=Math.floor(state.caveBodyTicks/720);if(cycles>0){state.caveBodyTicks-=cycles*720;const gain=Math.max(1,Math.floor(bodyTemperNeed()*(.0025+state.caveBodyLevel*.001)));state.bodyTemper+=gain*cycles}}
+}
 function runSettlementTick(ticks=1){
   for(let i=0;i<ticks;i++){
     const foodArea=caveAreas.food,foodWorkers=Math.min(state.workerFood,areaWorkerMax(foodArea)),foodCapacity=areaCapacity(foodArea);
@@ -1145,6 +1187,7 @@ function runSettlementTick(ticks=1){
       if(possible>0){state.food-=possible*a.foodCost;state[a.value]+=possible*a.output}
     }
   }
+  runCaveFacilities(ticks);
 }
 
 const elementData = {
