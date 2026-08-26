@@ -95,11 +95,19 @@
         </div>
         <div class="sword-ritual" aria-hidden="true">
           <div class="sword-silence-veil"></div>
+          <div class="sword-dual-current"><i class="battle-current"></i><i class="heaven-current"></i></div>
+          <div class="sword-calamity-cloud cloud-left"></div><div class="sword-calamity-cloud cloud-right"></div>
+          <div class="sword-life-link"></div>
+          <div class="sword-spirit-omen"></div>
+          <div class="sword-phantoms"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
           <div class="sword-mist-split mist-left"></div><div class="sword-mist-split mist-right"></div>
           <div class="sword-orbit-trace"></div>
           <div class="sword-ground-scar"></div>
           <div class="sword-energy-column"></div>
+          <div class="sword-forge-core"></div>
           <div class="sword-great-shadow"></div>
+          <div class="sword-heaven-rift"></div>
+          <div class="sword-impact-flash"></div>
           <div class="sword-resonance-wave"></div>
           <div class="sword-cold-glint"></div>
           <div class="sword-final-halo"></div>
@@ -125,7 +133,7 @@
           <div class="sword-flight sword-flight-rear"><svg class="forged-sword" viewBox="0 0 80 650"><use href="#physicalSword"/></svg></div>
           <div class="sword-flight sword-flight-front"><svg class="forged-sword" viewBox="0 0 80 650" role="img" aria-label="本命飛劍"><use href="#physicalSword"/></svg></div>
           <div class="sword-insight-streams"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-          <div class="sword-shed-fragments"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="sword-shed-fragments"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
           <i class="sword-spark spark-one"></i><i class="sword-spark spark-two"></i><i class="sword-spark spark-three"></i>
         </div>
         <svg class="tribulation-bolt bolt-one" viewBox="0 0 300 720" preserveAspectRatio="none" aria-hidden="true"><path class="bolt-channel bolt-haze" d="M137 -24 145 24 136 57 151 91 141 125 154 158 139 194 148 229 130 260 139 298 121 329 130 365 111 397 122 431 104 464 112 500 96 531 105 562 116 590 126 611"/><path class="bolt-channel bolt-core" d="M137 -24 145 24 136 57 151 91 141 125 154 158 139 194 148 229 130 260 139 298 121 329 130 365 111 397 122 431 104 464 112 500 96 531 105 562 116 590 126 611"/><path class="bolt-tendril" d="M141 125 112 145 98 174M139 194 169 213 181 243M130 260 101 279 86 309M121 329 148 347 161 378M111 397 81 416 67 447M104 464 132 483 144 514M96 531 73 550 64 577"/></svg>
@@ -298,7 +306,9 @@
       <div id="helpModal" class="modal hidden">
         <div class="paper-panel modal-card help-card">
           <p class="eyebrow">問道指引</p><h2>幫助</h2>
-          <div class="help-tabs"><button class="active" data-help-tab="realms">境界</button></div>
+          <div class="help-tabs">
+            <button class="active" data-help-tab="cultivation">修行</button><button data-help-tab="sword">淬劍</button><button data-help-tab="body">煉體</button><button data-help-tab="battle">戰鬥</button><button data-help-tab="arts">靈根功法</button><button data-help-tab="cave">洞府</button><button data-help-tab="sect">門派</button>
+          </div>
           <div id="helpContent" class="help-content"></div>
           <button id="helpCloseBtn" class="text-button">關閉</button>
         </div>
@@ -423,6 +433,10 @@
             <div id="battleResultSeal" class="result-seal">勝</div>
             <h2 id="battleResultTitle">戰鬥勝利</h2>
             <p id="battleResultText"></p>
+            <div id="swordPathChoice" class="sword-path-choice hidden">
+              <small>此戰之悟將留於本命劍，選擇你的處世之道</small>
+              <div><button data-sword-trial-path="righteous">收劍悟道<b>正氣</b></button><button data-sword-trial-path="balance">觀其生滅<b>正邪共鳴</b></button><button data-sword-trial-path="evil">吞噼幻影<b>邪氣</b></button></div>
+            </div>
             <div class="battle-result-actions">
               <button id="battleResultNext" class="jade-button hidden">下一關・3秒</button>
               <button id="battleResultClose" class="text-button">返回</button>
@@ -444,6 +458,7 @@
   <audio id="battleBgm" src="assets/bgm-battle-user-v1.wav" preload="auto" loop></audio>
   <audio id="tribulationSuccessBgm" src="assets/bgm-tribulation-success-v1.wav" preload="auto"></audio>
   <audio id="tribulationFailureBgm" src="assets/bgm-tribulation-failure-v1.wav" preload="auto"></audio>
+  <audio id="swordBreakthroughBgm" src="assets/bgm-sword-breakthrough-user-v1.wav" preload="auto"></audio>
   <script src="game.js"></script>
 </body>
 </html>
