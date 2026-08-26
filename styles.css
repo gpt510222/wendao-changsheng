@@ -390,6 +390,9 @@
 /* Two remaining tabs after moving sword techniques into Arts. */
 .experience-tabs.two-tabs{grid-template-columns:repeat(2,1fr)}
 
+/* Keep the stamina recovery note inside its resource card. */
+.body-training-resources .stamina-resource em{white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+
 /* Manual tribulation result exit */
 .game-screen.tribulation-locked::before{pointer-events:none}
 .tribulation-scene.active{pointer-events:auto}
