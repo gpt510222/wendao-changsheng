@@ -1144,7 +1144,7 @@ function availableChildren(){return Math.max(0,state.daoChildTotal-assignedChild
 function daoChildCost(){return Math.floor(100*Math.pow(state.daoChildBought+1,1.45))}
 function renderCavePanel(view='dwelling'){
   currentCaveView=view;
-  const tabs=[['dwelling','洞府'],['study','書房'],['alchemy','丹房'],['forge','器室'],['brew','仙釀'],['partner','道侶']];
+  const tabs=[['dwelling','靈脈'],['production','資源生產'],['study','書房'],['alchemy','丹房'],['forge','器室'],['brew','仙釀'],['partner','道侶']];
   $('#featureDescription').innerHTML=`<div class="cave-tabs">${tabs.map(([key,label])=>`<button data-cave-view="${key}" class="${key===view?'active':''}">${label}</button>`).join('')}</div><div id="caveInner"></div>`;
   $$('.cave-tabs button').forEach(b=>b.onclick=()=>renderCavePanel(b.dataset.caveView));
   renderCaveView(view);
@@ -1153,7 +1153,7 @@ function renderCaveView(view){
   currentCaveView=view;
   $$('.cave-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.caveView===view));
   const inner=$('#caveInner');if(!inner)return;
-  if(view!=='dwelling'){
+  if(!['dwelling','production'].includes(view)){
     const names={study:'書房',alchemy:'丹房',forge:'器室',brew:'仙釀',partner:'道侶'};
     inner.innerHTML=`<div class="cave-placeholder"><b>${names[view]}</b><small>相關內容將於後續版本開放</small></div>`;return;
   }
@@ -1161,17 +1161,21 @@ function renderCaveView(view){
   const coreCost=caveCoreUpgradeCost(),coreMax=state.caveCoreLevel>=7,canCore=!coreMax&&state.spiritStone>=coreCost.stone&&state.wood>=coreCost.wood&&state.meteorIron>=coreCost.iron;
   const facilities=Object.entries(caveFacilities).map(([key,f])=>{const level=state[f.level],enabled=state[f.enabled],draw=caveFacilityDraw(f),cost=caveFacilityUpgradeCost(key),maxed=level>=7,locked=key==='sword'&&!state.swordEmbryo,canUpgrade=!maxed&&state.spiritStone>=cost.stone&&state.wood>=cost.wood&&state.meteorIron>=cost.iron;return `<article class="cave-facility ${enabled?'running':''} ${locked?'facility-locked':''}"><span class="facility-seal">${f.seal}</span><div><small>${enabled?'靈氣流轉中':'目前停用'}・耗用 ${draw}</small><b>${f.label}・${level}級</b><p>${f.description}</p><strong>${caveFacilityEffect(key)}</strong></div><div class="facility-actions"><button data-toggle-facility="${key}" ${locked?'disabled':''}>${locked?'凝聚本命劍後開放':enabled?'停止運轉':'開啟運轉'}</button><button data-upgrade-facility="${key}" ${canUpgrade?'':'disabled'}>${maxed?'已達最高級':`升級・靈石 ${formatLargeNumber(cost.stone)}／木 ${formatLargeNumber(cost.wood)}／鐵 ${formatLargeNumber(cost.iron)}`}</button></div></article>`}).join('');
   const cost=daoChildCost();
-  inner.innerHTML=`<section class="cave-core"><div><small>洞府靈脈・${state.caveCoreLevel}階</small><b>供應 ${caveSpiritUsed()} / ${caveSpiritCapacity()}</b><p>修行房間共用靈氣供應；資源區由道童獨立運作。</p></div><button id="upgradeCaveCore" ${canCore?'':'disabled'}>${coreMax?'靈脈已圓滿':`升階・靈石 ${formatLargeNumber(coreCost.stone)}／木 ${formatLargeNumber(coreCost.wood)}／鐵 ${formatLargeNumber(coreCost.iron)}`}</button></section><section class="cave-section-title"><b>修行布置</b><small>依目前目標啟停房間，離線期間同樣生效</small></section><div class="cave-facility-grid">${facilities}</div><section class="cave-section-title"><b>資源產地</b><small>一級倉儲約可容納單一道童 8 小時產量</small></section><section class="dao-child-yard"><img src="assets/qstyle-v2/dao-child.png" alt="道童"><div><small>可用道童</small><b>${availableChildren()} / ${state.daoChildTotal}</b><em>未安排的道童會在此等候</em></div><button id="buyDaoChild" ${state.food>=cost?'':'disabled'}>招募<br>食物 ${formatLargeNumber(cost)}</button></section><div class="resource-area-grid">${cards}</div>`;
+  if(view==='dwelling'){
+    inner.innerHTML=`<section class="cave-core"><div><small>洞府靈脈・${state.caveCoreLevel}階</small><b>供應 ${caveSpiritUsed()} / ${caveSpiritCapacity()}</b><p>修行房間共用靈氣供應；資源區由道童獨立運作。</p></div><button id="upgradeCaveCore" ${canCore?'':'disabled'}>${coreMax?'靈脈已圓滿':`升階・靈石 ${formatLargeNumber(coreCost.stone)}／木 ${formatLargeNumber(coreCost.wood)}／鐵 ${formatLargeNumber(coreCost.iron)}`}</button></section><section class="cave-section-title"><b>修行布置</b><small>依目前目標啟停房間，離線期間同樣生效</small></section><div class="cave-facility-grid">${facilities}</div>`;
+    $$('[data-toggle-facility]').forEach(b=>b.onclick=()=>toggleCaveFacility(b.dataset.toggleFacility));
+    $$('[data-upgrade-facility]').forEach(b=>b.onclick=()=>upgradeCaveFacility(b.dataset.upgradeFacility));
+    $('#upgradeCaveCore').onclick=upgradeCaveCore;
+    return;
+  }
+  inner.innerHTML=`<section class="cave-section-title"><b>資源產地</b><small>一級倉儲約可容納單一道童 8 小時產量</small></section><section class="dao-child-yard"><img src="assets/qstyle-v2/dao-child.png" alt="道童"><div><small>可用道童</small><b>${availableChildren()} / ${state.daoChildTotal}</b><em>未安排的道童會在此等候</em></div><button id="buyDaoChild" ${state.food>=cost?'':'disabled'}>招募<br>食物 ${formatLargeNumber(cost)}</button></section><div class="resource-area-grid">${cards}</div>`;
   $$('.worker-stepper button').forEach(b=>b.onclick=()=>assignWorker(b.dataset.worker,+b.dataset.change));
   $$('.area-upgrade').forEach(b=>b.onclick=()=>upgradeCaveArea(b.dataset.upgradeArea));
-  $$('[data-toggle-facility]').forEach(b=>b.onclick=()=>toggleCaveFacility(b.dataset.toggleFacility));
-  $$('[data-upgrade-facility]').forEach(b=>b.onclick=()=>upgradeCaveFacility(b.dataset.upgradeFacility));
-  $('#upgradeCaveCore').onclick=upgradeCaveCore;
   $('#buyDaoChild').onclick=buyDaoChild;
 }
-function assignWorker(key,change){const a=caveAreas[key];if(change>0){if(availableChildren()<1)return toast('目前沒有閒置道童');if(state[a.worker]>=areaWorkerMax(a))return toast('此區域已達道童上限')}else if(state[a.worker]<=0)return;state[a.worker]+=change;renderCaveView('dwelling');save()}
-function buyDaoChild(){const cost=daoChildCost();if(state.food<cost)return toast('食物不足');state.food-=cost;state.daoChildTotal++;state.daoChildBought++;toast('新道童前來投效');renderCaveView('dwelling');render();save()}
-function upgradeCaveArea(key){const a=caveAreas[key],cost=areaUpgradeCost(a);if(state.wood<cost)return toast('木材不足');state.wood-=cost;state[a.level]++;toast(`${a.label}區域提升至${state[a.level]}級`);renderCaveView('dwelling');save()}
+function assignWorker(key,change){const a=caveAreas[key];if(change>0){if(availableChildren()<1)return toast('目前沒有閒置道童');if(state[a.worker]>=areaWorkerMax(a))return toast('此區域已達道童上限')}else if(state[a.worker]<=0)return;state[a.worker]+=change;renderCaveView('production');save()}
+function buyDaoChild(){const cost=daoChildCost();if(state.food<cost)return toast('食物不足');state.food-=cost;state.daoChildTotal++;state.daoChildBought++;toast('新道童前來投效');renderCaveView('production');render();save()}
+function upgradeCaveArea(key){const a=caveAreas[key],cost=areaUpgradeCost(a);if(state.wood<cost)return toast('木材不足');state.wood-=cost;state[a.level]++;toast(`${a.label}區域提升至${state[a.level]}級`);renderCaveView('production');save()}
 function toggleCaveFacility(key){
   const facility=caveFacilities[key];if(!facility)return;if(key==='sword'&&!state.swordEmbryo)return toast('凝聚本命劍後才能開啟洗劍池');
   if(state[facility.enabled])state[facility.enabled]=false;
