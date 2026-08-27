@@ -135,6 +135,15 @@
 .q-style .hero-stack .hero-true-form.true-form-taixu-sword{
   inset:-4%;width:108%;height:108%
 }
+.q-style .hero-stack .hero-true-form.true-form-dari-buddha-hand{
+  inset:-24%;width:148%;height:148%;object-position:center bottom
+}
+.q-style .hero-stack[data-true-form="dari-buddha-hand"] .hero-character{
+  transform:scale(.78);transform-origin:50% 100%
+}
+.q-style .hero-stack[data-true-form="dari-buddha-hand"] .hero-character-hotspot{
+  inset:22% 11% 0;width:78%;height:78%
+}
 @media(max-height:760px){
   .q-style .hero-stack{bottom:calc(var(--q-nav-height) + var(--q-path-zone) - 2px);height:min(42vh,525px)}
   .q-style .path-button,.q-style .path-button.body-button,.q-style .path-button.sword-button{min-height:0;padding:0}
@@ -144,6 +153,8 @@
   .q-style .path-actions{width:100%}
   .q-style .path-button.spirit-button{left:0}
   .q-style .path-button.body-button{right:0}
+  .q-style .hero-stack[data-true-form="dari-buddha-hand"] .hero-character{transform:scale(.72)}
+  .q-style .hero-stack[data-true-form="dari-buddha-hand"] .hero-character-hotspot{inset:28% 14% 0;width:72%;height:72%}
 }
 
 /* Illustrated mailbox entrance and letter UI. */

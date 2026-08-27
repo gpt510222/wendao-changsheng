@@ -149,7 +149,8 @@ const wardrobeOutfits={
 const trueFormCatalog=[
   {id:'none',name:'返璞歸真',description:'收斂真身異象，以本來面目示人。'},
   {id:'taixu-sword',name:'太虛劍相',image:'assets/qstyle-v2/true-form-sword-v2.png',description:'八方虛靈古劍結成劍陣，隨吐納明滅共鳴。'},
-  {id:'jiuxiao-wings',name:'九霄靈翼',image:'assets/qstyle-v2/true-form-wings.png',description:'以清靈元息凝成的光翼，非羽非骨，如雲霞舒展。'}
+  {id:'jiuxiao-wings',name:'九霄靈翼',image:'assets/qstyle-v2/true-form-wings.png',description:'以清靈元息凝成的光翼，非羽非骨，如雲霞舒展。'},
+  {id:'dari-buddha-hand',name:'大日佛掌',image:'assets/qstyle-v2/true-form-dari-buddha-v3.png',description:'半透明的大日佛影於修士身後顯化，垂下金光雙掌，安穩托持主角入定修練。'}
 ];
 const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, swordPathVersion:2,swordEmbryo:'',swordName:'',swordNurtureLevel:0,swordIntent:0,swordInsight:0,swordIntentType:'',swordMoves:['origin'],swordTrialWins:0,bodyPathVersion:1,bodyStamina:100,bodyStaminaUpdatedAt:0,bodyTemper:0,bodyInjury:'',bodyInjuryUntil:0,testTemporaryItemsMailVersion:0,testResourceSupplyMailVersion:0,testFoodAuraSupplyMailVersion:0,testSpiritMedicineMailVersion:0,testCultivationPillCount:0,testSpiritStoneTenMillionCount:0,spiritMedicineCount:0, ...tribulationPillDefaults, ...techniqueBookDefaults, tribulationPillMigration:1, testTribulationPillGrantVersion:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],learnedBookIds:[],mailbox:[],scripturePurchases:{date:'',ids:[]},marketPermanentPurchases:{},marketDailyPurchases:{date:'',counts:{}},artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:99999, testJadeGrantVersion:1, food:200, wood:40, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0,workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1,caveCoreLevel:1,caveCultivationLevel:1,caveSwordLevel:1,caveBodyLevel:1,caveCultivationEnabled:true,caveSwordEnabled:false,caveBodyEnabled:false,caveSwordTicks:0,caveBodyTicks:0, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, sectNpcSnapshot:null, righteousness:0, evilQi:0, prestige:0, actingLeader:false, npcAffinity:{},npcDaily:{date:'',exchanged:0},sectTokens:0,sectTokenDaily:{date:'',exchanged:0},practiceBuff:{active:false,until:0,remaining:0,total:0},transmissionBuff:{active:false,until:0,remaining:0,total:0},lastGreetingDay:'',lastSalaryDay:'',lastPracticeDay:'',bornAt:null,lastTrustedTime:0,lastSave:Date.now() };
 defaults.npcDaily={};defaults.cultivationAwakened=false;
@@ -189,6 +190,7 @@ function applyCharacterVisual(){
   const hero=$('#heroCharacter');if(hero)hero.src=characterAsset();
   const form=$('#heroTrueForm');if(!form)return;
   const selected=trueFormCatalog.find(item=>item.id===(state.trueForm||'none'));
+  const heroArt=$('#heroArt');if(heroArt)heroArt.dataset.trueForm=selected?.id||'none';
   form.className=`hero-true-form true-form-${selected?.id||'none'}`;
   if(selected?.image){form.src=selected.image;form.alt=selected.name;form.classList.remove('hidden')}
   else{form.removeAttribute('src');form.alt='';form.classList.add('hidden')}
