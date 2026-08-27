@@ -1028,7 +1028,7 @@ function npcAction(index,action){const n=sectNpcs()[index],daily=npcDailyState(i
 function combatHealth(rootBone){return Math.max(125,120+Math.max(0,rootBone)*4)}
 function combatEvasion(agility){return Math.max(0,agility)*3}
 function combatAccuracy(spiritualPower){return Math.max(0,spiritualPower)*3}
-function combatDodgeChance(attacker,defender){const evasion=Math.max(0,defender.evasion||0),accuracy=Math.max(0,attacker.accuracy||0);return Math.min(.35,evasion/(evasion+accuracy*2+1000))}
+function combatDodgeChance(attacker,defender){const evasion=Math.max(0,defender.evasion||0),accuracy=Math.max(0,attacker.accuracy||0);return Math.min(.35,evasion/(evasion+accuracy*4+1000))}
 function combatCritical(spiritualPower){const rating=Math.max(0,spiritualPower)*3;return Math.min(.45,rating/(rating+3000))}
 function battlePlayerStats(){
   const rootBone=effectiveCore('rootBone'),trueQi=effectiveCore('trueQi'),physique=effectiveCore('physique'),agility=effectiveCore('agility'),spiritualPower=effectiveCore('spiritualPower');
@@ -1400,7 +1400,7 @@ function showCharacterAttributes() {
   const attributeRows=inner.querySelectorAll('.sheet-attributes>div');attributeRows[3].querySelector('strong').innerHTML=`<button id="evasionHelpBtn" class="attribute-help-button">閃避評級：${evasion}<i>？</i></button>`;attributeRows[4].querySelector('strong').textContent=`命中評級：${accuracy}・暴擊：${critical}%`;
   inner.querySelector('.sheet-header').insertAdjacentHTML('beforeend',`<div><small>淬劍境界</small><b>${realmName(state.swordLevel||0,swordRealms)}</b></div>`);
   if(state.swordEmbryo)inner.querySelector('.sheet-title').insertAdjacentHTML('beforebegin',`<div class="sheet-sword"><small>本命劍・${swordEmbryos[state.swordEmbryo].name}</small><b>${state.swordName}</b><span>養劍 ${state.swordNurtureLevel} 階${state.swordIntentType?`・${swordIntents[state.swordIntentType].name}`:''}・劍格 ${swordPathTitle()}</span></div>`);
-  $('#evasionHelpBtn').onclick=()=>gameConfirm(`【評級來源】\n每 1 點游影提供 3 點閃避評級。\n每 1 點銳識提供 3 點命中評級。\n\n【閃避率公式】\n閃避率＝防守方閃避評級 ÷（防守方閃避評級＋攻擊方命中評級×2＋1000）\n最終閃避率最高為 35%。\n\n【如何理解】\n防守方閃避評級越高，越容易避開攻擊；攻擊方命中評級越高，越能壓低對方的閃避率。命中評級並不是固定命中百分比，實際結果必須同時比較交戰雙方。\n\n具有「命中評級提高」效果的招式，會先提高本次攻擊的命中評級，再代入公式。例如命中評級＋25%，代表該次攻擊以原命中評級的 125% 計算。\n\n多段攻擊的每一擊都會各自判定閃避，因此可能出現部分命中、部分閃避。暴擊則是另一項獨立判定，命中後才會顯示其傷害結果。`,{title:'命中與閃避說明',confirmText:'明白了',info:true});
+  $('#evasionHelpBtn').onclick=()=>gameConfirm(`【評級來源】\n每 1 點游影提供 3 點閃避評級。\n每 1 點銳識提供 3 點命中評級。\n\n【閃避率公式】\n閃避率＝防守方閃避評級 ÷（防守方閃避評級＋攻擊方命中評級×4＋1000）\n最終閃避率最高為 35%。\n\n【如何理解】\n防守方閃避評級越高，越容易避開攻擊；攻擊方命中評級越高，越能壓低對方的閃避率。命中評級並不是固定命中百分比，實際結果必須同時比較交戰雙方。\n\n當雙方評級相近時，中後期閃避率會逐漸接近 20%；只有防守方的閃避評級明顯高於攻擊方命中評級時，才會接近 35%上限。\n\n具有「命中評級提高」效果的招式，會先提高本次攻擊的命中評級，再代入公式。例如命中評級＋25%，代表該次攻擊以原命中評級的 125% 計算。\n\n多段攻擊的每一擊都會各自判定閃避，因此可能出現部分命中、部分閃避。暴擊則是另一項獨立判定，命中後才會顯示其傷害結果。`,{title:'命中與閃避說明',confirmText:'明白了',info:true});
   $('#attributeBackBtn').onclick=()=>renderBagView('character');
 }
 
