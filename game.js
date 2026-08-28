@@ -1486,6 +1486,7 @@ function renderCavePanel(view='dwelling'){
   const tabs=[['dwelling','靈脈'],['production','資源生產'],['study','書房'],['alchemy','丹房'],['forge','器室'],['brew','仙釀'],['partner','道侶']];
   $('#featureDescription').innerHTML=`<div class="cave-tabs">${tabs.map(([key,label])=>`<button data-cave-view="${key}" class="${key===view?'active':''}">${label}</button>`).join('')}</div><div id="caveInner"></div>`;
   $$('.cave-tabs button').forEach(b=>b.onclick=()=>renderCavePanel(b.dataset.caveView));
+  const tabBar=$('.cave-tabs'),activeTab=$('.cave-tabs .active');if(tabBar){tabBar.addEventListener('wheel',event=>{if(Math.abs(event.deltaY)<=Math.abs(event.deltaX))return;tabBar.scrollLeft+=event.deltaY;event.preventDefault()},{passive:false});if(activeTab)tabBar.scrollLeft=activeTab.offsetLeft-tabBar.offsetLeft-(tabBar.clientWidth-activeTab.clientWidth)/2}
   renderCaveView(view);
 }
 function productionMaxTier(){return worldProgressTier()}
