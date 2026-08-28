@@ -6,7 +6,7 @@ await mkdir("dist/client/assets/qstyle-v2", { recursive: true });
 await mkdir("dist/server", { recursive: true });
 await mkdir("dist/.openai", { recursive: true });
 
-for (const file of ["index.html", "q-style-preview.html", "styles.css", "q-style.css", "game.js"]) {
+for (const file of ["index.html", "styles.css", "q-style.css", "game.js"]) {
   await cp(file, `dist/client/${file}`);
 }
 const gameAssets = [
