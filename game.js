@@ -936,7 +936,7 @@ function startBodyTrial(){
   battle={active:true,resolved:false,mode:'bodyTrial',round:1,completedRounds:0,targetRounds,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'煉體試煉化身',npc:{id:`body-trial-${state.bodyLevel}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='煉體試煉化身';$('#battleLog').innerHTML=`<p><b>${state.name}</b>踏入試煉，必須以肉身撐過 ${targetRounds} 回合。</p>`;syncBattleWeapon();updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
 }
 
-const divineRoamingStoneCost=50000000,divineRoamingJadeCost=1980,divineRoamingAttemptMs=60000;
+const divineRoamingStoneCost=50000,divineRoamingJadeCost=300,divineRoamingAttemptMs=60000;
 function divineRoamingDaily(){const today=dateKey()||new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei'}).format(new Date());if(state.divineRoamingDay!==today){state.divineRoamingDay=today;state.divineRoamingUsed=0}return {used:Math.max(0,state.divineRoamingUsed||0),remaining:Math.max(0,100-(state.divineRoamingUsed||0))}}
 function divineRoamingRate(attempt){return attempt<=50?1:attempt<=75?.5:.1}
 function addDivineHarvest(key,name,amount,type='state'){if(!amount)return;const harvest=state.divineRoamingHarvest||(state.divineRoamingHarvest={}),id=`${type}:${key}`;harvest[id]=harvest[id]||{key,name,type,amount:0};harvest[id].amount+=amount}
