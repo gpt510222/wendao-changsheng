@@ -665,10 +665,10 @@ function render() {
   const temperNeed=bodyTemperNeed();
   $('#bodyCost').textContent='';
   const nextSword=(state.swordLevel||0)+1,swordTrialRequired=nextSword%10===0&&(state.swordTrialWins||0)<nextSword;
-  $('#swordCost').textContent='';
+  $('#swordCost').textContent=!state.swordPathOpened?'點擊開啟淬劍之路':swordMax?'已達最高境界':swordTrialRequired?`需通過試劍境第 ${nextSword} 關`:`淬劍需 ${formatLargeNumber(swordCost)} 劍元`;
   $('#spiritUp').classList.toggle('ready',!spiritMax&&free>=spiritCost);
   $('#bodyUp').classList.remove('ready');
-  $('#swordUp').classList.remove('ready');
+  $('#swordUp').classList.toggle('ready',state.swordPathOpened&&!swordMax&&!swordTrialRequired&&swordEssence>=swordCost);
   $('#heroCharacterHotspot').disabled=!hasMindEmbodiment();
   $('#muteBtn').textContent=state.muted?'♫ 開啟音效':'♪ 靜音';
   renderMailButton();
@@ -1662,7 +1662,7 @@ function helpCard(title,items,note=''){return `<section class="help-guide-card">
 function realmHelp(){const groups=[['練氣',spiritRealms],['煉體',bodyRealms],['淬劍',swordRealms]];return groups.map(([title,realms])=>`<section class="help-realm-group"><h3>${title}境界</h3><ol>${realms.map((realm,index)=>`<li><span>${index+1}</span><b>${realm}</b><small>每境十層</small></li>`).join('')}</ol></section>`).join('')}
 function renderHelp(tab='cultivation'){
   $$('.help-tabs button').forEach(button=>button.classList.toggle('active',button.dataset.helpTab===tab));const pages={
-    cultivation:helpCard('三路修行',['修為只用於練氣；淬劍使用獨立累積的劍元；煉體則以體力鍛鍊並累積淬鍊度。','修為與劍元採大數精確保存，可長期囤積；數量極大時會自動改用更高單位或科學記號。','新手教程只正式開啟練氣；消耗30隕鐵可開啟淬劍，消耗120食物可開啟煉體。','主畫面的淬劍與煉體按鈕只用於進入頁籤，所有突破操作都在各自頁籤內進行。'])+helpCard('練氣渡劫',['渡劫有成功率，可投入對應境界的渡劫丹，每顆提升 5%。','成功後提升境界與屬性；失敗會損失本次所需修為的一半。','渡劫演出期間會鎖定其他操作，結果完成後再退出。'])+realmHelp(),
+    cultivation:helpCard('三路修行',['修為只用於練氣；淬劍使用獨立累積的劍元；煉體則以體力鍛鍊並累積淬鍊度。','修為與劍元採大數精確保存，可長期囤積；數量極大時會自動改用更高單位或科學記號。','新手教程只正式開啟練氣；消耗30隕鐵可開啟淬劍，消耗120食物可開啟煉體。','主畫面的淬劍按鈕會直接消耗劍元提升境界；只有每逢第十層才會引導至試劍境。煉體按鈕則進入煉體頁面。'])+helpCard('練氣渡劫',['渡劫有成功率，可投入對應境界的渡劫丹，每顆提升 5%。','成功後提升境界與屬性；失敗會損失本次所需修為的一半。','渡劫演出期間會鎖定其他操作，結果完成後再退出。'])+realmHelp(),
     sword:helpCard('本命劍',['淬劍達養刃一層後，可從重鋒、靈元、流影三種劍胚中擇一凝聚，目前不可更換。','每枚劍胚具有兩招專屬劍招；非當前劍胚的招式不可學習或裝配。','第一招凝劍後即可使用，第二招維持試劍境第20關解鎖。'])+helpCard('獨立修行與試劍境',['淬劍境界不受練氣境界限制；每提升一層淬劍開放下一關試劍境。','每逢第十層，必須先擊敗對應試劍境關卡，才能完成淬劍大境界突破。','淬劍達凝魄並通過第40關後，可領悟破軍、流光或歸元劍意。'])+helpCard('劍途道印',['門派任務會依立場累積正氣或邪氣；正邪閱歷不會消耗或互相抵銷。','大境界破境時，依閱歷凝成天罡、血煞或兩儀劍印；閱歷不足仍可突破，但不凝印。','每一招都具有天罡、血煞、兩儀、無印四種演出；累積道印比例會繼續改變劍光色彩、光暈與陰陽權重。']),
     body:helpCard('獨立煉體',['煉體境界不受練氣境界限制，也不消耗修為；只需滿足淬鍊度與自身試煉條件。','基礎、藥浴、極限鍛體只消耗體力、食物與木材；可單次操作或在批量頁消耗目前可用體力。','鍛體室需先正式開啟煉體之路，滿境界後會停止累積淬鍊度。'])+helpCard('傷勢與肉身試煉',['擦傷會降低淬鍊度收益；內傷會降低試煉氣血；筋傷會降低試煉閃避並禁止極限鍛體。','傷勢可等待自然痊癒，也可消耗食物與木材立即療傷。','肉身試煉只採用煉體境界形成的肉身屬性，不讀取練氣、淬劍、功法或人物總戰力。'])+helpCard('肉身特性',['玉骨降低極限鍛體受傷率；鳴髓縮短傷勢時間；曜身提高試煉氣血。','擎嶽降低試煉傷害；撼霄降低療傷材料；鎮陸滿足凡界煉體飛升條件。']),
     battle:helpCard('戰鬥規則',['氣血來自命骨，攻擊來自元息，防禦來自玄軀，閃避受游影影響，命中與暴擊受銳識影響。','本命劍的招式配置包含第一式、第二式，戰鬥時依順序循環施展，同一招不能重複裝配。','門派切磋、掌門挑戰、試劍境與肉身試煉各有不同的勝利條件與獲得內容。','戰鬥進行三回合後才可中途退出；非普通切磋的退出視為認輸。'])+helpCard('各類歷練',['試劍境：擊敗固定戰力的劍道幻影。','肉身試煉：只按煉體境界建立雙方數值，無法被擊倒，以撐過指定回合為目標。','門派切磋：勝利可獲得聲望與部分劍道資源，每日勝利次數受限。']),
@@ -1841,7 +1841,7 @@ $$('.outfit-choice').forEach(b=>b.onclick=()=>{$$('.outfit-choice').forEach(x=>x
 function updateOriginPreview(){$('#originStats').textContent=originDescriptions[createOrigin]}
 $$('.origin-choice').forEach(b=>b.onclick=()=>{$$('.origin-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOrigin=b.dataset.origin;updateOriginPreview()});
 $('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,appearance:createAppearance,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now,sectTechniqueMailVersion:2,swordPathOpened:false,bodyPathOpened:false};Object.keys(tribulationPillDefaults).forEach(key=>state[key]=200);state.mailbox=[createWelcomeMail(now)];ensureTestTemporaryItemsMail();ensureTestResourceSupplyMail();ensureTestFoodAuraSupplyMail();ensureTestSpiritMedicineMail();ensureTestSwordPathPillsMail();startGame();save()};
-$('#spiritUp').onclick=()=>upgrade('spirit'); $('#swordUp').onclick=()=>openExperienceView('realm'); $('#bodyUp').onclick=()=>openExperienceView('body');
+$('#spiritUp').onclick=()=>upgrade('spirit'); $('#swordUp').onclick=()=>upgrade('sword'); $('#bodyUp').onclick=()=>openExperienceView('body');
 $('#tribConfirm').onclick=tribulate; $('#tribCancel').onclick=()=>$('#tribulationModal').classList.add('hidden');
 $('#tribulationExit').onclick=exitTribulationResult;
 $('#tribPillMinus').onclick=()=>adjustTribulationPills(-1);$('#tribPillPlus').onclick=()=>adjustTribulationPills(1);$('#tribPillMax').onclick=maximizeTribulationPills;
