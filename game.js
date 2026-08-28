@@ -952,7 +952,7 @@ function openDivineHarvest(){processDivineRoaming();const entries=Object.values(
 function claimDivineHarvest(){const entries=Object.values(state.divineRoamingHarvest||{});if(!entries.length)return;const newSlots=entries.filter(x=>x.type==='state'&&Object.values(itemCatalog).some(item=>item.count===x.key)&&(state[x.key]||0)<=0).length;if(bagUsedSlots()+newSlots>bagCapacity())return toast('角色儲物袋空間不足');entries.forEach(x=>{if(x.type==='loot'){state.mainlineLoot=state.mainlineLoot||{};state.mainlineLoot[x.key]=(state.mainlineLoot[x.key]||0)+x.amount}else state[x.key]=(state[x.key]||0)+x.amount});state.divineRoamingHarvest={};save();render();openDivineHarvest();toast('遠遊收益已提取至角色儲物袋')}
 function renderMortalMainline(inner=$('#experienceInner')){
   const cleared=Math.max(0,state.mainlineCleared||0),available=Math.min(18,cleared+1),progressRealm=worldProgressTier();
-  inner.innerHTML=`<section class="mainline-header"><div><small>九境・十八關</small><h2>九鎖封天</h2><p>從懵懂追查異象開始，逐步看見古災、九鎖與守界之爭的全貌。</p></div><strong>${cleared} / 18</strong></section><div class="mainline-stage-grid">${mortalMainline.map(stage=>{const storyLocked=stage.id>available,realmLocked=stage.realm>progressRealm,locked=storyLocked||realmLocked,done=stage.id<=cleared,bias=stage.id>=17?'四象均衡':mainlineBias[(stage.id-1)%4][0],lockText=storyLocked?`通過第 ${stage.id-1} 關開啟`:`需任一路線達第 ${stage.realm} 境`;return `<article class="mainline-stage ${done?'cleared':''} ${locked?'locked':''}" style="--stage-bg:url('${stage.image}')"><button class="mainline-stage-entry" data-mainline-stage="${stage.id}" ${locked?'disabled':''}><span>${mainlineArcName(stage.id)}・第 ${stage.id} 關・第 ${stage.realm} 境</span><b>${stage.name}</b><small>${locked?lockText:stage.summary}</small><em>${stage.id%2?'素材型':'階材／裝備型'}・${bias}</em><i>Boss・${stage.boss}</i></button>${done&&state.divineRoamingUnlocked?`<button class="mainline-roaming-button" data-divine-stage="${stage.id}">神念遠遊</button>`:''}</article>`}).join('')}</div>`;
+  inner.innerHTML=`<section class="mainline-header"><div><small>九境・十八關</small><h2>九鎖封天</h2><p>從懵懂追查異象開始，逐步看見古災、九鎖與守界之爭的全貌。</p></div><strong>${cleared} / 18</strong></section><div class="mainline-stage-grid">${mortalMainline.map(stage=>{const storyLocked=stage.id>available,realmLocked=stage.realm>progressRealm,locked=storyLocked||realmLocked,done=stage.id<=cleared,specialty=stage.id>=17?'四象藥材均衡產出':`${mainlineBias[(stage.id-1)%4][1]}／${mainlineBias[(stage.id-1)%4][2]}`,lockText=storyLocked?`通過第 ${stage.id-1} 關開啟`:`需任一路線達第 ${stage.realm} 境`;return `<article class="mainline-stage ${done?'cleared':''} ${locked?'locked':''}" style="--stage-bg:url('${stage.image}')"><button class="mainline-stage-entry" data-mainline-stage="${stage.id}" ${locked?'disabled':''}><span>${mainlineArcName(stage.id)}・第 ${stage.id} 關・第 ${stage.realm} 境</span><b>${stage.name}</b><small>${locked?lockText:stage.summary}</small><em>${stage.id%2?'素材型':'階材／裝備型'}・特色產出 ${specialty}</em><i>Boss・${stage.boss}</i></button>${done&&state.divineRoamingUnlocked?`<button class="mainline-roaming-button" data-divine-stage="${stage.id}">神念遠遊</button>`:''}</article>`}).join('')}</div>`;
   $$('[data-mainline-stage]').forEach(button=>button.onclick=()=>openMainlineStory(+button.dataset.mainlineStage));
   $$('[data-divine-stage]').forEach(button=>button.onclick=()=>openDivineRoamingStage(+button.dataset.divineStage));
 }
@@ -1005,7 +1005,6 @@ function toggleFeature(button) {
   }
   currentFeature=page;
   $$('.feature-tab').forEach(x=>x.classList.toggle('active',x===button));
-  const descriptions={arts:'功法蒐集、參悟與裝配功能將於後續版本開放。'};
   if(page==='root') {
     $('#featurePanel').classList.remove('feature-locked'); renderSpiritRootPanel('root');
   } else if(page==='cave') {
@@ -1183,6 +1182,21 @@ function useSectToken(quantity=1){
   if(currentFeature==='sect'&&currentSectView==='shop')renderSectShop();else if(currentFeature==='bag')renderBagView('bag');render();save();return true
 }
 function registerEquipmentItems(){(state.equipmentInventory||[]).forEach(e=>{const key=`equipment-${e.id}`,slot=equipmentSlots.find(x=>x[0]===e.slot),stat=e.affixes?.length?e.affixes.map(x=>`${x.element}系功法效果 +${x.value.toFixed(1)}%`).join('、'):`${e.label}+${e.value}`;itemCatalog[key]={name:`${e.quality==='rare'?'極品':'凡品'}·${equipmentSets[e.tier-1]}${slot[1]}`,image:`assets/qstyle-v2/production/equipment/${e.slot}-t${e.tier}.png`,description:`器室製成的${equipmentSets[e.tier-1]}階${slot[1]}。${stat}`,count:`equipmentCount_${e.id}`,usable:true,giftable:false,sellPrice:1,equipmentData:e};if(state[`equipmentCount_${e.id}`]==null)state[`equipmentCount_${e.id}`]=1})}
+function equipmentComparisonStats(equipment){
+  const stats={};if(!equipment)return stats;
+  if(equipment.label)stats[equipment.label]={value:Number(equipment.value)||0,percent:false};
+  (equipment.affixes||[]).forEach(affix=>stats[`${affix.element}系功法效果`]={value:Number(affix.value)||0,percent:true});
+  return stats;
+}
+function renderEquipmentComparison(equipment){
+  const panel=$('#itemModalEquipmentCompare');if(!panel)return;
+  if(!equipment){panel.innerHTML='';panel.classList.add('hidden');return}
+  const equippedId=state.equippedItems?.[equipment.slot],current=(state.equipmentInventory||[]).find(item=>item.id===equippedId);
+  if(current?.id===equipment.id){panel.innerHTML='<b>裝備比較</b><span class="equipment-current">目前裝備中</span>';panel.classList.remove('hidden');return}
+  const nextStats=equipmentComparisonStats(equipment),currentStats=equipmentComparisonStats(current),labels=[...new Set([...Object.keys(nextStats),...Object.keys(currentStats)])];
+  const rows=labels.map(label=>{const next=nextStats[label]?.value||0,old=currentStats[label]?.value||0,percent=nextStats[label]?.percent||currentStats[label]?.percent,change=next-old,direction=change>0?'up':change<0?'down':'same',arrow=direction==='up'?'▲':direction==='down'?'▼':'—',value=percent?`+${next.toFixed(1)}%`:`+${formatLargeNumber(next)}`;return `<span><em>${label}</em><strong>${value}<i class="${direction}" aria-label="${direction==='up'?'上升':direction==='down'?'下降':'不變'}">${arrow}</i></strong><small>${current?`目前 ${percent?`+${old.toFixed(1)}%`:`+${formatLargeNumber(old)}`}`:'目前未裝備'}</small></span>`}).join('');
+  panel.innerHTML=`<b>裝備比較</b>${rows}`;panel.classList.remove('hidden');
+}
 function equipInventoryItem(item){const e=item?.equipmentData;if(!e)return false;state.equippedItems=state.equippedItems||{};state.equippedItems[e.slot]=e.id;toast(`已裝備${item.name}`);render();save();return true}
 function useAttributePill(item,quantity){const p=item?.pillData;if(!p)return false;const usageKey=`${p.key}_${p.tier}`,used=state.pillUsage?.[usageKey]||0,owned=state[item.count]||0,amount=Math.max(0,Math.min(50-used,owned,Math.floor(quantity)));if(amount<1){toast('此階此類丹藥已達服用上限 50 顆');return false}state.pillUsage=state.pillUsage||{};state.pillUsage[usageKey]=used+amount;state[item.count]-=amount;state[p.attribute]=(state[p.attribute]||0)+amount;toast(`服用${item.name} ×${amount}・${p.label}+${amount}（${used+amount}/50）`);render();save();return true}
 function openItemModal(key){
@@ -1190,7 +1204,7 @@ function openItemModal(key){
   const learned=!!item.techniqueBook&&(state.learnedBookIds||[]).includes(item.techniqueBook.id);
   const sectBlocked=!!item.sectInvitation&&!!state.sect;
   refreshBodyState();
-  itemModalKey=key;itemModalQuantity=1;$('#itemModalImage').src=item.image;$('#itemModalImage').alt=item.name;$('#itemModalName').textContent=item.name;$('#itemModalDescription').textContent=item.description+(learned?'\n\n此功法已習得，本書只能售出。':'')+(sectBlocked?'\n\n你目前已有門派，必須先脫離門派才能使用此信物。':'');$('#itemModalCount').textContent=`持有數量：${formatLargeNumber(count)}`;
+  itemModalKey=key;itemModalQuantity=1;$('#itemModalImage').src=item.image;$('#itemModalImage').alt=item.name;$('#itemModalName').textContent=item.name;$('#itemModalDescription').textContent=item.description+(learned?'\n\n此功法已習得，本書只能售出。':'')+(sectBlocked?'\n\n你目前已有門派，必須先脫離門派才能使用此信物。':'');renderEquipmentComparison(item.equipmentData);$('#itemModalCount').textContent=`持有數量：${formatLargeNumber(count)}`;
   const sell=$('#itemModalSell');sell.disabled=count<1;sell.onclick=()=>openSellModal(key,itemModalQuantity);
   const showUse=item.usable&&!learned,canUse=showUse&&!sectBlocked;const use=$('#itemModalUse');use.textContent=item.equipmentData?'裝備':'使用';use.classList.toggle('hidden',!showUse);use.disabled=!canUse||count<1;use.onclick=canUse?()=>useItem(key,itemModalQuantity):null;
   updateItemQuantity();
@@ -1664,12 +1678,12 @@ function helpCard(title,items,note=''){return `<section class="help-guide-card">
 function realmHelp(){const groups=[['練氣',spiritRealms],['煉體',bodyRealms],['淬劍',swordRealms]];return groups.map(([title,realms])=>`<section class="help-realm-group"><h3>${title}境界</h3><ol>${realms.map((realm,index)=>`<li><span>${index+1}</span><b>${realm}</b><small>每境十層</small></li>`).join('')}</ol></section>`).join('')}
 function renderHelp(tab='cultivation'){
   $$('.help-tabs button').forEach(button=>button.classList.toggle('active',button.dataset.helpTab===tab));const pages={
-    cultivation:helpCard('三路修行',['修為只用於練氣；淬劍使用獨立累積的劍元；煉體則以體力鍛鍊並累積淬鍊度。','修為與劍元採大數精確保存，可長期囤積；數量極大時會自動改用更高單位或科學記號。','新手教程只正式開啟練氣；消耗30隕鐵可開啟淬劍，消耗120食物可開啟煉體。','主畫面的淬劍按鈕會直接消耗劍元提升境界；只有每逢第十層才會引導至試劍境。煉體按鈕則進入煉體頁面。'])+helpCard('練氣渡劫',['渡劫有成功率，可投入對應境界的渡劫丹，每顆提升 5%。','成功後提升境界與屬性；失敗會損失本次所需修為的一半。','渡劫演出期間會鎖定其他操作，結果完成後再退出。'])+realmHelp(),
+    cultivation:helpCard('三路修行',['修為只用於練氣；淬劍使用獨立累積的劍元；煉體則以體力鍛鍊並累積淬鍊度。','修為與劍元採大數精確保存，可長期囤積；數量極大時會自動改用更高單位或科學記號。','新手教程只正式開啟練氣；消耗30隕鐵可開啟淬劍，消耗120食物可開啟煉體。','主畫面的淬劍按鈕會直接消耗劍元提升境界；只有每逢第十層才會引導至試劍境。煉體按鈕則進入煉體頁面。'])+helpCard('境界、功能與關卡解鎖',['練氣、淬劍、煉體皆為每境十層；主畫面會直接顯示下一層所需資源，資源足夠後方可提升。','九鎖封天每一境有兩關：需先通過前一關，並讓練氣、淬劍或煉體任一路線達到該境，才會開啟下一關。','淬劍每提升一層開放一關試劍境；逢第十層必須先通過同層關卡。煉體逢第十層則必須完成對應肉身試煉。','化念一層習得意念入體並開啟人物屬性；化念一層也可在百寶樓取得神遊秘籙，開通已通關副本的神念遠遊。','坊市、藏經閣與聲望堂樓層依任一路線的最高進度開放；上樓時會顯示所需境界。','丹房與器室可查看一至九階配方，但實際可製作階級取決於任一路線目前抵達的境界。'])+helpCard('練氣渡劫',['渡劫有成功率，可投入對應境界的渡劫丹，每顆提升 5%。','成功後提升境界與屬性；失敗會損失本次所需修為的一半。','渡劫演出期間會鎖定其他操作，成功或失敗後需由玩家手動退出。'])+realmHelp(),
     sword:helpCard('本命劍',['淬劍達養刃一層後，可從重鋒、靈元、流影三種劍胚中擇一凝聚，目前不可更換。','每枚劍胚具有兩招專屬劍招；非當前劍胚的招式不可學習或裝配。','第一招凝劍後即可使用，第二招維持試劍境第20關解鎖。'])+helpCard('獨立修行與試劍境',['淬劍境界不受練氣境界限制；每提升一層淬劍開放下一關試劍境。','每逢第十層，必須先擊敗對應試劍境關卡，才能完成淬劍大境界突破。','淬劍達凝魄並通過第40關後，可領悟破軍、流光或歸元劍意。'])+helpCard('劍途道印',['門派任務會依立場累積正氣或邪氣；正邪閱歷不會消耗或互相抵銷。','大境界破境時，依閱歷凝成天罡、血煞或兩儀劍印；閱歷不足仍可突破，但不凝印。','每一招都具有天罡、血煞、兩儀、無印四種演出；累積道印比例會繼續改變劍光色彩、光暈與陰陽權重。']),
     body:helpCard('獨立煉體',['煉體境界不受練氣境界限制，也不消耗修為；只需滿足淬鍊度與自身試煉條件。','基礎、藥浴、極限鍛體只消耗體力、食物與木材；可單次操作或在批量頁消耗目前可用體力。','鍛體室需先正式開啟煉體之路，滿境界後會停止累積淬鍊度。'])+helpCard('傷勢與肉身試煉',['擦傷會降低淬鍊度收益；內傷會降低試煉氣血；筋傷會降低試煉閃避並禁止極限鍛體。','傷勢可等待自然痊癒，也可消耗食物與木材立即療傷。','肉身試煉只採用煉體境界形成的肉身屬性，不讀取練氣、淬劍、功法或人物總戰力。'])+helpCard('肉身特性',['玉骨降低極限鍛體受傷率；鳴髓縮短傷勢時間；曜身提高試煉氣血。','擎嶽降低試煉傷害；撼霄降低療傷材料；鎮陸滿足凡界煉體飛升條件。']),
     battle:helpCard('戰鬥規則',['氣血來自命骨，攻擊來自元息，防禦來自玄軀，閃避受游影影響，命中與暴擊受銳識影響。','本命劍的招式配置包含第一式、第二式，戰鬥時依順序循環施展，同一招不能重複裝配。','門派切磋、掌門挑戰、試劍境與肉身試煉各有不同的勝利條件與獲得內容。','戰鬥進行三回合後才可中途退出；非普通切磋的退出視為認輸。'])+helpCard('各類歷練',['試劍境：擊敗固定戰力的劍道幻影。','肉身試煉：只按煉體境界建立雙方數值，無法被擊倒，以撐過指定回合為目標。','門派切磋：勝利可獲得聲望與部分劍道資源，每日勝利次數受限。']),
     arts:helpCard('靈根',['靈氣由掛機結算獲得，可用於提升金、木、水、火、土五行靈根。','靈根會放大對應五行功法的效果；天契會提高靈氣獲取效率。','靈池可提升並容納更多靈氣，操作前請留意畫面顯示的消耗。'])+helpCard('功法',['功法分為門派功法、功法書與招式三大頁；功法書內再分玄錄、命篇、體典、行章、悟卷與天箋。','門派功法向大長老學習，受門派職位、技能格上限與貢獻影響。','功法書可從藏經閣購買並於儲物袋使用；同名功法僅能學習一次。','意念入體於化念一層自動習得，用於開啟人物屬性，不列入功法頁籤。','功法加成會合併進入人物屬性與戰鬥力計算。']),
-    cave:helpCard('靈脈與修行布置',['洞府靈脈提供設施運作所需供應，提升靈脈可擴充上限。','聚靈室提高掛機修為；洗劍池提高掛機劍元；鍛體室累積淬鍊度。','設施可啟停與升級；供應不足時無法啟用，離線期間仍持續生效。'])+helpCard('資源生產',['招募道童後，可分配到食物、木材與隕鐵產地。','產地等級影響生產效率，倉儲等級影響可保留的離線資源。','書房、丹房、器室、仙釀與道侶為後續擴充頁面，現階段以靈脈與資源生產為主。']),
+    cave:helpCard('靈脈與修行布置',['洞府靈脈提供設施運作所需供應，提升靈脈可擴充上限。','聚靈室提高掛機修為；洗劍池提高掛機劍元；鍛體室累積淬鍊度。','設施可啟停與升級；供應不足時無法啟用，離線期間仍持續生效。'])+helpCard('資源生產',['招募道童後，可分配到食物、木材與隕鐵產地。','產地等級影響生產效率，倉儲等級影響可保留的離線資源。','丹房可將副本主藥與丹砂煉成永久屬性丹；每階每類最多服用 50 顆。','器室使用副本裝備素材、階材與器靈精魄製作裝備；凡品與極品的數值範圍不同。','書房、仙釀與道侶尚未開放，現階段不會產生資源或加成。'])+helpCard('儲物袋與裝備',['副本素材、丹藥與裝備會存入儲物袋；不需要的物品可在道具詳情中售出換取靈石。','開啟裝備詳情時，數值旁的綠色上箭頭代表換裝後提高，紅色下箭頭代表降低；目前裝備的數值會列在下方。','九鎖封天關卡會標示當地較容易取得的特色主藥；其他通用素材仍可能在各副本少量取得。']),
     sect:helpCard('拜入門派',['一至九星門派依序於聽息、引霞、凝曜、靈胎、化念、歸流、照虛、踏霄、遊穹一層開放。','無門無派時可尋訪目前境界允許的仙門，也可在儲物袋使用門派信物指定拜入。','門派分正、邪立場，會影響長期門派任務累積的正氣或邪氣。','脫離門派需消耗 200 聲望，並清空剩餘門派貢獻與當前持續任務。'])+helpCard('門派生活',['持續任務每個修煉年發放貢獻、靈石、聲望與對應正邪閱歷；高階任務收益更高。','貢獻可晉升內門、親傳、供奉與護法，職位會影響俸祿與部分功能。','可與門人聊天、送禮、切磋；每日次數會隨可信時間換日重置。','練功房、掌門傳功、每日請安、俸祿、功法學習與物資兌換均位於門派頁。'])
   };$('#helpContent').innerHTML=pages[tab]||pages.cultivation;
 }

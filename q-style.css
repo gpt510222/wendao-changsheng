@@ -30,7 +30,6 @@
 @media(min-width:900px){.q-style .hero-stack{width:390px;height:51%;bottom:14.5%}.q-style .path-actions{width:680px}.q-style .path-button{width:210px}}
 @media(max-height:760px){.q-style .hero-stack{height:43%;bottom:17%}.q-style .path-button{min-height:92px;padding-top:48px}.q-style .path-button img{width:61px;height:61px}}
 
-/* Q-style v2 asset migration. Original files remain in assets/ for rollback. */
 .q-style .create-screen{background-image:linear-gradient(#dff5f1cc,#fff4d9df),url("assets/qstyle-v2/title-bg.png")}
 .q-style .pool-art img{content:url("assets/qstyle-v2/spirit-pool.png")}
 .q-style .dao-child-yard>img{content:url("assets/qstyle-v2/dao-child.png")}
