@@ -415,6 +415,9 @@ function realmName(level, arr) {
   return `${arr[Math.min(Math.floor(level/10),arr.length-1)]}・${['一','二','三','四','五','六','七','八','九','十'][level%10]}層`;
 }
 function spiritRealmIndex(){return Math.floor(Math.max(0,state.spiritLevel||0)/10)}
+function worldProgressLevel(){return Math.max(state.spiritLevel||0,state.swordLevel||0,state.bodyLevel||0)}
+function worldProgressTier(){return Math.max(1,Math.min(9,Math.floor(worldProgressLevel()/10)+1))}
+function worldProgressGateText(level){return `任一路線達第 ${Math.floor(Math.max(0,level)/10)+1} 境`}
 function swordPathUnlocked(){return (state.swordLevel||0)>=20}
 function swordIntentUnlocked(){return (state.swordLevel||0)>=40&&(state.swordTrialWins||0)>=40&&!!state.swordEmbryo}
 function swordPathExperienceNeed(level=(state.swordLevel||0)+1){const realm=Math.max(1,Math.floor(level/10));return Math.round(20*Math.pow(1.55,realm-1))}
@@ -946,8 +949,8 @@ function startDivineRoaming(stage,total){const daily=divineRoamingDaily(),job=st
 function openDivineHarvest(){processDivineRoaming();const entries=Object.values(state.divineRoamingHarvest||{}),job=state.divineRoamingJob;let modal=$('#divineRoamingModal');if(!modal){modal=document.createElement('div');modal.id='divineRoamingModal';modal.className='divine-roaming-modal';document.body.append(modal)}modal.innerHTML=`<section class="divine-roaming-window divine-harvest-window"><button class="divine-close">×</button><h2>神念遠遊・臨時儲物袋</h2><p>${divineRoamingStatus()}・臨時袋沒有容量上限</p><div class="divine-harvest-grid">${entries.length?entries.map(x=>`<span><b>${x.name}</b><strong>× ${formatLargeNumber(x.amount)}</strong></span>`).join(''):'<small>目前尚無遠遊收益</small>'}</div><button id="claimDivineHarvest" ${entries.length?'':'disabled'}>提取全部收益</button>${job&&job.completed<job.total?'<small>提取不會中斷剩餘遠遊。</small>':''}</section>`;modal.classList.add('show');modal.querySelector('.divine-close').onclick=()=>modal.classList.remove('show');$('#claimDivineHarvest').onclick=claimDivineHarvest}
 function claimDivineHarvest(){const entries=Object.values(state.divineRoamingHarvest||{});if(!entries.length)return;const newSlots=entries.filter(x=>x.type==='state'&&Object.values(itemCatalog).some(item=>item.count===x.key)&&(state[x.key]||0)<=0).length;if(bagUsedSlots()+newSlots>bagCapacity())return toast('角色儲物袋空間不足');entries.forEach(x=>{if(x.type==='loot'){state.mainlineLoot=state.mainlineLoot||{};state.mainlineLoot[x.key]=(state.mainlineLoot[x.key]||0)+x.amount}else state[x.key]=(state[x.key]||0)+x.amount});state.divineRoamingHarvest={};save();render();openDivineHarvest();toast('遠遊收益已提取至角色儲物袋')}
 function renderMortalMainline(inner=$('#experienceInner')){
-  const cleared=Math.max(0,state.mainlineCleared||0),available=Math.min(18,cleared+1),spiritRealm=Math.floor((state.spiritLevel||0)/10)+1;
-  inner.innerHTML=`<section class="mainline-header"><div><small>九境・十八關</small><h2>九鎖封天</h2><p>從懵懂追查異象開始，逐步看見古災、九鎖與守界之爭的全貌。</p></div><strong>${cleared} / 18</strong></section><div class="mainline-stage-grid">${mortalMainline.map(stage=>{const storyLocked=stage.id>available,realmLocked=stage.realm>spiritRealm,locked=storyLocked||realmLocked,done=stage.id<=cleared,bias=stage.id>=17?'四象均衡':mainlineBias[(stage.id-1)%4][0],lockText=storyLocked?`通過第 ${stage.id-1} 關開啟`:`需達${spiritRealms[stage.realm-1]}境`;return `<article class="mainline-stage ${done?'cleared':''} ${locked?'locked':''}" style="--stage-bg:url('${stage.image}')"><button class="mainline-stage-entry" data-mainline-stage="${stage.id}" ${locked?'disabled':''}><span>${mainlineArcName(stage.id)}・第 ${stage.id} 關・${spiritRealms[stage.realm-1]}</span><b>${stage.name}</b><small>${locked?lockText:stage.summary}</small><em>${stage.id%2?'素材型':'階材／裝備型'}・${bias}</em><i>Boss・${stage.boss}</i></button>${done&&state.divineRoamingUnlocked?`<button class="mainline-roaming-button" data-divine-stage="${stage.id}">神念遠遊</button>`:''}</article>`}).join('')}</div>`;
+  const cleared=Math.max(0,state.mainlineCleared||0),available=Math.min(18,cleared+1),progressRealm=worldProgressTier();
+  inner.innerHTML=`<section class="mainline-header"><div><small>九境・十八關</small><h2>九鎖封天</h2><p>從懵懂追查異象開始，逐步看見古災、九鎖與守界之爭的全貌。</p></div><strong>${cleared} / 18</strong></section><div class="mainline-stage-grid">${mortalMainline.map(stage=>{const storyLocked=stage.id>available,realmLocked=stage.realm>progressRealm,locked=storyLocked||realmLocked,done=stage.id<=cleared,bias=stage.id>=17?'四象均衡':mainlineBias[(stage.id-1)%4][0],lockText=storyLocked?`通過第 ${stage.id-1} 關開啟`:`需任一路線達第 ${stage.realm} 境`;return `<article class="mainline-stage ${done?'cleared':''} ${locked?'locked':''}" style="--stage-bg:url('${stage.image}')"><button class="mainline-stage-entry" data-mainline-stage="${stage.id}" ${locked?'disabled':''}><span>${mainlineArcName(stage.id)}・第 ${stage.id} 關・第 ${stage.realm} 境</span><b>${stage.name}</b><small>${locked?lockText:stage.summary}</small><em>${stage.id%2?'素材型':'階材／裝備型'}・${bias}</em><i>Boss・${stage.boss}</i></button>${done&&state.divineRoamingUnlocked?`<button class="mainline-roaming-button" data-divine-stage="${stage.id}">神念遠遊</button>`:''}</article>`}).join('')}</div>`;
   $$('[data-mainline-stage]').forEach(button=>button.onclick=()=>openMainlineStory(+button.dataset.mainlineStage));
   $$('[data-divine-stage]').forEach(button=>button.onclick=()=>openDivineRoamingStage(+button.dataset.divineStage));
 }
@@ -1101,7 +1104,7 @@ function sectDescription(){
   const path=state.sectFaction==='正'?'門人奉行正道、護持蒼生，行事以仁義為先，以清正自守。':'門人不受正統戒律束縛，被世人視為旁門左道；行事只問本心與實力，恩怨必報。';
   return `${state.sect}立於${places[index%places.length]}，${practices[(index*3+Math.floor(index/places.length))%practices.length]}。${path}`;
 }
-function allEligibleSects(){return sectCatalog.filter(g=>state.spiritLevel>=g.need).flatMap(g=>[...g.good.map(name=>({name,faction:'正',star:g.star})),...g.evil.map(name=>({name,faction:'邪',star:g.star}))])}
+function allEligibleSects(){return sectCatalog.filter(g=>worldProgressLevel()>=g.need).flatMap(g=>[...g.good.map(name=>({name,faction:'正',star:g.star})),...g.evil.map(name=>({name,faction:'邪',star:g.star}))])}
 function joinSect(pick){
   if(!pick||state.sect)return false;
   state.sect=pick.name;state.sectFaction=pick.faction;state.sectStar=pick.star;state.sectContribution=0;state.sectRank=0;state.sectTask='';state.sectJoinedAt=gameNow();state.sectYearsProcessed=0;state.actingLeader=false;state.npcAffinity={};state.npcDaily={};state.sectNpcSnapshot=createSectNpcSnapshot();
@@ -1129,8 +1132,8 @@ function renderSectPathIncome(){const inner=$('#sectInner');if(currentSectView!=
 function renderSectPanel(view='home'){
   currentSectView=view;processSectYears();
   if(!state.sect){
-    const unlocked=sectCatalog.filter(g=>state.spiritLevel>=g.need);const max=unlocked.at(-1);
-    $('#featureDescription').innerHTML=`<section class="sectless"><div class="sect-seal">無</div><h2>無門無派</h2><p>你尚未拜入任何門派，可外出尋訪仙門、求取入道機緣。</p><div class="sect-unlocks">目前最高可加入：${['一','二','三','四','五','六','七','八','九'][max.star-1]}星門派・需求${max.realm}</div><button id="joinSectBtn" class="jade-button">尋訪仙門</button></section>`;
+    const unlocked=sectCatalog.filter(g=>worldProgressLevel()>=g.need);const max=unlocked.at(-1);
+    $('#featureDescription').innerHTML=`<section class="sectless"><div class="sect-seal">無</div><h2>無門無派</h2><p>你尚未拜入任何門派，可外出尋訪仙門、求取入道機緣。</p><div class="sect-unlocks">目前最高可加入：${['一','二','三','四','五','六','七','八','九'][max.star-1]}星門派・依三路最高境界判定</div><button id="joinSectBtn" class="jade-button">尋訪仙門</button></section>`;
     $('#joinSectBtn').onclick=joinRandomSect;return;
   }
   const tabs=[['home','門派'],['npcs','門人'],['practice','練功房'],['tasks','任務'],['salary','俸祿']];
@@ -1147,7 +1150,7 @@ function renderSectView(view){
   }
   if(view==='npcs'){if(!validSectNpcSnapshot()){state.sectNpcSnapshot=createSectNpcSnapshot();save()}inner.innerHTML=`<div class="npc-grid">${sectNpcs().map((n,index)=>{const power=state.sectNpcSnapshot.stats[String(n.id)].combatPower;return `<button class="npc-card" data-npc="${index}"><span class="npc-portrait p${n.portrait}" style="--portrait-hue:${n.id%37-18}deg;--portrait-bright:${.92+(n.id%9)*.02}"></span><b>${n.title}</b><strong>${n.name}</strong><small>戰力 ${formatCombatPower(power)}</small></button>`}).join('')}</div><div id="npcDetail" class="npc-detail">點選一位門人進行互動</div>`;$$('.npc-card').forEach(b=>b.onclick=()=>renderNpcDetail(+b.dataset.npc));return}
   if(view==='shop'){renderSectShop();return}
-  if(view==='tasks'){inner.innerHTML=`<div class="task-list">${sectTasks.map(t=>`<button data-task="${t.id}" class="task-card ${state.sectTask===t.id?'active':''}" ${state.spiritLevel<t.need?'disabled':''}><b>${t.name}</b><span>每年：貢獻+${t.gain}・靈石+${t.stone}・聲望+${t.prestige}</span><small>${t.desc}</small><em>${state.sectTask===t.id?'已接取':state.spiritLevel>=t.need?'可接取':`需 ${realmName(t.need,spiritRealms)}`}</em></button>`).join('')}</div><p class="sect-note">任務會持續執行；境界提高後不會自動更換。脫離門派時任務立即終止。</p>`;$$('.task-card:not(:disabled)').forEach(b=>b.onclick=()=>{state.sectTask=b.dataset.task;toast(`開始持續任務：${selectedSectTask().name}`);renderSectView('tasks');save()});return}
+  if(view==='tasks'){const progress=worldProgressLevel();inner.innerHTML=`<div class="task-list">${sectTasks.map(t=>`<button data-task="${t.id}" class="task-card ${state.sectTask===t.id?'active':''}" ${progress<t.need?'disabled':''}><b>${t.name}</b><span>每年：貢獻+${t.gain}・靈石+${t.stone}・聲望+${t.prestige}</span><small>${t.desc}</small><em>${state.sectTask===t.id?'已接取':progress>=t.need?'可接取':`需${worldProgressGateText(t.need)}`}</em></button>`).join('')}</div><p class="sect-note">任務會持續執行；境界提高後不會自動更換。脫離門派時任務立即終止。</p>`;$$('.task-card:not(:disabled)').forEach(b=>b.onclick=()=>{state.sectTask=b.dataset.task;toast(`開始持續任務：${selectedSectTask().name}`);renderSectView('tasks');save()});return}
   if(view==='practice'){
     const can=state.sectRank>=1,done=state.lastPracticeDay===dateKey(),practiceOn=buffActive('practiceBuff'),transmissionOn=buffActive('transmissionBuff');
     const practiceReason=!can?'需晉升內門弟子':done?'今日已完成':state.spiritStone<1000?`尚缺 ${Math.ceil(1000-state.spiritStone)} 靈石`:'開始練功';
@@ -1461,7 +1464,7 @@ function renderCavePanel(view='dwelling'){
   $$('.cave-tabs button').forEach(b=>b.onclick=()=>renderCavePanel(b.dataset.caveView));
   renderCaveView(view);
 }
-function productionMaxTier(){return Math.max(1,Math.min(9,Math.floor((state.spiritLevel||0)/10)+1))}
+function productionMaxTier(){return worldProgressTier()}
 function productionLanding(kind,inner){const data={alchemy:['丹房','一座丹爐，不升級、不分階；境界決定最高煉製階級。','alchemy-furnace.png'],forge:['器室','一座鑄造爐，製作必定成功；隨機性只在成品數值與詞條。','forge-furnace.png'],brew:['仙釀','酒罈已安置完成，釀造內容將於後續製作。','wine-jar.png']}[kind];inner.innerHTML=`<section class="production-landing"><small>洞府・${data[0]}</small><button class="production-vessel" data-enter-production="${kind}"><img src="assets/qstyle-v2/production/${data[2]}" alt="${data[0]}"><b>${data[0]}</b><span>${data[1]}</span><em>${kind==='brew'?'查看酒罈':'點擊進入生產'}</em></button></section>`;$('[data-enter-production]').onclick=()=>{state.productionView[kind]=true;renderCaveView(kind==='alchemy'?'alchemy':kind==='forge'?'forge':'brew')};}
 function lootAmount(name){return Math.max(0,Math.floor(state.mainlineLoot?.[name]||0))}
 function spendLoot(name,amount){state.mainlineLoot=state.mainlineLoot||{};state.mainlineLoot[name]=lootAmount(name)-amount}
@@ -1803,8 +1806,8 @@ function changeMarketFloor(direction){
   if(next===current)return;
   if(next>current){
     const requiredLevel=marketFloorLevels[next-1]??0;
-    if(state.spiritLevel<requiredLevel){
-      showMarketFloorNotice(`需達到${realmName(requiredLevel,spiritRealms)}才可上樓`);
+    if(worldProgressLevel()<requiredLevel){
+      showMarketFloorNotice(`需${worldProgressGateText(requiredLevel)}才可上樓`);
       return;
     }
   }
