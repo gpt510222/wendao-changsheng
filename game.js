@@ -633,17 +633,19 @@ function playTone() {
   try { audioContext ||= new (window.AudioContext||window.webkitAudioContext)(); const o=audioContext.createOscillator(),g=audioContext.createGain();o.frequency.value=520;g.gain.setValueAtTime(.035,audioContext.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+.35);o.connect(g).connect(audioContext.destination);o.start();o.stop(audioContext.currentTime+.35); } catch {}
 }
 function updateBgmVolume() {
-  ['#titleBgm','#mainBgm','#battleBgm','#tribulationSuccessBgm','#tribulationFailureBgm','#swordBreakthroughBgm'].forEach(id=>{const track=$(id);track.muted=state.muted;track.volume=id==='#battleBgm'?.48:id==='#swordBreakthroughBgm'?.62:id.startsWith('#tribulation')?.55:.42});
+  bgmTracks().forEach(([name,track])=>{track.muted=state.muted;track.volume=name==='battle'?.48:name==='swordBreakthrough'?.62:name.startsWith('tribulation')?.55:.42});
   const cinematic=$('#swordCinematicVideo');if(cinematic){cinematic.muted=state.muted;cinematic.volume=.82}
 }
+function bgmTracks(){return [['title',$('#titleBgm')],['main',$('#mainBgm')],['battle',$('#battleBgm')],['tribulationSuccess',$('#tribulationSuccessBgm')],['tribulationFailure',$('#tribulationFailureBgm')],['swordBreakthrough',$('#swordBreakthroughBgm')],...Array.from({length:9},(_,index)=>[`mainline${index+1}`,$(`#mainlineBgm${index+1}`)])]}
 function startBgm(theme) {
-  const tracks={title:$('#titleBgm'),main:$('#mainBgm'),battle:$('#battleBgm'),tribulationSuccess:$('#tribulationSuccessBgm'),tribulationFailure:$('#tribulationFailureBgm'),swordBreakthrough:$('#swordBreakthroughBgm')}, next=tracks[theme];
-  Object.entries(tracks).forEach(([name,track])=>{if(name!==theme){track.pause();track.currentTime=0}});
+  const tracks=bgmTracks(),next=tracks.find(([name])=>name===theme)?.[1];if(!next)return;
+  tracks.forEach(([name,track])=>{if(name!==theme){track.pause();track.currentTime=0}});
   bgmTheme=theme; updateBgmVolume();
   next.play().catch(()=>{});
 }
+function startMainlineBgm(stage){startBgm(`mainline${Math.ceil(stage.id/2)}`)}
 function stopAllBgm() {
-  ['#titleBgm','#mainBgm','#battleBgm','#tribulationSuccessBgm','#tribulationFailureBgm','#swordBreakthroughBgm'].forEach(id=>{const track=$(id);track.pause();track.currentTime=0});
+  bgmTracks().forEach(([,track])=>{track.pause();track.currentTime=0});
   bgmTheme=null;
 }
 function render() {
@@ -944,16 +946,18 @@ function mainlineDialogue(stage){
   const portraitFor=key=>key==='player'?mainlineProtagonistPortrait():mainlinePortraits[key]||mainlinePortraits.guardian;
   return mainlineStoryScripts[stage.id-1].map(([name,portrait,text])=>({name:name==='主角'?(state.name||'修士'):name,portrait:portraitFor(portrait),text}));
 }
-function openMainlineStory(id){mainlineStoryStage=mortalMainline[id-1];mainlineStoryStep=0;showMainlineDialogue()}
+function openMainlineStory(id){mainlineStoryStage=mortalMainline[id-1];mainlineStoryStep=0;startMainlineBgm(mainlineStoryStage);showMainlineDialogue()}
 function showMainlineDialogue(){
   const stage=mainlineStoryStage,lines=mainlineDialogue(stage),line=lines[mainlineStoryStep];let modal=$('#mainlineStoryModal');if(!modal){modal=document.createElement('div');modal.id='mainlineStoryModal';modal.className='mainline-story-modal';document.body.append(modal)}
   modal.innerHTML=`<div class="mainline-story-scene" style="--story-bg:url('${stage.image}')"><div class="story-location"><small>第 ${stage.id} 關</small><b>${stage.name}</b></div><img class="story-portrait" src="${line.portrait}" alt="${line.name}"><div class="story-dialogue"><strong>${line.name}</strong><p>${line.text}</p><button id="mainlineStoryNext">${mainlineStoryStep<lines.length-1?'繼續':'迎戰'}</button></div></div>`;modal.classList.add('show');$('#mainlineStoryNext').onclick=()=>{if(++mainlineStoryStep<lines.length)showMainlineDialogue();else{modal.classList.remove('show');startMainlineBattle(stage)}};
 }
 function showMainlineDefeatDialogue(stage){
+  startMainlineBgm(stage);
   let step=0,modal=$('#mainlineStoryModal');if(!modal){modal=document.createElement('div');modal.id='mainlineStoryModal';modal.className='mainline-story-modal';document.body.append(modal)}const portraitFor=key=>key==='player'?mainlineProtagonistPortrait():mainlinePortraits[key]||mainlinePortraits.guardian,lines=mainlineDefeatScripts[stage.id-1].map(([name,portrait,text])=>({name:name==='主角'?(state.name||'修士'):name,portrait:portraitFor(portrait),text}));
   const draw=()=>{const line=lines[step];modal.innerHTML=`<div class="mainline-story-scene defeat-scene" style="--story-bg:url('${stage.image}')"><div class="story-location"><small>戰敗・第 ${stage.id} 關</small><b>${stage.name}</b></div><img class="story-portrait" src="${line.portrait}" alt="${line.name}"><div class="story-dialogue defeat-dialogue"><strong>${line.name}</strong><p>${line.text}</p><button id="mainlineStoryNext">${step<lines.length-1?'繼續':'返回結算'}</button></div></div>`;modal.classList.add('show');$('#mainlineStoryNext').onclick=()=>{if(++step<lines.length)draw();else modal.classList.remove('show')}};draw();
 }
 function showMainlineVictoryDialogue(stage){
+  startMainlineBgm(stage);
   let step=0,modal=$('#mainlineStoryModal');if(!modal){modal=document.createElement('div');modal.id='mainlineStoryModal';modal.className='mainline-story-modal';document.body.append(modal)}const portraitFor=key=>key==='player'?mainlineProtagonistPortrait():mainlinePortraits[key]||mainlinePortraits.guardian,lines=mainlineVictoryScripts[stage.id-1].map(([name,portrait,text])=>({name:name==='主角'?(state.name||'修士'):name,portrait:portraitFor(portrait),text}));
   const draw=()=>{const line=lines[step];modal.innerHTML=`<div class="mainline-story-scene victory-scene" style="--story-bg:url('${stage.image}')"><div class="story-location"><small>戰勝・第 ${stage.id} 關</small><b>${stage.name}</b></div><img class="story-portrait" src="${line.portrait}" alt="${line.name}"><div class="story-dialogue victory-dialogue"><strong>${line.name}</strong><p>${line.text}</p><button id="mainlineStoryNext">${step<lines.length-1?'繼續':'領取戰利品'}</button></div></div>`;modal.classList.add('show');$('#mainlineStoryNext').onclick=()=>{if(++step<lines.length)draw();else modal.classList.remove('show')}};draw();
 }
@@ -1009,7 +1013,7 @@ function toggleFeature(button) {
 
 function toggleMainlinePage(){
   const button=$('#mainlineButton');
-  if(currentFeature==='mainline'){currentFeature=null;button.classList.remove('active');$('#featurePanel').classList.add('hidden');$('#gameScreen').classList.remove('feature-open');return}
+  if(currentFeature==='mainline'){currentFeature=null;button.classList.remove('active');$('#featurePanel').classList.add('hidden');$('#gameScreen').classList.remove('feature-open');startBgm('main');return}
   currentFeature='mainline';$$('.feature-tab').forEach(x=>x.classList.remove('active'));button.classList.add('active');$('#featurePanel').classList.remove('feature-locked','hidden');renderMainlinePage();$('#gameScreen').classList.add('feature-open');
 }
 
@@ -1405,7 +1409,7 @@ function finishBattle(won,reason){
   $('#battleResultText').textContent=resultText;
   if(battle.mode==='mainline')setTimeout(()=>won?showMainlineVictoryDialogue(battle.mainlineStage):showMainlineDefeatDialogue(battle.mainlineStage),180);
 }
-function closeBattle(){const npcId=battle?.enemy?.npc?.id,mode=battle?.mode;clearTimeout(battleTimer);clearSwordTrialAdvance();battle=null;$('#battleModal').classList.add('hidden');$('.battle-arena')?.style.removeProperty('background-image');startBgm('main');if(currentFeature==='sect'&&npcId!=null){const index=sectNpcs().findIndex(n=>n.id===npcId);renderSectPanel('npcs');if(index>=0)renderNpcDetail(index)}else if(currentFeature==='experience'&&mode==='swordTrial')renderExperiencePanel('trial');else if(currentFeature==='experience'&&mode==='bodyTrial')renderExperiencePanel('bodyTrial');else if(currentFeature==='mainline'&&mode==='mainline')renderMainlinePage()}
+function closeBattle(){const npcId=battle?.enemy?.npc?.id,mode=battle?.mode,mainlineStage=battle?.mainlineStage;clearTimeout(battleTimer);clearSwordTrialAdvance();battle=null;$('#battleModal').classList.add('hidden');$('.battle-arena')?.style.removeProperty('background-image');if(mode==='mainline'&&mainlineStage)startMainlineBgm(mainlineStage);else startBgm('main');if(currentFeature==='sect'&&npcId!=null){const index=sectNpcs().findIndex(n=>n.id===npcId);renderSectPanel('npcs');if(index>=0)renderNpcDetail(index)}else if(currentFeature==='experience'&&mode==='swordTrial')renderExperiencePanel('trial');else if(currentFeature==='experience'&&mode==='bodyTrial')renderExperiencePanel('bodyTrial');else if(currentFeature==='mainline'&&mode==='mainline')renderMainlinePage()}
 function updatePracticeTimers(){
   if(currentFeature!=='sect'||currentSectView!=='practice')return;
   for(const [key,prefix] of [['practiceBuff','practice'],['transmissionBuff','transmission']]){const bar=$(`#${prefix}TimerBar`),text=$(`#${prefix}TimerText`);if(!bar||!text)continue;const active=buffActive(key);bar.style.width=`${buffPercent(key)}%`;text.textContent=active?buffClock(key):'未開啟';if(!active&&text.closest('.buff-timer')?.classList.contains('active')){renderSectView('practice');render();break}}
