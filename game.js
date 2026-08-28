@@ -260,7 +260,7 @@ const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', ori
 defaults.npcDaily={};defaults.cultivationAwakened=false;
 defaults.free=0n;defaults.swordEssence=0n;defaults.totalEarned=0n;defaults.swordPathOpened=null;defaults.bodyPathOpened=null;
 defaults.attributeGrowthVersion=3;
-defaults.swordPathVersion=3;defaults.swordPathMarks=[];defaults.swordTrialChoices={};defaults.swordTrialPendingChoice=0;
+defaults.swordPathVersion=0;defaults.swordPathMarks=[];defaults.swordTrialChoices={};defaults.swordTrialPendingChoice=0;
 defaults.testSwordPathPillsMailVersion=0;defaults.testSwordEssenceMailVersion=0;defaults.righteousQiPillCount=0;defaults.evilQiPillCount=0;
 defaults.sectTechniqueMailVersion=0;
   defaults.mainlineCleared=0;defaults.mainlineStories={};defaults.mainlineMaterials={};defaults.mainlineLoot={};defaults.mainlineEnemySnapshots={};defaults.mainlineHarvest=[];defaults.mainlineSpiritStoneBag=0;defaults.mainlineWoodBag=0;defaults.mainlineIronBag=0;defaults.mainlineFoodBag=0;
@@ -366,12 +366,14 @@ function migrateAttributeGrowth(version){
   state.attributeGrowthVersion=3;
 }
 function normalizeSwordPath(){
+  const version=Math.max(0,Math.floor(state.swordPathVersion||0));
   if(!swordEmbryos[state.swordEmbryo])state.swordEmbryo='';
   if(!state.swordEmbryo)state.swordName='';else state.swordName=String(state.swordName||'無名靈劍').trim().slice(0,12)||'無名靈劍';
   state.swordNurtureLevel=Math.max(0,Math.min(swordRealms.length,Math.floor(state.swordNurtureLevel||0)));state.swordIntent=Math.max(0,Math.floor(state.swordIntent||0));state.swordInsight=Math.max(0,Math.floor(state.swordInsight||0));state.swordTrialWins=Math.max(0,Math.min(maxSwordLevel+1,Math.floor(state.swordTrialWins||0)));
+  if(version<4)state.swordTrialWins=Math.max(state.swordTrialWins,Math.min(maxSwordLevel+1,Math.max(0,Math.floor(state.swordLevel||0))));
   if(!swordIntents[state.swordIntentType])state.swordIntentType='';
   const embryoMoves=swordTechniquesForEmbryo(state.swordEmbryo),saved=Array.isArray(state.swordMoves)?state.swordMoves:[],allowed=['origin',...embryoMoves.map(move=>move.id)],valid=[...new Set(saved.filter(id=>allowed.includes(id)))];if(!valid.includes('origin')&&!state.swordEmbryo)valid.unshift('origin');if(state.swordEmbryo)for(const id of ['origin',...embryoMoves.map(move=>move.id)]){if(valid.length>=2)break;if(!valid.includes(id))valid.push(id)}state.swordMoves=valid.slice(0,state.swordEmbryo?2:1);
-  state.swordPathMarks=Array.isArray(state.swordPathMarks)?state.swordPathMarks.filter(mark=>mark&&swordPaths[mark.path]&&mark.path!=='unmarked'&&Number.isInteger(mark.level)):[];state.swordTrialChoices=state.swordTrialChoices&&typeof state.swordTrialChoices==='object'?state.swordTrialChoices:{};state.swordTrialPendingChoice=Math.max(0,Math.floor(state.swordTrialPendingChoice||0));state.swordPathVersion=3;
+  state.swordPathMarks=Array.isArray(state.swordPathMarks)?state.swordPathMarks.filter(mark=>mark&&swordPaths[mark.path]&&mark.path!=='unmarked'&&Number.isInteger(mark.level)):[];state.swordTrialChoices=state.swordTrialChoices&&typeof state.swordTrialChoices==='object'?state.swordTrialChoices:{};state.swordTrialPendingChoice=Math.max(0,Math.floor(state.swordTrialPendingChoice||0));state.swordPathVersion=4;
 }
 function activeBodyInjury(){return bodyInjuries[state.bodyInjury]&&(state.bodyInjuryUntil||0)>gameNow()?state.bodyInjury:''}
 function refreshBodyState(){
@@ -418,7 +420,7 @@ function spiritRealmIndex(){return Math.floor(Math.max(0,state.spiritLevel||0)/1
 function worldProgressLevel(){return Math.max(state.spiritLevel||0,state.swordLevel||0,state.bodyLevel||0)}
 function worldProgressTier(){return Math.max(1,Math.min(9,Math.floor(worldProgressLevel()/10)+1))}
 function worldProgressGateText(level){return `任一路線達第 ${Math.floor(Math.max(0,level)/10)+1} 境`}
-function swordPathUnlocked(){return (state.swordLevel||0)>=20}
+function swordPathUnlocked(){return !!state.swordPathOpened}
 function swordIntentUnlocked(){return (state.swordLevel||0)>=40&&(state.swordTrialWins||0)>=40&&!!state.swordEmbryo}
 function swordPathExperienceNeed(level=(state.swordLevel||0)+1){const realm=Math.max(1,Math.floor(level/10));return Math.round(20*Math.pow(1.55,realm-1))}
 function swordPathAlignment(level=(state.swordLevel||0)+1){const righteous=Math.max(0,Math.floor(state.righteousness||0)),evil=Math.max(0,Math.floor(state.evilQi||0)),total=righteous+evil;if(total<swordPathExperienceNeed(level))return 'unmarked';const tendency=(righteous-evil)/Math.max(1,total);return tendency>=.25?'righteous':tendency<=-.25?'evil':'balance'}
@@ -710,7 +712,7 @@ async function openCultivationPath(type){
   const sword=type==='sword';
   if(!state.cultivationAwakened)return toast('需先完成新手修練，踏入聽息一層');
   const key=sword?'swordPathOpened':'bodyPathOpened';if(state[key])return;
-  const cost=pathOpeningCosts[type],held=Math.floor(state[cost.key]||0),name=sword?'淬劍':'煉體',realm=sword?'啟鋒一層':'塵軀一層',description=sword?'開啟後會獨立凝聚劍元，以劍元提升淬劍境界，並在養刃境凝聚本命劍；每逢第十層需通過試劍境。':'開啟後透過鍛體累積淬鍊度提升肉身，不消耗修為；每逢第十層需通過肉身試煉。';
+  const cost=pathOpeningCosts[type],held=Math.floor(state[cost.key]||0),name=sword?'淬劍':'煉體',realm=sword?'啟鋒一層':'塵軀一層',description=sword?'開啟後會獨立凝聚劍元，並可立即凝聚本命劍、進入試劍境；每提升一層開放下一關，每逢第十層需先通關再突破。':'開啟後透過鍛體累積淬鍊度提升肉身，不消耗修為；每逢第十層需通過肉身試煉。';
   if(held<cost.amount)return toast(`開啟${name}之路尚缺 ${formatLargeNumber(cost.amount-held)} ${cost.label}`);
   if(!await gameConfirm(`是否正式開啟${name}之路？\n\n${description}\n\n需要消耗：${cost.label} ${formatLargeNumber(cost.amount)}\n目前持有：${formatLargeNumber(held)}`,{title:`開啟${name}之路`,confirmText:`踏入${realm}`}))return;
   state[cost.key]-=cost.amount;state[key]=true;toast(`已開啟${name}之路・${realm}`);render();if(currentFeature==='experience')renderExperiencePanel(sword?'sword':'body');save();
@@ -903,7 +905,7 @@ function renderExperiencePanel(view='realm'){
   if(!bodyMode&&!state.swordPathOpened){inner.innerHTML=`<div class="realm-lock"><b>淬劍之路尚未開啟</b><small>消耗隕鐵 30，正式踏入啟鋒一層。目前持有：${formatLargeNumber(state.meteorIron)}</small><button id="openSwordPath" class="jade-button" ${state.meteorIron<30?'disabled':''}>開啟淬劍之路</button></div>`;$('#openSwordPath').onclick=()=>openCultivationPath('sword');return}
   if(bodyMode){renderBodyExperienceView(view,inner);return}
   if(view==='realm'){inner.innerHTML=swordProgressCard();bindSwordProgress();return}
-  if(!swordPathUnlocked()){inner.innerHTML=`${swordProgressCard()}<div class="realm-lock"><b>養刃境開啟本命劍</b><small>淬劍達養刃境後，可凝聚本命劍。</small></div>`;bindSwordProgress();return}
+  if(!swordPathUnlocked()){inner.innerHTML=`${swordProgressCard()}<div class="realm-lock"><b>先開啟淬劍之路</b><small>踏入啟鋒一層後，即可凝聚本命劍並進入試劍境。</small></div>`;bindSwordProgress();return}
   if(view==='sword'){
     if(!state.swordEmbryo){inner.innerHTML=`<section class="sword-intro"><h2>凝聚本命劍</h2><p>選擇一枚劍胚，讓它隨你一同養成。第一版本選定後無法更換。</p><div class="sword-choice-grid">${Object.entries(swordEmbryos).map(([id,item])=>`<button data-sword-embryo="${id}"><b>${item.name}</b><span>${item.description}</span></button>`).join('')}</div></section>`;$$('[data-sword-embryo]').forEach(button=>button.onclick=()=>chooseSwordEmbryo(button.dataset.swordEmbryo));return}
     const embryo=swordEmbryos[state.swordEmbryo],cost=swordNurtureCost(),intent=swordIntents[state.swordIntentType],nurtureMax=swordNurtureMax(),nurtureLimit=swordNurtureLimit(),nurtureMilestone=state.swordNurtureLevel*10;inner.innerHTML=`<section class="sword-dashboard"><div class="sword-seal">劍</div><div class="sword-heading"><small>${embryo.name}・養劍 ${state.swordNurtureLevel} / ${nurtureMax} 階</small><h2>${state.swordName}</h2><p>${embryo.description}</p></div><div class="sword-resources"><span>劍意 <b>${formatLargeNumber(state.swordIntent)}</b></span><span>戰鬥感悟 <b>${formatLargeNumber(state.swordInsight)}</b></span><span>試劍進度 <b>${state.swordTrialWins} / ${maxSwordLevel+1}</b></span></div><div class="sword-rename"><input id="swordNameInput" maxlength="12" value="${state.swordName.replace(/"/g,'&quot;')}" aria-label="本命劍名稱"><button id="renameSwordBtn">定名</button></div><button id="nurtureSwordBtn" class="jade-button" ${state.swordNurtureLevel>=nurtureLimit||state.meteorIron<cost.iron||state.spiritStone<cost.stone||state.swordInsight<cost.insight?'disabled':''}>${state.swordNurtureLevel>=nurtureMax?'本命劍養成圓滿':state.swordNurtureLevel>=nurtureLimit?`通過試劍境第 ${nurtureMilestone} 關開放下一階`:`養劍・感悟 ${formatLargeNumber(cost.insight)}／隕鐵 ${formatLargeNumber(cost.iron)}／靈石 ${formatLargeNumber(cost.stone)}`}</button></section><section class="intent-section"><h3>${intent?`已悟・${intent.name}`:'第一劍意'}</h3>${intent?`<p>${intent.description}</p>`:!swordIntentUnlocked()?`<p>需淬劍達凝魄，並通過試劍境第40關。目前劍意 ${formatLargeNumber(state.swordIntent)} / 10。</p>`:`<div class="intent-grid">${Object.entries(swordIntents).map(([id,item])=>`<button data-sword-intent="${id}" ${state.swordIntent<10?'disabled':''}><b>${item.name}</b><small>${item.description}</small></button>`).join('')}</div>`}</section>`;$('#renameSwordBtn').onclick=renameSword;$('#nurtureSwordBtn').onclick=nurtureSword;$$('[data-sword-intent]').forEach(button=>button.onclick=()=>chooseSwordIntent(button.dataset.swordIntent));return
