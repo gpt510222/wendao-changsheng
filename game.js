@@ -892,8 +892,7 @@ function renderSwordPathSummary(){
   if(state.swordTrialPendingChoice){inner.querySelector('.sword-path-summary').insertAdjacentHTML('afterend',`<section class="pending-path-choice"><b>第 ${state.swordTrialPendingChoice} 關之悟尚未定性</b><span>此選擇會影響下次大境界的劍途判定。</span><div><button data-pending-sword-path="righteous">收劍悟道</button><button data-pending-sword-path="balance">觀其生滅</button><button data-pending-sword-path="evil">吞噼幻影</button></div></section>`);$$('[data-pending-sword-path]').forEach(button=>button.onclick=()=>chooseSwordTrialPath(button.dataset.pendingSwordPath))}
 }
 function renderExperiencePanel(view='realm'){
-  currentExperienceView=view;const mainlineMode=view==='mainline',bodyMode=['body','training','bulkTraining','passives','bodyTrial'].includes(view),tabs=mainlineMode?[['mainline','凡間主線']]:bodyMode?[['body','肉身'],['training','鍛體'],['bulkTraining','批量'],['passives','體魄'],['bodyTrial','試煉']]:[['realm','淬劍'],['sword','本命劍'],['trial','試劍境']];$('#featureDescription').innerHTML=`<div class="experience-road-tabs"><button data-road="mainline" class="${mainlineMode?'active':''}">凡間主線</button><button data-road="realm" class="${!mainlineMode&&!bodyMode?'active':''}">淬劍之路</button><button data-road="body" class="${bodyMode?'active':''}">煉體之路</button></div><div class="experience-tabs">${tabs.map(([id,label])=>`<button data-experience-view="${id}" class="${id===view?'active':''}">${label}</button>`).join('')}</div><div id="experienceInner"></div>`;$$('[data-road]').forEach(button=>button.onclick=()=>renderExperiencePanel(button.dataset.road));$$('[data-experience-view]').forEach(button=>button.onclick=()=>renderExperiencePanel(button.dataset.experienceView));const inner=$('#experienceInner');
-  if(mainlineMode){renderMortalMainline(inner);return}
+  if(view==='mainline')view='realm';currentExperienceView=view;const bodyMode=['body','training','bulkTraining','passives','bodyTrial'].includes(view),tabs=bodyMode?[['body','肉身'],['training','鍛體'],['bulkTraining','批量'],['passives','體魄'],['bodyTrial','試煉']]:[['realm','淬劍'],['sword','本命劍'],['trial','試劍境']];$('#featureDescription').innerHTML=`<div class="experience-road-tabs two-roads"><button data-road="realm" class="${!bodyMode?'active':''}">淬劍之路</button><button data-road="body" class="${bodyMode?'active':''}">煉體之路</button></div><div class="experience-tabs">${tabs.map(([id,label])=>`<button data-experience-view="${id}" class="${id===view?'active':''}">${label}</button>`).join('')}</div><div id="experienceInner"></div>`;$$('[data-road]').forEach(button=>button.onclick=()=>renderExperiencePanel(button.dataset.road));$$('[data-experience-view]').forEach(button=>button.onclick=()=>renderExperiencePanel(button.dataset.experienceView));const inner=$('#experienceInner');
   if(bodyMode&&!state.bodyPathOpened){inner.innerHTML=`<div class="realm-lock"><b>煉體之路尚未開啟</b><small>消耗食物 120，正式踏入塵軀一層。目前持有：${formatLargeNumber(state.food)}</small><button id="openBodyPath" class="jade-button" ${state.food<120?'disabled':''}>開啟煉體之路</button></div>`;$('#openBodyPath').onclick=()=>openCultivationPath('body');return}
   if(!bodyMode&&!state.swordPathOpened){inner.innerHTML=`<div class="realm-lock"><b>淬劍之路尚未開啟</b><small>消耗隕鐵 30，正式踏入啟鋒一層。目前持有：${formatLargeNumber(state.meteorIron)}</small><button id="openSwordPath" class="jade-button" ${state.meteorIron<30?'disabled':''}>開啟淬劍之路</button></div>`;$('#openSwordPath').onclick=()=>openCultivationPath('sword');return}
   if(bodyMode){renderBodyExperienceView(view,inner);return}
@@ -936,6 +935,9 @@ function renderMortalMainline(inner=$('#experienceInner')){
   inner.innerHTML=`<section class="mainline-header"><div><small>九境・十八關</small><h2>九鎖封天</h2><p>從懵懂追查異象開始，逐步看見古災、九鎖與守界之爭的全貌。</p></div><strong>${cleared} / 18</strong></section><div class="mainline-stage-grid">${mortalMainline.map(stage=>{const storyLocked=stage.id>available,realmLocked=stage.realm>spiritRealm,locked=storyLocked||realmLocked,done=stage.id<=cleared,bias=stage.id>=17?'四象均衡':mainlineBias[(stage.id-1)%4][0],lockText=storyLocked?`通過第 ${stage.id-1} 關開啟`:`需達${spiritRealms[stage.realm-1]}境`;return `<button class="mainline-stage ${done?'cleared':''} ${locked?'locked':''}" data-mainline-stage="${stage.id}" ${locked?'disabled':''} style="--stage-bg:url('${stage.image}')"><span>${mainlineArcName(stage.id)}・第 ${stage.id} 關・${spiritRealms[stage.realm-1]}</span><b>${stage.name}</b><small>${locked?lockText:stage.summary}</small><em>${stage.id%2?'素材型':'階材／裝備型'}・${bias}</em><i>Boss・${stage.boss}</i></button>`}).join('')}</div>`;
   $$('[data-mainline-stage]').forEach(button=>button.onclick=()=>openMainlineStory(+button.dataset.mainlineStage));
 }
+function renderMainlinePage(){
+  $('#featureDescription').innerHTML='<div class="mainline-standalone-bar"><button id="mainlineBackButton" type="button">返回修煉</button><b>九鎖封天</b><span></span></div><div id="mainlineStandaloneInner"></div>';renderMortalMainline($('#mainlineStandaloneInner'));$('#mainlineBackButton').onclick=toggleMainlinePage;
+}
 function mainlineDialogue(stage){
   const portraitFor=key=>key==='player'?mainlineProtagonistPortrait():mainlinePortraits[key]||mainlinePortraits.guardian;
   return mainlineStoryScripts[stage.id-1].map(([name,portrait,text])=>({name:name==='主角'?(state.name||'修士'):name,portrait:portraitFor(portrait),text}));
@@ -969,6 +971,7 @@ function grantMainlineDrops(stage){
 }
 function toggleFeature(button) {
   const page=button.dataset.page;
+  $('#mainlineButton')?.classList.remove('active');
   if(!state.cultivationAwakened&&(page==='root'||page==='sect'))return toast(`${page==='root'?'靈池':'門派'}需踏入聽息・一層後開啟`);
   if(currentFeature===page) {
     currentFeature=null;
@@ -993,13 +996,19 @@ function toggleFeature(button) {
   } else if(page==='arts') {
     $('#featurePanel').classList.remove('feature-locked');renderArtsPanel('sect');
   } else if(page==='experience') {
-    $('#featurePanel').classList.remove('feature-locked');renderExperiencePanel('mainline');
+    $('#featurePanel').classList.remove('feature-locked');renderExperiencePanel('realm');
   } else {
     $('#featurePanel').classList.remove('feature-locked');
     $('#featureDescription').textContent=descriptions[page];
   }
   $('#featurePanel').classList.remove('hidden');
   $('#gameScreen').classList.add('feature-open');
+}
+
+function toggleMainlinePage(){
+  const button=$('#mainlineButton');
+  if(currentFeature==='mainline'){currentFeature=null;button.classList.remove('active');$('#featurePanel').classList.add('hidden');$('#gameScreen').classList.remove('feature-open');return}
+  currentFeature='mainline';$$('.feature-tab').forEach(x=>x.classList.remove('active'));button.classList.add('active');$('#featurePanel').classList.remove('feature-locked','hidden');renderMainlinePage();$('#gameScreen').classList.add('feature-open');
 }
 
 function textSeed(text){return [...text].reduce((sum,char,index)=>sum+char.charCodeAt(0)*(index+3),0)}
@@ -1394,7 +1403,7 @@ function finishBattle(won,reason){
   $('#battleResultText').textContent=resultText;
   if(battle.mode==='mainline')setTimeout(()=>won?showMainlineVictoryDialogue(battle.mainlineStage):showMainlineDefeatDialogue(battle.mainlineStage),180);
 }
-function closeBattle(){const npcId=battle?.enemy?.npc?.id,mode=battle?.mode;clearTimeout(battleTimer);clearSwordTrialAdvance();battle=null;$('#battleModal').classList.add('hidden');$('.battle-arena')?.style.removeProperty('background-image');startBgm('main');if(currentFeature==='sect'&&npcId!=null){const index=sectNpcs().findIndex(n=>n.id===npcId);renderSectPanel('npcs');if(index>=0)renderNpcDetail(index)}else if(currentFeature==='experience'&&mode==='swordTrial')renderExperiencePanel('trial');else if(currentFeature==='experience'&&mode==='bodyTrial')renderExperiencePanel('bodyTrial');else if(currentFeature==='experience'&&mode==='mainline')renderExperiencePanel('mainline')}
+function closeBattle(){const npcId=battle?.enemy?.npc?.id,mode=battle?.mode;clearTimeout(battleTimer);clearSwordTrialAdvance();battle=null;$('#battleModal').classList.add('hidden');$('.battle-arena')?.style.removeProperty('background-image');startBgm('main');if(currentFeature==='sect'&&npcId!=null){const index=sectNpcs().findIndex(n=>n.id===npcId);renderSectPanel('npcs');if(index>=0)renderNpcDetail(index)}else if(currentFeature==='experience'&&mode==='swordTrial')renderExperiencePanel('trial');else if(currentFeature==='experience'&&mode==='bodyTrial')renderExperiencePanel('bodyTrial');else if(currentFeature==='mainline'&&mode==='mainline')renderMainlinePage()}
 function updatePracticeTimers(){
   if(currentFeature!=='sect'||currentSectView!=='practice')return;
   for(const [key,prefix] of [['practiceBuff','practice'],['transmissionBuff','transmission']]){const bar=$(`#${prefix}TimerBar`),text=$(`#${prefix}TimerText`);if(!bar||!text)continue;const active=buffActive(key);bar.style.width=`${buffPercent(key)}%`;text.textContent=active?buffClock(key):'未開啟';if(!active&&text.closest('.buff-timer')?.classList.contains('active')){renderSectView('practice');render();break}}
@@ -1838,6 +1847,7 @@ $('#tribulationExit').onclick=exitTribulationResult;
 $('#tribPillMinus').onclick=()=>adjustTribulationPills(-1);$('#tribPillPlus').onclick=()=>adjustTribulationPills(1);$('#tribPillMax').onclick=maximizeTribulationPills;
 $('#heroCharacterHotspot').onclick=openHeroCharacterAttributes;
 $$('.feature-tab').forEach(b=>b.onclick=()=>toggleFeature(b));
+$('#mainlineButton').onclick=toggleMainlinePage;
 $('#menuBtn').onclick=()=>$('#gameMenu').classList.toggle('hidden');
 $('#settingsBtn').onclick=openSettings;
 $('#helpBtn').onclick=openHelp;
