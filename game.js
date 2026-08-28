@@ -1438,20 +1438,23 @@ async function challengeMaster(){
   state.prestige-=200;save();render();startNpcBattle(sectNpcs()[0],'master');
 }
 
+const caveAreaMaxLevel=30;
 const caveAreas = {
-  food:{label:'食物',value:'food',worker:'workerFood',level:'foodAreaLevel',icon:'assets/qstyle-v2/food-cutout.png',baseCap:100,output:1,foodCost:0,upgradeBase:40},
-  wood:{label:'木材',value:'wood',worker:'workerWood',level:'woodAreaLevel',icon:'assets/qstyle-v2/wood-cutout.png',baseCap:100,output:1,foodCost:2,upgradeBase:50},
-  meteorIron:{label:'隕鐵',value:'meteorIron',worker:'workerMeteorIron',level:'meteorIronAreaLevel',icon:'assets/qstyle-v2/meteor-iron-cutout.png',baseCap:100,output:1,foodCost:4,upgradeBase:60}
+  food:{label:'食物',value:'food',worker:'workerFood',level:'foodAreaLevel',icon:'assets/qstyle-v2/food-cutout.png',baseCap:100,foodCost:0,upgradeBase:40},
+  wood:{label:'木材',value:'wood',worker:'workerWood',level:'woodAreaLevel',icon:'assets/qstyle-v2/wood-cutout.png',baseCap:100,foodCost:2,upgradeBase:50},
+  meteorIron:{label:'隕鐵',value:'meteorIron',worker:'workerMeteorIron',level:'meteorIronAreaLevel',icon:'assets/qstyle-v2/meteor-iron-cutout.png',baseCap:100,foodCost:4,upgradeBase:60}
 };
 const caveFacilities={
   cultivation:{label:'聚靈室',seal:'氣',level:'caveCultivationLevel',enabled:'caveCultivationEnabled',description:'引靈入室，持續提高線上與離線修為。'},
   sword:{label:'洗劍池',seal:'劍',level:'caveSwordLevel',enabled:'caveSwordEnabled',description:'本命劍浸養於靈泉，掛機時額外凝聚劍元。'},
   body:{label:'鍛體室',seal:'體',level:'caveBodyLevel',enabled:'caveBodyEnabled',description:'以地脈溫養筋骨，掛機時緩慢累積淬鍊度。'}
 };
-function areaCapacity(area){return Math.floor(area.baseCap*Math.pow(2,state[area.level]-1))}
-function areaWorkerMax(area){return state[area.level]}
-function areaUpgradeCost(area){return Math.floor(area.upgradeBase*Math.pow(1.55,state[area.level]-1))}
-function normalizeCaveWorkers(){state.workerSpiritStone=0;Object.values(caveAreas).forEach(area=>state[area.worker]=Math.max(0,Math.min(Math.floor(state[area.worker]||0),areaWorkerMax(area))))}
+function caveAreaLevel(area,level=state[area.level]){return Math.max(1,Math.min(caveAreaMaxLevel,Math.floor(level||1)))}
+function areaCapacity(area,level=state[area.level]){return Math.floor(area.baseCap*Math.pow(1.32,caveAreaLevel(area,level)-1))}
+function areaWorkerMax(area,level=state[area.level]){return 1+Math.floor((caveAreaLevel(area,level)-1)/3)}
+function areaOutput(area,level=state[area.level]){return 1+Math.floor((caveAreaLevel(area,level)-1)/2)}
+function areaUpgradeCost(area,level=state[area.level]){const current=caveAreaLevel(area,level);return Math.floor(areaCapacity(area,current)*(area.upgradeBase/100))}
+function normalizeCaveWorkers(){state.workerSpiritStone=0;Object.values(caveAreas).forEach(area=>{state[area.level]=caveAreaLevel(area);state[area.worker]=Math.max(0,Math.min(Math.floor(state[area.worker]||0),areaWorkerMax(area)))})}
 function normalizeCaveState(){
   state.caveCoreLevel=Math.max(1,Math.min(7,Math.floor(state.caveCoreLevel||1)));
   for(const facility of Object.values(caveFacilities)){state[facility.level]=Math.max(1,Math.min(7,Math.floor(state[facility.level]||1)));state[facility.enabled]=!!state[facility.enabled]}
@@ -1498,7 +1501,7 @@ function renderCaveView(view){
     if(view==='alchemy'){if(!state.productionView.alchemy)return productionLanding('alchemy',inner);renderAlchemyProduction(inner);return}if(view==='forge'){if(!state.productionView.forge)return productionLanding('forge',inner);renderForgeProduction(inner);return}if(view==='brew'){productionLanding('brew',inner);return}
     const names={study:'書房',partner:'道侶'};inner.innerHTML=`<div class="cave-placeholder"><b>${names[view]}</b><small>相關內容將於後續版本開放</small></div>`;return;
   }
-  const cards=Object.entries(caveAreas).map(([key,a])=>{const cap=areaCapacity(a),max=areaWorkerMax(a),upgrade=areaUpgradeCost(a),nextCap=Math.floor(cap*2),stored=Math.floor(state[a.value]),full=stored>=cap,percent=Math.min(100,stored/Math.max(1,cap)*100);return `<article class="resource-area ${full?'storage-full':''}"><header><img src="${a.icon}" alt="${a.label}"><div><b>${a.label}</b><small>${state[a.level]}級產地</small></div><em>${full?'倉滿':'生產中'}</em></header><div class="resource-storage"><span><small>目前儲量</small><strong title="${stored.toLocaleString()}">${formatCaveAmount(stored)}</strong></span><i>／</i><span><small>儲存上限</small><strong title="${cap.toLocaleString()}">${formatCaveAmount(cap)}</strong></span></div><div class="resource-capacity-bar"><i style="width:${percent}%"></i></div><p>${full?'倉儲已滿，已暫停生產':`每名道童每 5 秒產出 ${formatCaveAmount(a.output)}${a.foodCost?`，消耗食物 ${formatCaveAmount(a.foodCost)}`:''}`}</p><div class="worker-stepper"><button data-worker="${key}" data-change="-1">−</button><span>道童 ${state[a.worker]} / ${max}</span><button data-worker="${key}" data-change="1">＋</button></div><button class="area-upgrade" data-upgrade-area="${key}" ${state.wood>=upgrade?'':'disabled'}><span>擴建上限至 ${formatCaveAmount(nextCap)}</span><small>木材 ${formatCaveAmount(upgrade)}</small></button></article>`}).join('');
+  const cards=Object.entries(caveAreas).map(([key,a])=>{const level=state[a.level],cap=areaCapacity(a),max=areaWorkerMax(a),output=areaOutput(a),maxed=level>=caveAreaMaxLevel,upgrade=areaUpgradeCost(a),nextCap=areaCapacity(a,level+1),stored=Math.floor(state[a.value]),full=stored>=cap,percent=Math.min(100,stored/Math.max(1,cap)*100);return `<article class="resource-area ${full?'storage-full':''}"><header><img src="${a.icon}" alt="${a.label}"><div><b>${a.label}</b><small>${level}級產地</small></div><em>${full?'倉滿':'生產中'}</em></header><div class="resource-storage"><span><small>目前儲量</small><strong title="${stored.toLocaleString()}">${formatCaveAmount(stored)}</strong></span><i>／</i><span><small>儲存上限</small><strong title="${cap.toLocaleString()}">${formatCaveAmount(cap)}</strong></span></div><div class="resource-capacity-bar"><i style="width:${percent}%"></i></div><p>${full?'倉儲已滿，已暫停生產':`每名道童每 5 秒產出 ${formatCaveAmount(output)}${a.foodCost?`，消耗食物 ${formatCaveAmount(a.foodCost)}`:''}`}</p><div class="worker-stepper"><button data-worker="${key}" data-change="-1">−</button><span>道童 ${state[a.worker]} / ${max}</span><button data-worker="${key}" data-change="1">＋</button></div><button class="area-upgrade" data-upgrade-area="${key}" ${!maxed&&state.wood>=upgrade?'':'disabled'}><span>${maxed?'產地已達最高級':`擴建上限至 ${formatCaveAmount(nextCap)}`}</span><small>${maxed?'30 級圓滿':`木材 ${formatCaveAmount(upgrade)}`}</small></button></article>`}).join('');
   const coreCost=caveCoreUpgradeCost(),coreMax=state.caveCoreLevel>=7,canCore=!coreMax&&state.spiritStone>=coreCost.stone&&state.wood>=coreCost.wood&&state.meteorIron>=coreCost.iron;
   const facilities=Object.entries(caveFacilities).map(([key,f])=>{const level=state[f.level],enabled=state[f.enabled],draw=caveFacilityDraw(f),cost=caveFacilityUpgradeCost(key),maxed=level>=7,locked=key==='sword'&&!state.swordEmbryo,canUpgrade=!maxed&&state.spiritStone>=cost.stone&&state.wood>=cost.wood&&state.meteorIron>=cost.iron;return `<article class="cave-facility ${enabled?'running':''} ${locked?'facility-locked':''}"><span class="facility-seal">${f.seal}</span><div><small>${enabled?'靈氣流轉中':'目前停用'}・耗用 ${draw}</small><b>${f.label}・${level}級</b><p>${f.description}</p><strong>${caveFacilityEffect(key)}</strong></div><div class="facility-actions"><button data-toggle-facility="${key}" ${locked?'disabled':''}>${locked?'凝聚本命劍後開放':enabled?'停止運轉':'開啟運轉'}</button><button data-upgrade-facility="${key}" ${canUpgrade?'':'disabled'}>${maxed?'已達最高級':`升級・靈石 ${formatLargeNumber(cost.stone)}／木 ${formatLargeNumber(cost.wood)}／鐵 ${formatLargeNumber(cost.iron)}`}</button></div></article>`}).join('');
   const cost=daoChildCost();
@@ -1510,14 +1513,14 @@ function renderCaveView(view){
     if(!state.bodyPathOpened){const bodyToggle=$('[data-toggle-facility="body"]');if(bodyToggle){const card=bodyToggle.closest('.cave-facility');bodyToggle.disabled=true;bodyToggle.textContent='開啟煉體後開放';card?.classList.add('facility-locked');const upgrade=card?.querySelector('[data-upgrade-facility="body"]');if(upgrade)upgrade.disabled=true}}
     return;
   }
-    inner.innerHTML=`<section class="cave-section-title"><b>資源產地</b><small>食物、木材與隕鐵區初始容量皆為 100；每次擴建容量約翻倍，並增加一名道童上限</small></section><section class="dao-child-yard"><img src="assets/qstyle-v2/dao-child.png" alt="道童"><div><small>可用道童</small><b>${availableChildren()} / ${state.daoChildTotal}</b><em>未安排的道童會在此等候</em></div><button id="buyDaoChild" ${state.food>=cost?'':'disabled'}>招募<br>食物 ${formatLargeNumber(cost)}</button></section><div class="resource-area-grid">${cards}</div>`;
+    inner.innerHTML=`<section class="cave-section-title"><b>資源產地</b><small>產地最高 30 級；容量與產量平滑成長，每 3 級增加一名道童上限</small></section><section class="dao-child-yard"><img src="assets/qstyle-v2/dao-child.png" alt="道童"><div><small>可用道童</small><b>${availableChildren()} / ${state.daoChildTotal}</b><em>未安排的道童會在此等候</em></div><button id="buyDaoChild" ${state.food>=cost?'':'disabled'}>招募<br>食物 ${formatLargeNumber(cost)}</button></section><div class="resource-area-grid">${cards}</div>`;
   $$('.worker-stepper button').forEach(b=>b.onclick=()=>assignWorker(b.dataset.worker,+b.dataset.change));
   $$('.area-upgrade').forEach(b=>b.onclick=()=>upgradeCaveArea(b.dataset.upgradeArea));
   $('#buyDaoChild').onclick=buyDaoChild;
 }
 function assignWorker(key,change){const a=caveAreas[key];if(change>0){if(availableChildren()<1)return toast('目前沒有閒置道童');if(state[a.worker]>=areaWorkerMax(a))return toast('此區域已達道童上限')}else if(state[a.worker]<=0)return;state[a.worker]+=change;renderCaveView('production');save()}
 function buyDaoChild(){const cost=daoChildCost();if(state.food<cost)return toast('食物不足');state.food-=cost;state.daoChildTotal++;state.daoChildBought++;toast('新道童前來投效');renderCaveView('production');render();save()}
-function upgradeCaveArea(key){const a=caveAreas[key],cost=areaUpgradeCost(a);if(state.wood<cost)return toast('木材不足');state.wood-=cost;state[a.level]++;toast(`${a.label}區域提升至${state[a.level]}級`);renderCaveView('production');save()}
+function upgradeCaveArea(key){const a=caveAreas[key];if(state[a.level]>=caveAreaMaxLevel)return toast('此產地已達最高級');const cost=areaUpgradeCost(a);if(state.wood<cost)return toast('木材不足');state.wood-=cost;state[a.level]++;toast(`${a.label}區域提升至${state[a.level]}級`);renderCaveView('production');save()}
 function toggleCaveFacility(key){
   const facility=caveFacilities[key];if(!facility)return;if(key==='sword'&&!state.swordEmbryo)return toast('凝聚本命劍後才能開啟洗劍池');if(key==='body'&&!state.bodyPathOpened)return toast('開啟煉體之路後才能使用鍛體室');
   if(state[facility.enabled])state[facility.enabled]=false;
@@ -1533,12 +1536,12 @@ function runCaveFacilities(ticks){
 }
 function runSettlementTick(ticks=1){
   for(let i=0;i<ticks;i++){
-    const foodArea=caveAreas.food,foodWorkers=Math.min(state.workerFood,areaWorkerMax(foodArea)),foodCapacity=areaCapacity(foodArea);
-    if(state.food<foodCapacity)state.food=Math.min(foodCapacity,state.food+foodWorkers*foodArea.output);
+    const foodArea=caveAreas.food,foodWorkers=Math.min(state.workerFood,areaWorkerMax(foodArea)),foodCapacity=areaCapacity(foodArea),foodOutput=areaOutput(foodArea);
+    if(state.food<foodCapacity)state.food=Math.min(foodCapacity,state.food+foodWorkers*foodOutput);
     for(const key of ['wood','meteorIron']){
-      const a=caveAreas[key],room=Math.max(0,areaCapacity(a)-state[a.value]),workers=Math.min(state[a.worker],areaWorkerMax(a));
-      const possible=Math.min(workers,Math.floor(room/a.output),a.foodCost?Math.floor(state.food/a.foodCost):workers);
-      if(possible>0){state.food-=possible*a.foodCost;state[a.value]+=possible*a.output}
+      const a=caveAreas[key],output=areaOutput(a),room=Math.max(0,areaCapacity(a)-state[a.value]),workers=Math.min(state[a.worker],areaWorkerMax(a));
+      const possible=Math.min(workers,Math.floor(room/output),a.foodCost?Math.floor(state.food/a.foodCost):workers);
+      if(possible>0){state.food-=possible*a.foodCost;state[a.value]+=possible*output}
     }
   }
   runCaveFacilities(ticks);
