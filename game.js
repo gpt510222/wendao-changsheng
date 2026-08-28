@@ -260,7 +260,7 @@ defaults.npcDaily={};defaults.cultivationAwakened=false;
 defaults.free=0n;defaults.swordEssence=0n;defaults.totalEarned=0n;defaults.swordPathOpened=null;defaults.bodyPathOpened=null;
 defaults.attributeGrowthVersion=3;
 defaults.swordPathVersion=3;defaults.swordPathMarks=[];defaults.swordTrialChoices={};defaults.swordTrialPendingChoice=0;
-defaults.testSwordPathPillsMailVersion=0;defaults.righteousQiPillCount=0;defaults.evilQiPillCount=0;
+defaults.testSwordPathPillsMailVersion=0;defaults.testSwordEssenceMailVersion=0;defaults.righteousQiPillCount=0;defaults.evilQiPillCount=0;
 defaults.sectTechniqueMailVersion=0;
 defaults.mainlineCleared=0;defaults.mainlineStories={};defaults.mainlineMaterials={};defaults.mainlineLoot={};defaults.mainlineEnemySnapshots={};defaults.mainlineHarvest=[];defaults.mainlineSpiritStoneBag=0;defaults.mainlineWoodBag=0;defaults.mainlineIronBag=0;defaults.mainlineFoodBag=0;
 mainlineMaterials.forEach(([,key])=>defaults[`mainlineMaterial_${key}`]=0);defaults.mainlineMaterialMigration=0;
@@ -539,6 +539,8 @@ function createTestSpiritMedicineMail(now){return {id:'test-spirit-medicine-v1',
 function ensureTestSpiritMedicineMail(){if(!state.name||state.testSpiritMedicineMailVersion>=1)return;if(!mailbox().some(mail=>mail.id==='test-spirit-medicine-v1'))mailbox().push(createTestSpiritMedicineMail(gameNow()));state.testSpiritMedicineMailVersion=1}
 function createTestSwordPathPillsMail(now){return {id:'test-sword-path-pills-v1',subject:'劍途測試・正邪丹藥',sender:'問道長生・測試',body:'為方便測試劍途道印與正邪預示，隨信附上正氣丹、邪氣丹各五百顆。領取後可在儲物袋中批量使用。',sentAt:now,read:false,claimed:false,attachments:[{type:'item',key:'righteousQiPillCount',name:'正氣丹',image:itemCatalog.righteousQiPill.image,amount:500},{type:'item',key:'evilQiPillCount',name:'邪氣丹',image:itemCatalog.evilQiPill.image,amount:500}]}}
 function ensureTestSwordPathPillsMail(){if(!state.name||state.testSwordPathPillsMailVersion>=1)return;if(!mailbox().some(mail=>mail.id==='test-sword-path-pills-v1'))mailbox().push(createTestSwordPathPillsMail(gameNow()));state.testSwordPathPillsMailVersion=1}
+function createTestSwordEssenceMail(now){return {id:'test-sword-essence-v1',subject:'淬劍測試・十億劍元',sender:'問道長生・測試',body:'為方便測試淬劍境界提升與試劍境流程，隨信附上十億劍元。領取後會直接加入目前持有的劍元。',sentAt:now,read:false,claimed:false,attachments:[{type:'currency',key:'swordEssence',name:'劍元',image:'assets/qstyle-v2/sword-cultivation.png',amount:1000000000}]}}
+function ensureTestSwordEssenceMail(){if(!state.name||state.testSwordEssenceMailVersion>=1)return;if(!mailbox().some(mail=>mail.id==='test-sword-essence-v1'))mailbox().push(createTestSwordEssenceMail(gameNow()));state.testSwordEssenceMailVersion=1}
 function createSectTechniqueRevisionMail(now){return {id:'sect-technique-revision-v2',subject:'門派功法改修致歉與舊傳承操作說明',sender:'問道長生・開發團隊',body:'道友安好：\n\n本次更新重新整理了所有門派的傳功內容，造成查閱與養成規劃上的不便，我們在此致歉。悟卷與天箋現已改為真正稀有的門派傳承：每個星級僅有一個正派與一個邪派門派持有稀有功法，其中一部為悟卷、另一部為天箋；奇偶星級會交換正邪所持類型。全九星合計只有九部悟卷與九部天箋，且仍需晉升供奉才能學習。\n\n【已學功法如何處理】\n更新不會刪除、降級或改寫你已學會的功法。內容與新版不同者會標示為「舊傳承」，原名稱、五行、類型、等級與效果均會繼續保留。\n\n【免費轉換新版】\n前往「功法 → 門派功法」，在舊傳承功法上點選「免費轉換」。轉換會保留原本的星階與功法等級，但名稱、五行、功法類型及加成屬性會改成該門派目前對應欄位的新版內容。確認視窗會先列出轉換前後資料；不想轉換可以直接取消，舊功法沒有期限。\n\n【遺忘與重新學習】\n舊傳承一旦遺忘便無法復原，也不會返還已投入的靈氣。若保留舊傳承，該門派同一欄位視為已學，不能再額外取得新版；需先使用免費轉換，或自行遺忘後再依門派職位重新學習。尚未學過的門派功法會直接依新版內容顯示。\n\n【離開原門派】\n即使已離開原門派，舊傳承仍會保留，也可在門派功法頁免費轉換；不必為了處理舊功法重新拜入原門派。\n\n感謝道友在測試期間陪伴我們調整修行體系。',sentAt:now,read:false,claimed:true,attachments:[]}}
 function ensureSectTechniqueRevisionMail(){if(!state.name||state.sectTechniqueMailVersion>=2)return;if(!mailbox().some(mail=>mail.id==='sect-technique-revision-v2'))mailbox().unshift(createSectTechniqueRevisionMail(gameNow()));state.sectTechniqueMailVersion=2}
 function mailbox(){return Array.isArray(state.mailbox)?state.mailbox:(state.mailbox=[])}
@@ -1825,7 +1827,7 @@ function closeMarket(){
   resetMarketNavigation();
 }
 
-load();normalizeMainlineMaterialItems();registerEquipmentItems();normalizeIndependentPaths();normalizeSwordPath();normalizeBodyPath();ensureTestTemporaryItemsMail();ensureTestResourceSupplyMail();ensureTestFoodAuraSupplyMail();ensureTestSpiritMedicineMail();ensureTestSwordPathPillsMail();ensureSectTechniqueRevisionMail();
+load();normalizeMainlineMaterialItems();registerEquipmentItems();normalizeIndependentPaths();normalizeSwordPath();normalizeBodyPath();ensureTestTemporaryItemsMail();ensureTestResourceSupplyMail();ensureTestFoodAuraSupplyMail();ensureTestSpiritMedicineMail();ensureTestSwordPathPillsMail();ensureTestSwordEssenceMail();ensureSectTechniqueRevisionMail();
 try{const existing=JSON.parse(localStorage.getItem(saveKey));if(state.name&&(!existing||!Object.prototype.hasOwnProperty.call(existing,'cultivationAwakened')))state.cultivationAwakened=true}catch{}
 setClockAnchor(state.lastTrustedTime||Math.min(state.lastSave||Date.now(),Date.now()),location.protocol==='file:');
 if(state.sect&&!validSectNpcSnapshot()){state.sectNpcSnapshot=createSectNpcSnapshot();save()}
@@ -1840,7 +1842,7 @@ $$('.appearance-choice').forEach(b=>b.onclick=()=>{$$('.appearance-choice').forE
 $$('.outfit-choice').forEach(b=>b.onclick=()=>{$$('.outfit-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOutfit=+b.dataset.style;updateCreator()});
 function updateOriginPreview(){$('#originStats').textContent=originDescriptions[createOrigin]}
 $$('.origin-choice').forEach(b=>b.onclick=()=>{$$('.origin-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOrigin=b.dataset.origin;updateOriginPreview()});
-$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,appearance:createAppearance,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now,sectTechniqueMailVersion:2,swordPathOpened:false,bodyPathOpened:false};Object.keys(tribulationPillDefaults).forEach(key=>state[key]=200);state.mailbox=[createWelcomeMail(now)];ensureTestTemporaryItemsMail();ensureTestResourceSupplyMail();ensureTestFoodAuraSupplyMail();ensureTestSpiritMedicineMail();ensureTestSwordPathPillsMail();startGame();save()};
+$('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,appearance:createAppearance,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now,sectTechniqueMailVersion:2,swordPathOpened:false,bodyPathOpened:false};Object.keys(tribulationPillDefaults).forEach(key=>state[key]=200);state.mailbox=[createWelcomeMail(now)];ensureTestTemporaryItemsMail();ensureTestResourceSupplyMail();ensureTestFoodAuraSupplyMail();ensureTestSpiritMedicineMail();ensureTestSwordPathPillsMail();ensureTestSwordEssenceMail();startGame();save()};
 $('#spiritUp').onclick=()=>upgrade('spirit'); $('#swordUp').onclick=()=>upgrade('sword'); $('#bodyUp').onclick=()=>openExperienceView('body');
 $('#tribConfirm').onclick=tribulate; $('#tribCancel').onclick=()=>$('#tribulationModal').classList.add('hidden');
 $('#tribulationExit').onclick=exitTribulationResult;
