@@ -246,11 +246,13 @@ const mainlineBagRanges=[[20,40,15,30,10,20,15,30],[25,50,20,35,12,24,20,35],[35
 const wardrobeOutfits={
   女:[
     {id:1,name:'雲水袍',kind:'初始服裝'},{id:2,name:'月華袍',kind:'初始服裝'},{id:3,name:'丹霞袍',kind:'初始服裝'},
-    {id:4,name:'星河鳳羽衣',kind:'華服'},{id:5,name:'九霄玄凰裳',kind:'華服'}
+    {id:4,name:'星河鳳羽衣',kind:'華服'},{id:5,name:'九霄玄凰裳',kind:'華服'},
+    {id:6,name:'星海月神綃',kind:'神話品質',effect:'star'},{id:7,name:'燼凰涅槃裳',kind:'神話品質',effect:'flame'},{id:8,name:'萬象瑤光衣',kind:'神話品質',effect:'myriad'}
   ],
   男:[
     {id:1,name:'青雲袍',kind:'初始服裝'},{id:2,name:'玄劍袍',kind:'初始服裝'},{id:3,name:'山嶽袍',kind:'初始服裝'},
-    {id:4,name:'太虛星辰袍',kind:'華服'},{id:5,name:'天衍劍尊衣',kind:'華服'}
+    {id:4,name:'太虛星辰袍',kind:'華服'},{id:5,name:'天衍劍尊衣',kind:'華服'},
+    {id:6,name:'太初星帝袍',kind:'神話品質',effect:'star'},{id:7,name:'鴻蒙劫火袞',kind:'神話品質',effect:'flame'},{id:8,name:'萬象道君服',kind:'神話品質',effect:'myriad'}
   ]
 };
 const trueFormCatalog=[
@@ -270,7 +272,7 @@ defaults.sectTechniqueMailVersion=0;
 defaults.divineRoamingUnlocked=false;defaults.divineRoamingManualCount=0;defaults.divineRoamingDay='';defaults.divineRoamingUsed=0;defaults.divineRoamingJob=null;defaults.divineRoamingHarvest={};defaults.divineRoamingTimingVersion=0;
 defaults.mindEmbodimentUnlocked=false;defaults.mindEmbodimentManualCount=0;
 mainlineMaterials.forEach(([,key])=>defaults[`mainlineMaterial_${key}`]=0);defaults.mainlineMaterialMigration=0;
-defaults.equipmentInventory=[];defaults.equippedItems={};defaults.pillUsage={};defaults.productionView={alchemy:false,forge:false,brew:false};defaults.craftingTier=1;defaults.craftingQuality='normal';defaults.craftingSlot='crown';defaults.craftingPill='yuanxi';
+defaults.equipmentInventory=[];defaults.equippedItems={};defaults.pillUsage={};defaults.craftingTier=1;defaults.craftingQuality='normal';defaults.craftingSlot='crown';defaults.craftingPill='yuanxi';
 pillTypes.forEach(([key])=>{for(let tier=1;tier<=9;tier++)defaults[`pillCount_${key}_${tier}`]=0});
 let state = { ...defaults }, tickStart = Date.now(), manualCultivationStartedAt=0, manualCultivationTimer=null, breakthroughInProgress=false;
 const saveKey = 'wendao-idle-v2';
@@ -289,9 +291,9 @@ function gameNow(){return Math.floor(clockEpoch+(performance.now()-clockPerf))}
 function appearanceAsset(gender,appearance,outfit){
   if(qStyleMode){
     const g=gender==='男'?'male':'female';
-    const selectedOutfit=Math.max(1,Math.min(5,Number(outfit)||1));
+    const selectedOutfit=Math.max(1,Math.min(8,Number(outfit)||1));
     const selectedAppearance=Math.max(1,Math.min(3,Number(appearance)||1));
-    const asset=selectedAppearance===1
+    const asset=selectedOutfit>=6||selectedAppearance===1
       ? `assets/qstyle-v2/${g}-outfit-${selectedOutfit}.png`
       : `assets/qstyle-v2/${g}-appearance-${selectedAppearance}-outfit-${selectedOutfit}.png`;
     return `${asset}?v=20260810c`;
@@ -303,9 +305,11 @@ function appearanceAsset(gender,appearance,outfit){
 function characterAsset(){return appearanceAsset(state.gender,state.appearance||1,state.outfit||1)}
 function applyCharacterVisual(){
   const hero=$('#heroCharacter');if(hero)hero.src=characterAsset();
+  const outfit=wardrobeOutfits[state.gender]?.find(item=>item.id===(Number(state.outfit)||1));
+  const heroArt=$('#heroArt');if(heroArt)heroArt.dataset.outfitEffect=outfit?.effect||'none';
   const form=$('#heroTrueForm');if(!form)return;
   const selected=trueFormCatalog.find(item=>item.id===(state.trueForm||'none'));
-  const heroArt=$('#heroArt');if(heroArt)heroArt.dataset.trueForm=selected?.id||'none';
+  if(heroArt)heroArt.dataset.trueForm=selected?.id||'none';
   form.className=`hero-true-form true-form-${selected?.id||'none'}`;
   if(selected?.image){form.src=selected.image;form.alt=selected.name;form.classList.remove('hidden')}
   else{form.removeAttribute('src');form.alt='';form.classList.add('hidden')}
@@ -599,7 +603,8 @@ function renderNoviceCultivation(){
   const awakened=!!state.cultivationAwakened,ready=!awakened&&state.free>=600n,progress=Math.min(100,Number(state.free)/6),novice=$('#noviceCultivation'),button=$('#manualCultivateBtn');
   novice.classList.toggle('hidden',awakened);novice.classList.toggle('breakthrough-ready',ready);
   $('.path-actions').classList.toggle('hidden',!awakened);
-  $$('.feature-tab[data-page="root"],.feature-tab[data-page="sect"]').forEach(tab=>tab.classList.toggle('novice-locked',!awakened));
+  $$('.feature-tab').forEach(tab=>{tab.classList.toggle('novice-locked',!awakened);tab.setAttribute('aria-disabled',String(!awakened))});
+  const mainlineButton=$('#mainlineButton');mainlineButton.classList.toggle('hidden',!awakened);mainlineButton.disabled=!awakened;mainlineButton.setAttribute('aria-hidden',String(!awakened));
   if(awakened)return;
   $('#noviceProgressText').textContent=ready?'修為已足，點擊突破踏入聽息一層':`入門進度 ${formatLargeNumber(state.free)} / 600`;
   $('#noviceProgressBar').style.width=`${progress}%`;
@@ -966,13 +971,14 @@ function renderMortalMainline(inner=$('#experienceInner')){
   $$('[data-divine-stage]').forEach(button=>button.onclick=()=>openDivineRoamingStage(+button.dataset.divineStage));
 }
 function renderMainlinePage(){
+  if(!state.cultivationAwakened)return false;
   processDivineRoaming();const roaming=state.spiritLevel>=40?`<button id="divineRoamingHeader" type="button">${state.divineRoamingUnlocked?'遠遊臨時儲物袋':'神念遠遊'}</button>`:'<span></span>';$('#featureDescription').innerHTML=`<div class="mainline-standalone-bar"><button id="mainlineBackButton" type="button">返回修煉</button><b>九鎖封天</b>${roaming}</div><div id="mainlineStandaloneInner"></div>`;renderMortalMainline($('#mainlineStandaloneInner'));$('#mainlineBackButton').onclick=toggleMainlinePage;if($('#divineRoamingHeader'))$('#divineRoamingHeader').onclick=()=>state.divineRoamingUnlocked?openDivineHarvest():openDivineRoamingUnlock();
 }
 function mainlineDialogue(stage){
   const portraitFor=key=>key==='player'?mainlineProtagonistPortrait():mainlinePortraits[key]||mainlinePortraits.guardian;
   return mainlineStoryScripts[stage.id-1].map(([name,portrait,text])=>({name:name==='主角'?(state.name||'修士'):name,portrait:portraitFor(portrait),text}));
 }
-function openMainlineStory(id){mainlineStoryStage=mortalMainline[id-1];mainlineStoryStep=0;startMainlineBgm(mainlineStoryStage);showMainlineDialogue()}
+function openMainlineStory(id){if(!state.cultivationAwakened)return toast('完成新手教程後開啟九鎖封天');mainlineStoryStage=mortalMainline[id-1];mainlineStoryStep=0;startMainlineBgm(mainlineStoryStage);showMainlineDialogue()}
 function showMainlineDialogue(){
   const stage=mainlineStoryStage,lines=mainlineDialogue(stage),line=lines[mainlineStoryStep];let modal=$('#mainlineStoryModal');if(!modal){modal=document.createElement('div');modal.id='mainlineStoryModal';modal.className='mainline-story-modal';document.body.append(modal)}
   modal.innerHTML=`<div class="mainline-story-scene" style="--story-bg:url('${stage.image}')"><div class="story-location"><small>第 ${stage.id} 關</small><b>${stage.name}</b></div><img class="story-portrait" src="${line.portrait}" alt="${line.name}"><div class="story-dialogue"><strong>${line.name}</strong><p>${line.text}</p><button id="mainlineStoryNext">${mainlineStoryStep<lines.length-1?'繼續':'迎戰'}</button></div></div>`;modal.classList.add('show');$('#mainlineStoryNext').onclick=()=>{if(++mainlineStoryStep<lines.length)showMainlineDialogue();else{modal.classList.remove('show');startMainlineBattle(stage)}};
@@ -1003,7 +1009,7 @@ function grantMainlineDrops(stage){
 function toggleFeature(button) {
   const page=button.dataset.page;
   $('#mainlineButton')?.classList.remove('active');
-  if(!state.cultivationAwakened&&(page==='root'||page==='sect'))return toast(`${page==='root'?'靈池':'門派'}需踏入聽息・一層後開啟`);
+  if(!state.cultivationAwakened)return toast('完成新手教程、踏入聽息一層後開啟此功能');
   if(currentFeature===page) {
     currentFeature=null;
     $('#featurePanel').classList.add('hidden');
@@ -1037,6 +1043,7 @@ function toggleFeature(button) {
 
 function toggleMainlinePage(){
   const button=$('#mainlineButton');
+  if(!state.cultivationAwakened)return toast('完成新手教程、踏入聽息一層後開啟九鎖封天');
   if(currentFeature==='mainline'){currentFeature=null;button.classList.remove('active');$('#featurePanel').classList.add('hidden');$('#gameScreen').classList.remove('feature-open');startBgm('main');return}
   currentFeature='mainline';$$('.feature-tab').forEach(x=>x.classList.remove('active'));button.classList.add('active');$('#featurePanel').classList.remove('feature-locked','hidden');renderMainlinePage();$('#gameScreen').classList.add('feature-open');
 }
@@ -1490,7 +1497,6 @@ function renderCavePanel(view='dwelling'){
   renderCaveView(view);
 }
 function productionMaxTier(){return worldProgressTier()}
-function productionLanding(kind,inner){const data={alchemy:['丹房','一座丹爐，不升級、不分階；境界決定最高煉製階級。','alchemy-furnace.png'],forge:['器室','一座鑄造爐，製作必定成功；隨機性只在成品數值與詞條。','forge-furnace.png'],brew:['仙釀','酒罈已安置完成，釀造內容將於後續製作。','wine-jar.png']}[kind];inner.innerHTML=`<section class="production-landing"><small>洞府・${data[0]}</small><button class="production-vessel" data-enter-production="${kind}"><img src="assets/qstyle-v2/production/${data[2]}" alt="${data[0]}"><b>${data[0]}</b><span>${data[1]}</span><em>${kind==='brew'?'查看酒罈':'點擊進入生產'}</em></button></section>`;$('[data-enter-production]').onclick=()=>{state.productionView[kind]=true;renderCaveView(kind==='alchemy'?'alchemy':kind==='forge'?'forge':'brew')};}
 function lootAmount(name){return Math.max(0,Math.floor(state.mainlineLoot?.[name]||0))}
 function spendLoot(name,amount){state.mainlineLoot=state.mainlineLoot||{};state.mainlineLoot[name]=lootAmount(name)-amount}
 function renderAlchemyProduction(inner){const max=productionMaxTier(),tier=Math.max(1,Math.min(max,9,state.craftingTier||1)),unlocked=tier<=max,type=pillTypes.find(x=>x[0]===state.craftingPill)||pillTypes[0],need=pillNeeds[tier-1],herb=lootAmount(type[4]),sand=lootAmount('丹砂'),can=unlocked&&herb>=need[0]&&sand>=need[1],tierText=['一','二','三','四','五','六','七','八','九'][tier-1];inner.innerHTML=`<section class="production-workshop"><button data-production-back="alchemy">返回丹爐</button><h2>丹房生產</h2><p>一至九階丹方皆可查看・目前最高可煉 ${['一','二','三','四','五','六','七','八','九'][max-1]}階</p><div class="production-tier-tabs">${Array.from({length:9},(_,i)=>`<button data-craft-tier="${i+1}" class="${tier===i+1?'active':''} ${i+1>max?'tier-locked':''}">${i+1}階${i+1>max?'・未達境界':''}</button>`).join('')}</div><div class="production-choice-grid">${pillTypes.map(([key,name])=>`<button data-pill-type="${key}" class="${type[0]===key?'active':''}"><img src="assets/qstyle-v2/production/pills/${key}-t${tier}.png"><b>${tierText}階${name}</b></button>`).join('')}</div><section class="craft-requirement"><b>${type[1]}</b><span>${type[4]} ${herb}/${need[0]}</span><span>丹砂 ${sand}/${need[1]}</span>${unlocked?'':`<span class="realm-lock">境界不足：需達到可煉製${tierText}階丹藥的境界</span>`}<button id="craftPillBtn" ${can?'':'disabled'}>${unlocked?'煉製一顆':'境界不足'}</button></section></section>`;bindProductionControls('alchemy');$$('[data-pill-type]').forEach(b=>b.onclick=()=>{state.craftingPill=b.dataset.pillType;renderAlchemyProduction(inner)});$('#craftPillBtn').onclick=()=>{if(!unlocked)return toast('目前境界尚不足以煉製此階丹藥');if(!can)return;spendLoot(type[4],need[0]);spendLoot('丹砂',need[1]);state[`pillCount_${type[0]}_${tier}`]=(state[`pillCount_${type[0]}_${tier}`]||0)+1;toast(`煉成${tierText}階${type[1]}`);save();renderAlchemyProduction(inner)}}
@@ -1498,13 +1504,13 @@ function rollInt(min,max){return min+Math.floor(Math.random()*(max-min+1))}
 function craftEquipment(){const tier=Math.min(productionMaxTier(),state.craftingTier||1),slot=equipmentSlots.find(x=>x[0]===state.craftingSlot)||equipmentSlots[0],quality=state.craftingQuality==='rare'?'rare':'normal',need=forgeNeeds[tier-1],mainKey=`mainlineMaterial_${slot[4]}`,tierMat=tierMaterials[tier-1];if((state[mainKey]||0)<need[0]||lootAmount(tierMat)<need[1]||(quality==='rare'&&lootAmount('器靈精魄')<need[2]))return toast('製作素材不足');state[mainKey]-=need[0];spendLoot(tierMat,need[1]);if(quality==='rare')spendLoot('器靈精魄',need[2]);const index=equipmentSlots.indexOf(slot),rollTable=quality==='rare'?equipmentRareRolls:equipmentNormalRolls,range=index<5?rollTable[tier-1][index]:null,e={id:`${Date.now()}-${Math.random().toString(36).slice(2,7)}`,slot:slot[0],tier,quality,label:slot[3],value:range?rollInt(range[0],range[1]):0,affixes:[]};if(index>=5){const elements=['金','木','水','火','土'].sort(()=>Math.random()-.5).slice(0,tier<=3?1:tier<=6?2:3),min=tier<=3?1:tier<=6?2:3,max=tier<=3?2:tier<=6?5:8;e.affixes=elements.map(element=>{const low=min*10,high=max*10,value=quality==='rare'?Math.max(rollInt(low,high),rollInt(low,high)):rollInt(low,high);return {element,value:value/10}})}state.equipmentInventory=state.equipmentInventory||[];state.equipmentInventory.push(e);registerEquipmentItems();toast(`製成${quality==='rare'?'極品':'凡品'}·${equipmentSets[tier-1]}${slot[1]}`);save();renderCaveView('forge')}
 function renderForgeProduction(inner){const max=productionMaxTier(),tier=Math.max(1,Math.min(max,9,state.craftingTier||1)),unlocked=tier<=max,slot=equipmentSlots.find(x=>x[0]===state.craftingSlot)||equipmentSlots[0],quality=state.craftingQuality==='rare'?'rare':'normal',need=forgeNeeds[tier-1],main=state[`mainlineMaterial_${slot[4]}`]||0,tm=lootAmount(tierMaterials[tier-1]),soul=lootAmount('器靈精魄'),can=unlocked&&main>=need[0]&&tm>=need[1]&&(quality==='normal'||soul>=need[2]),tierText=['一','二','三','四','五','六','七','八','九'][tier-1];inner.innerHTML=`<section class="production-workshop"><button data-production-back="forge">返回鑄造爐</button><h2>器室生產</h2><p>一至九階器譜皆可查看・目前最高可製作 ${equipmentSets[max-1]}</p><div class="production-tier-tabs">${Array.from({length:9},(_,i)=>`<button data-craft-tier="${i+1}" class="${tier===i+1?'active':''} ${i+1>max?'tier-locked':''}">${i+1}階${i+1>max?'・未達境界':''}</button>`).join('')}</div><div class="production-choice-grid equipment-choices">${equipmentSlots.map(([key,name])=>`<button data-equip-slot="${key}" class="${slot[0]===key?'active':''}"><img src="assets/qstyle-v2/production/equipment/${key}-t${tier}.png"><b>${name}</b></button>`).join('')}</div><div class="quality-choice"><button data-craft-quality="normal" class="${quality==='normal'?'active':''}">凡品</button><button data-craft-quality="rare" class="${quality==='rare'?'active':''}">極品</button></div><section class="craft-requirement"><b>${quality==='rare'?'極品':'凡品'}·${equipmentSets[tier-1]}${slot[1]}</b><span>${mainlineMaterials.find(x=>x[1]===slot[4])[0]} ${main}/${need[0]}</span><span>${tierMaterials[tier-1]} ${tm}/${need[1]}</span>${quality==='rare'?`<span>器靈精魄 ${soul}/${need[2]}</span>`:''}${unlocked?'':`<span class="realm-lock">境界不足：需達到可製作${tierText}階裝備的境界</span>`}<button id="craftEquipmentBtn" ${can?'':'disabled'}>${unlocked?'製作裝備':'境界不足'}</button></section></section>`;bindProductionControls('forge');$$('[data-equip-slot]').forEach(b=>b.onclick=()=>{state.craftingSlot=b.dataset.equipSlot;renderForgeProduction(inner)});$$('[data-craft-quality]').forEach(b=>b.onclick=()=>{state.craftingQuality=b.dataset.craftQuality;renderForgeProduction(inner)});$('#craftEquipmentBtn').onclick=()=>{if(!unlocked)return toast('目前境界尚不足以製作此階裝備');craftEquipment()}}
 function productionTierRequirement(tier){return `需練氣達${spiritRealms[tier-1]}一層、煉體達${bodyRealms[tier-1]}一層，或淬劍達${swordRealms[tier-1]}一層`}
-function bindProductionControls(kind){$$('[data-production-back]').forEach(b=>b.onclick=()=>{state.productionView[kind]=false;renderCaveView(kind)});const max=productionMaxTier(),tabs=$('.production-tier-tabs');$$('[data-craft-tier]').forEach(b=>b.onclick=()=>{const tier=+b.dataset.craftTier;if(tier>max)return toast(productionTierRequirement(tier));state.craftingTier=tier;kind==='alchemy'?renderAlchemyProduction($('#caveInner')):renderForgeProduction($('#caveInner'))});if(tabs)tabs.addEventListener('wheel',event=>{if(Math.abs(event.deltaY)<=Math.abs(event.deltaX))return;tabs.scrollLeft+=event.deltaY;event.preventDefault()},{passive:false})}
+function bindProductionControls(kind){const back=$('[data-production-back]');if(back)back.remove();const max=productionMaxTier(),tabs=$('.production-tier-tabs');$$('[data-craft-tier]').forEach(b=>b.onclick=()=>{const tier=+b.dataset.craftTier;if(tier>max)return toast(productionTierRequirement(tier));state.craftingTier=tier;kind==='alchemy'?renderAlchemyProduction($('#caveInner')):renderForgeProduction($('#caveInner'))});if(tabs)tabs.addEventListener('wheel',event=>{if(Math.abs(event.deltaY)<=Math.abs(event.deltaX))return;tabs.scrollLeft+=event.deltaY;event.preventDefault()},{passive:false})}
 function renderCaveView(view){
   currentCaveView=view;
   $$('.cave-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.caveView===view));
   const inner=$('#caveInner');if(!inner)return;
   if(!['dwelling','production'].includes(view)){
-    if(view==='alchemy'){if(!state.productionView.alchemy)return productionLanding('alchemy',inner);renderAlchemyProduction(inner);return}if(view==='forge'){if(!state.productionView.forge)return productionLanding('forge',inner);renderForgeProduction(inner);return}if(view==='brew'){productionLanding('brew',inner);return}
+    if(view==='alchemy'){renderAlchemyProduction(inner);return}if(view==='forge'){renderForgeProduction(inner);return}if(view==='brew'){inner.innerHTML='<div class="cave-placeholder"><b>仙釀</b><small>釀造內容將於後續版本開放</small></div>';return}
     const names={study:'書房',partner:'道侶'};inner.innerHTML=`<div class="cave-placeholder"><b>${names[view]}</b><small>相關內容將於後續版本開放</small></div>`;return;
   }
   const cards=Object.entries(caveAreas).map(([key,a])=>{const level=state[a.level],cap=areaCapacity(a),max=areaWorkerMax(a),output=areaOutput(a),maxed=level>=caveAreaMaxLevel,upgrade=areaUpgradeCost(a),nextCap=areaCapacity(a,level+1),stored=Math.floor(state[a.value]),full=stored>=cap,percent=Math.min(100,stored/Math.max(1,cap)*100);return `<article class="resource-area ${full?'storage-full':''}"><header><img src="${a.icon}" alt="${a.label}"><div><b>${a.label}</b><small>${level}級產地</small></div><em>${full?'倉滿':'生產中'}</em></header><div class="resource-storage"><span><small>目前儲量</small><strong title="${stored.toLocaleString()}">${formatCaveAmount(stored)}</strong></span><i>／</i><span><small>儲存上限</small><strong title="${cap.toLocaleString()}">${formatCaveAmount(cap)}</strong></span></div><div class="resource-capacity-bar"><i style="width:${percent}%"></i></div><p>${full?'倉儲已滿，已暫停生產':`每名道童每 5 秒產出 ${formatCaveAmount(output)}${a.foodCost?`，消耗食物 ${formatCaveAmount(a.foodCost)}`:''}`}</p><div class="worker-stepper"><button data-worker="${key}" data-change="-1">−</button><span>道童 ${state[a.worker]} / ${max}</span><button data-worker="${key}" data-change="1">＋</button></div><button class="area-upgrade" data-upgrade-area="${key}" ${!maxed&&state.wood>=upgrade?'':'disabled'}><span>${maxed?'產地已達最高級':`擴建上限至 ${formatCaveAmount(nextCap)}`}</span><small>${maxed?'30 級圓滿':`木材 ${formatCaveAmount(upgrade)}`}</small></button></article>`}).join('');
@@ -1633,7 +1639,7 @@ function renderWardrobeSection(section){
   const inner=$('#wardrobeInner');if(!inner)return;
   if(section==='outfits'){
     const g=state.gender==='男'?'male':'female',appearance=state.appearance||1;
-    inner.innerHTML=`<div class="wardrobe-intro"><b>衣閣藏衣</b><span>服裝只改變外觀，不影響人物屬性。</span></div><div class="wardrobe-grid">${wardrobeOutfits[state.gender].map(outfit=>`<button class="wardrobe-card ${state.outfit===outfit.id?'selected':''}" data-outfit="${outfit.id}"><span class="wardrobe-preview"><img src="${appearanceAsset(state.gender,appearance,outfit.id)}" alt="${outfit.name}"></span><b>${outfit.name}</b><small>${outfit.kind}</small><em>${state.outfit===outfit.id?'穿戴中':'更換'}</em></button>`).join('')}</div>`;
+    inner.innerHTML=`<div class="wardrobe-intro"><b>衣閣藏衣</b><span>服裝只改變外觀，不影響人物屬性。</span></div><div class="wardrobe-grid">${wardrobeOutfits[state.gender].map(outfit=>`<button class="wardrobe-card ${outfit.effect?'mythic':''} ${state.outfit===outfit.id?'selected':''}" data-outfit="${outfit.id}" data-outfit-effect="${outfit.effect||'none'}"><span class="wardrobe-preview"><img src="${appearanceAsset(state.gender,appearance,outfit.id)}" alt="${outfit.name}"></span><b>${outfit.name}</b><small>${outfit.kind}</small><em>${state.outfit===outfit.id?'穿戴中':'更換'}</em></button>`).join('')}</div>`;
     $$('[data-outfit]').forEach(button=>button.onclick=()=>{state.outfit=+button.dataset.outfit;applyCharacterVisual();renderWardrobeSection('outfits');save()});
     return;
   }
