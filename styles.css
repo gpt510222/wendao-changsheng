@@ -623,3 +623,6 @@ html,body{width:100%;height:100%;min-height:0;overflow:hidden;overscroll-behavio
 .experience-tabs.body-primary-tabs{grid-template-columns:repeat(2,minmax(0,1fr));width:100%;max-width:560px}
 .arts-book-tabs{display:flex;grid-template-columns:none;gap:5px;max-width:540px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scroll-behavior:smooth;overscroll-behavior-x:contain;touch-action:pan-x}
 .arts-book-tabs button{flex:0 0 112px;white-space:nowrap}
+
+/* Divine roaming can be recalled after the current expedition finishes. */
+.divine-return-button{padding:9px 14px;border:1px solid #8f6957;border-radius:12px;background:#9a6253;color:#fff}.divine-return-button:disabled{opacity:.55}.divine-harvest-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:9px}.divine-harvest-actions #claimDivineHarvest{margin:0}
