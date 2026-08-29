@@ -293,10 +293,10 @@ function appearanceAsset(gender,appearance,outfit){
     const g=gender==='男'?'male':'female';
     const selectedOutfit=Math.max(1,Math.min(8,Number(outfit)||1));
     const selectedAppearance=Math.max(1,Math.min(3,Number(appearance)||1));
-    const asset=selectedOutfit>=6||selectedAppearance===1
+    const asset=selectedAppearance===1
       ? `assets/qstyle-v2/${g}-outfit-${selectedOutfit}.png`
       : `assets/qstyle-v2/${g}-appearance-${selectedAppearance}-outfit-${selectedOutfit}.png`;
-    return `${asset}?v=20260829a`;
+    return `${asset}?v=20260829b`;
   }
   const g=gender==='男'?'male':'female';
   const version=appearance===2?'v2':'v1';
