@@ -599,7 +599,7 @@ function renderNoviceCultivation(){
   const awakened=!!state.cultivationAwakened,ready=!awakened&&state.free>=600n,progress=Math.min(100,Number(state.free)/6),novice=$('#noviceCultivation'),button=$('#manualCultivateBtn');
   novice.classList.toggle('hidden',awakened);novice.classList.toggle('breakthrough-ready',ready);
   $('.path-actions').classList.toggle('hidden',!awakened);
-  $$('.feature-tab[data-page="root"],.feature-tab[data-page="sect"]').forEach(tab=>tab.classList.toggle('novice-locked',!awakened));
+  $$('.feature-tab').forEach(tab=>{tab.classList.toggle('novice-locked',!awakened);tab.setAttribute('aria-disabled',String(!awakened))});
   const mainlineButton=$('#mainlineButton');mainlineButton.classList.toggle('hidden',!awakened);mainlineButton.disabled=!awakened;mainlineButton.setAttribute('aria-hidden',String(!awakened));
   if(awakened)return;
   $('#noviceProgressText').textContent=ready?'修為已足，點擊突破踏入聽息一層':`入門進度 ${formatLargeNumber(state.free)} / 600`;
@@ -1005,7 +1005,7 @@ function grantMainlineDrops(stage){
 function toggleFeature(button) {
   const page=button.dataset.page;
   $('#mainlineButton')?.classList.remove('active');
-  if(!state.cultivationAwakened&&(page==='root'||page==='sect'))return toast(`${page==='root'?'靈池':'門派'}需踏入聽息・一層後開啟`);
+  if(!state.cultivationAwakened)return toast('完成新手教程、踏入聽息一層後開啟此功能');
   if(currentFeature===page) {
     currentFeature=null;
     $('#featurePanel').classList.add('hidden');
