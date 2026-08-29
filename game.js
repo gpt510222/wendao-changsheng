@@ -246,11 +246,13 @@ const mainlineBagRanges=[[20,40,15,30,10,20,15,30],[25,50,20,35,12,24,20,35],[35
 const wardrobeOutfits={
   女:[
     {id:1,name:'雲水袍',kind:'初始服裝'},{id:2,name:'月華袍',kind:'初始服裝'},{id:3,name:'丹霞袍',kind:'初始服裝'},
-    {id:4,name:'星河鳳羽衣',kind:'華服'},{id:5,name:'九霄玄凰裳',kind:'華服'}
+    {id:4,name:'星河鳳羽衣',kind:'華服'},{id:5,name:'九霄玄凰裳',kind:'華服'},
+    {id:6,name:'星海月神綃',kind:'神話品質',effect:'star'},{id:7,name:'燼凰涅槃裳',kind:'神話品質',effect:'flame'},{id:8,name:'萬象瑤光衣',kind:'神話品質',effect:'myriad'}
   ],
   男:[
     {id:1,name:'青雲袍',kind:'初始服裝'},{id:2,name:'玄劍袍',kind:'初始服裝'},{id:3,name:'山嶽袍',kind:'初始服裝'},
-    {id:4,name:'太虛星辰袍',kind:'華服'},{id:5,name:'天衍劍尊衣',kind:'華服'}
+    {id:4,name:'太虛星辰袍',kind:'華服'},{id:5,name:'天衍劍尊衣',kind:'華服'},
+    {id:6,name:'太初星帝袍',kind:'神話品質',effect:'star'},{id:7,name:'鴻蒙劫火袞',kind:'神話品質',effect:'flame'},{id:8,name:'萬象道君服',kind:'神話品質',effect:'myriad'}
   ]
 };
 const trueFormCatalog=[
@@ -289,9 +291,9 @@ function gameNow(){return Math.floor(clockEpoch+(performance.now()-clockPerf))}
 function appearanceAsset(gender,appearance,outfit){
   if(qStyleMode){
     const g=gender==='男'?'male':'female';
-    const selectedOutfit=Math.max(1,Math.min(5,Number(outfit)||1));
+    const selectedOutfit=Math.max(1,Math.min(8,Number(outfit)||1));
     const selectedAppearance=Math.max(1,Math.min(3,Number(appearance)||1));
-    const asset=selectedAppearance===1
+    const asset=selectedOutfit>=6||selectedAppearance===1
       ? `assets/qstyle-v2/${g}-outfit-${selectedOutfit}.png`
       : `assets/qstyle-v2/${g}-appearance-${selectedAppearance}-outfit-${selectedOutfit}.png`;
     return `${asset}?v=20260810c`;
@@ -303,9 +305,11 @@ function appearanceAsset(gender,appearance,outfit){
 function characterAsset(){return appearanceAsset(state.gender,state.appearance||1,state.outfit||1)}
 function applyCharacterVisual(){
   const hero=$('#heroCharacter');if(hero)hero.src=characterAsset();
+  const outfit=wardrobeOutfits[state.gender]?.find(item=>item.id===(Number(state.outfit)||1));
+  const heroArt=$('#heroArt');if(heroArt)heroArt.dataset.outfitEffect=outfit?.effect||'none';
   const form=$('#heroTrueForm');if(!form)return;
   const selected=trueFormCatalog.find(item=>item.id===(state.trueForm||'none'));
-  const heroArt=$('#heroArt');if(heroArt)heroArt.dataset.trueForm=selected?.id||'none';
+  if(heroArt)heroArt.dataset.trueForm=selected?.id||'none';
   form.className=`hero-true-form true-form-${selected?.id||'none'}`;
   if(selected?.image){form.src=selected.image;form.alt=selected.name;form.classList.remove('hidden')}
   else{form.removeAttribute('src');form.alt='';form.classList.add('hidden')}
@@ -1635,7 +1639,7 @@ function renderWardrobeSection(section){
   const inner=$('#wardrobeInner');if(!inner)return;
   if(section==='outfits'){
     const g=state.gender==='男'?'male':'female',appearance=state.appearance||1;
-    inner.innerHTML=`<div class="wardrobe-intro"><b>衣閣藏衣</b><span>服裝只改變外觀，不影響人物屬性。</span></div><div class="wardrobe-grid">${wardrobeOutfits[state.gender].map(outfit=>`<button class="wardrobe-card ${state.outfit===outfit.id?'selected':''}" data-outfit="${outfit.id}"><span class="wardrobe-preview"><img src="${appearanceAsset(state.gender,appearance,outfit.id)}" alt="${outfit.name}"></span><b>${outfit.name}</b><small>${outfit.kind}</small><em>${state.outfit===outfit.id?'穿戴中':'更換'}</em></button>`).join('')}</div>`;
+    inner.innerHTML=`<div class="wardrobe-intro"><b>衣閣藏衣</b><span>服裝只改變外觀，不影響人物屬性。</span></div><div class="wardrobe-grid">${wardrobeOutfits[state.gender].map(outfit=>`<button class="wardrobe-card ${outfit.effect?'mythic':''} ${state.outfit===outfit.id?'selected':''}" data-outfit="${outfit.id}" data-outfit-effect="${outfit.effect||'none'}"><span class="wardrobe-preview"><img src="${appearanceAsset(state.gender,appearance,outfit.id)}" alt="${outfit.name}"></span><b>${outfit.name}</b><small>${outfit.kind}</small><em>${state.outfit===outfit.id?'穿戴中':'更換'}</em></button>`).join('')}</div>`;
     $$('[data-outfit]').forEach(button=>button.onclick=()=>{state.outfit=+button.dataset.outfit;applyCharacterVisual();renderWardrobeSection('outfits');save()});
     return;
   }
