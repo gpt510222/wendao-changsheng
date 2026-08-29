@@ -722,13 +722,14 @@ function updateBgmVolume() {
   bgmTracks().forEach(([name,track])=>{track.muted=state.muted;track.volume=name==='battle'?.48:name==='swordBreakthrough'?.62:name.startsWith('tribulation')?.55:.42});
   const cinematic=$('#swordCinematicVideo');if(cinematic){cinematic.muted=state.muted;cinematic.volume=.82}
 }
-function bgmTracks(){return [['title',$('#titleBgm')],['tutorial',$('#tutorialBgm')],['main',$('#mainBgm')],['swordCultivation',$('#swordCultivationBgm')],['bodyCultivation',$('#bodyCultivationBgm')],['battle',$('#battleBgm')],['tribulationSuccess',$('#tribulationSuccessBgm')],['tribulationFailure',$('#tribulationFailureBgm')],['swordBreakthrough',$('#swordBreakthroughBgm')],...Array.from({length:9},(_,index)=>[`mainline${index+1}`,$(`#mainlineBgm${index+1}`)])]}
+const cultivationBgmSources={tutorial:'assets/bgm-tutorial-user-v1.wav?v=3',main:'assets/bgm-main-user-v4.wav?v=3',swordCultivation:'assets/bgm-sword-cultivation-user-v1.wav?v=3',bodyCultivation:'assets/bgm-body-cultivation-user-v1.wav?v=3'};
+function bgmTracks(){return [['title',$('#titleBgm')],['cultivation',$('#mainBgm')],['battle',$('#battleBgm')],['tribulationSuccess',$('#tribulationSuccessBgm')],['tribulationFailure',$('#tribulationFailureBgm')],['swordBreakthrough',$('#swordBreakthroughBgm')],...Array.from({length:9},(_,index)=>[`mainline${index+1}`,$(`#mainlineBgm${index+1}`)])]}
 function startBgm(theme) {
-  const tracks=bgmTracks(),next=tracks.find(([name])=>name===theme)?.[1];if(!next)return;
-  const changed=bgmTheme!==theme;
-  tracks.forEach(([name,track])=>{if(name!==theme){track.pause();track.currentTime=0}});
+  const tracks=bgmTracks(),cultivationSource=cultivationBgmSources[theme],trackName=cultivationSource?'cultivation':theme,next=tracks.find(([name])=>name===trackName)?.[1];if(!next)return;
+  const changed=bgmTheme!==theme;tracks.forEach(([name,track])=>{if(name!==trackName){track.pause();track.currentTime=0}});
+  if(cultivationSource&&next.dataset.cultivationTheme!==theme){next.pause();next.src=cultivationSource;next.dataset.cultivationTheme=theme;next.load();next.currentTime=0}
   bgmTheme=theme; updateBgmVolume();
-  if(changed){next.load();next.currentTime=0}
+  if(changed&&!cultivationSource){next.load();next.currentTime=0}
   next.play().catch(()=>document.addEventListener('pointerdown',()=>{if(bgmTheme===theme)next.play().catch(()=>{})},{once:true}));
 }
 function startMainlineBgm(stage){startBgm(`mainline${Math.ceil(stage.id/2)}`)}
