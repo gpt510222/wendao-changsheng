@@ -247,12 +247,12 @@ const wardrobeOutfits={
   女:[
     {id:1,name:'雲水袍',kind:'初始服裝'},{id:2,name:'月華袍',kind:'初始服裝'},{id:3,name:'丹霞袍',kind:'初始服裝'},
     {id:4,name:'星河鳳羽衣',kind:'華服'},{id:5,name:'九霄玄凰裳',kind:'華服'},
-    {id:6,name:'星海月神綃',kind:'神話品質',effect:'star'},{id:7,name:'燼凰涅槃裳',kind:'神話品質',effect:'flame'},{id:8,name:'萬象瑤光衣',kind:'神話品質',effect:'myriad'}
+    {id:6,name:'星海月神綃',kind:'太初仙品',effect:'star'},{id:7,name:'燼凰涅槃裳',kind:'太初仙品',effect:'flame'},{id:8,name:'萬象瑤光衣',kind:'太初仙品',effect:'myriad'}
   ],
   男:[
     {id:1,name:'青雲袍',kind:'初始服裝'},{id:2,name:'玄劍袍',kind:'初始服裝'},{id:3,name:'山嶽袍',kind:'初始服裝'},
     {id:4,name:'太虛星辰袍',kind:'華服'},{id:5,name:'天衍劍尊衣',kind:'華服'},
-    {id:6,name:'太初星帝袍',kind:'神話品質',effect:'star'},{id:7,name:'鴻蒙劫火袞',kind:'神話品質',effect:'flame'},{id:8,name:'萬象道君服',kind:'神話品質',effect:'myriad'}
+    {id:6,name:'太初星帝袍',kind:'太初仙品',effect:'star'},{id:7,name:'鴻蒙劫火袞',kind:'太初仙品',effect:'flame'},{id:8,name:'萬象道君服',kind:'太初仙品',effect:'myriad'}
   ]
 };
 const trueFormCatalog=[
@@ -296,7 +296,7 @@ function appearanceAsset(gender,appearance,outfit){
     const asset=selectedOutfit>=6||selectedAppearance===1
       ? `assets/qstyle-v2/${g}-outfit-${selectedOutfit}.png`
       : `assets/qstyle-v2/${g}-appearance-${selectedAppearance}-outfit-${selectedOutfit}.png`;
-    return `${asset}?v=20260810c`;
+    return `${asset}?v=20260829a`;
   }
   const g=gender==='男'?'male':'female';
   const version=appearance===2?'v2':'v1';
