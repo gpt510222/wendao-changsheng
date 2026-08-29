@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>問道長生・試玩版</title>
-  <link rel="stylesheet" href="styles.css?v=20260829-4">
-  <link rel="stylesheet" href="q-style.css?v=20260827-2">
+  <link rel="stylesheet" href="styles.css?v=20260829-6">
+  <link rel="stylesheet" href="q-style.css?v=20260829-15">
   <script>document.documentElement.classList.add('q-style');</script>
 </head>
 <body>
@@ -205,15 +205,33 @@
         </button>
       </section>
 
-      <div class="path-actions">
-        <button id="swordUp" class="path-button sword-button">
-          <img src="assets/qstyle-v2/sword-cultivation.png" alt="淬劍"><span><b>淬劍</b><small id="swordRealm">尚未開啟</small><em id="swordCost"></em></span>
-        </button>
+      <div id="spiritPathActions" class="path-actions path-action-group spirit-path-actions">
         <button id="spiritUp" class="path-button spirit-button">
           <img src="assets/qstyle-v2/nav-spirit-root.png" alt="練氣"><span><b>練氣</b><small id="spiritRealm">聽息・一層</small><em id="spiritCost">提升需 100</em></span>
         </button>
+      </div>
+
+      <div id="swordPathActions" class="path-actions path-action-group sword-path-actions">
+        <button id="swordUp" class="path-button sword-button">
+          <img src="assets/qstyle-v2/sword-temper-v1.png" alt="淬劍"><span><b>淬劍</b><small id="swordRealm">尚未開啟</small><em id="swordCost"></em></span>
+        </button>
+        <button id="swordLifeUp" class="path-button sword-primary-menu sword-life-button">
+          <img src="assets/qstyle-v2/sword-life-v1.png" alt="本命劍"><span><b>本命劍</b><small>養劍與劍意</small></span>
+        </button>
+        <button id="swordTrialUp" class="path-button sword-primary-menu sword-trial-button">
+          <img src="assets/qstyle-v2/sword-trial-v1.png" alt="試劍境"><span><b>試劍境</b><small>幻影試鋒</small></span>
+        </button>
+      </div>
+
+      <div id="bodyPathActions" class="path-actions path-action-group body-path-actions">
         <button id="bodyUp" class="path-button body-button">
-          <img src="assets/qstyle-v2/body-cultivation.png" alt="煉體"><span><b>煉體</b><small id="bodyRealm">尚未開啟</small><em id="bodyCost"></em></span>
+          <img src="assets/qstyle-v2/body-cultivation.png" alt="鍛體"><span><b>鍛體</b><small id="bodyRealm">尚未開啟</small><em id="bodyCost"></em></span>
+        </button>
+        <button id="bodyStatusUp" class="path-button body-primary-menu body-status-button">
+          <img src="assets/qstyle-v2/body-status-v1.png" alt="肉身"><span><b>肉身</b><small>境界與體魄</small></span>
+        </button>
+        <button id="bodyTrialUp" class="path-button body-primary-menu body-trial-button">
+          <img src="assets/qstyle-v2/body-trial-v1.png" alt="肉身試煉"><span><b>肉身試煉</b><small>承壓破境</small></span>
         </button>
       </div>
 
@@ -227,7 +245,7 @@
         <button class="feature-tab" data-page="cave" data-title="洞府"><img class="nav-icon" src="assets/qstyle-v2/nav-cave.png" alt=""><small>洞府</small></button>
         <button class="feature-tab" data-page="sect" data-title="門派"><img class="nav-icon" src="assets/qstyle-v2/nav-sect.png" alt=""><small>門派</small></button>
         <button class="feature-tab" data-page="arts" data-title="功法"><img class="nav-icon" src="assets/qstyle-v2/nav-arts-cutout.png" alt=""><small>功法</small></button>
-        <button class="feature-tab" data-page="experience" data-title="歷練"><img class="nav-icon" src="assets/qstyle-v2/nav-experience.png" alt=""><small>歷練</small></button>
+        <button class="feature-tab" data-page="experience" data-title="兼修"><img class="nav-icon" src="assets/qstyle-v2/nav-experience.png" alt=""><small>兼修</small></button>
         <button class="feature-tab" data-page="bag" data-title="儲物袋"><img class="nav-icon" src="assets/qstyle-v2/nav-bag-cutout.png" alt=""><small>儲物袋</small></button>
       </footer>
 
@@ -468,7 +486,10 @@
     </div>
   </aside>
   <audio id="titleBgm" src="assets/bgm-title-user-v3.wav" preload="auto" loop></audio>
+  <audio id="tutorialBgm" src="assets/bgm-tutorial-user-v1.wav" preload="auto" loop></audio>
   <audio id="mainBgm" src="assets/bgm-main-user-v4.wav" preload="auto" loop></audio>
+  <audio id="swordCultivationBgm" src="assets/bgm-sword-cultivation-user-v1.wav" preload="auto" loop></audio>
+  <audio id="bodyCultivationBgm" src="assets/bgm-body-cultivation-user-v1.wav" preload="auto" loop></audio>
   <audio id="battleBgm" src="assets/bgm-battle-user-v1.wav" preload="auto" loop></audio>
   <audio id="mainlineBgm1" src="assets/bgm-mainline-01.wav" preload="metadata" loop></audio>
   <audio id="mainlineBgm2" src="assets/bgm-mainline-02.wav" preload="metadata" loop></audio>
@@ -482,6 +503,6 @@
   <audio id="tribulationSuccessBgm" src="assets/bgm-tribulation-success-v1.wav" preload="auto"></audio>
   <audio id="tribulationFailureBgm" src="assets/bgm-tribulation-failure-v1.wav" preload="auto"></audio>
   <audio id="swordBreakthroughBgm" src="assets/bgm-sword-breakthrough-user-v1.wav" preload="auto"></audio>
-  <script src="game.js?v=20260829-9"></script>
+  <script src="game.js?v=20260829-20"></script>
 </body>
 </html>
