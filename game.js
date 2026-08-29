@@ -600,6 +600,7 @@ function renderNoviceCultivation(){
   novice.classList.toggle('hidden',awakened);novice.classList.toggle('breakthrough-ready',ready);
   $('.path-actions').classList.toggle('hidden',!awakened);
   $$('.feature-tab[data-page="root"],.feature-tab[data-page="sect"]').forEach(tab=>tab.classList.toggle('novice-locked',!awakened));
+  const mainlineButton=$('#mainlineButton');mainlineButton.classList.toggle('hidden',!awakened);mainlineButton.disabled=!awakened;mainlineButton.setAttribute('aria-hidden',String(!awakened));
   if(awakened)return;
   $('#noviceProgressText').textContent=ready?'修為已足，點擊突破踏入聽息一層':`入門進度 ${formatLargeNumber(state.free)} / 600`;
   $('#noviceProgressBar').style.width=`${progress}%`;
@@ -966,13 +967,14 @@ function renderMortalMainline(inner=$('#experienceInner')){
   $$('[data-divine-stage]').forEach(button=>button.onclick=()=>openDivineRoamingStage(+button.dataset.divineStage));
 }
 function renderMainlinePage(){
+  if(!state.cultivationAwakened)return false;
   processDivineRoaming();const roaming=state.spiritLevel>=40?`<button id="divineRoamingHeader" type="button">${state.divineRoamingUnlocked?'遠遊臨時儲物袋':'神念遠遊'}</button>`:'<span></span>';$('#featureDescription').innerHTML=`<div class="mainline-standalone-bar"><button id="mainlineBackButton" type="button">返回修煉</button><b>九鎖封天</b>${roaming}</div><div id="mainlineStandaloneInner"></div>`;renderMortalMainline($('#mainlineStandaloneInner'));$('#mainlineBackButton').onclick=toggleMainlinePage;if($('#divineRoamingHeader'))$('#divineRoamingHeader').onclick=()=>state.divineRoamingUnlocked?openDivineHarvest():openDivineRoamingUnlock();
 }
 function mainlineDialogue(stage){
   const portraitFor=key=>key==='player'?mainlineProtagonistPortrait():mainlinePortraits[key]||mainlinePortraits.guardian;
   return mainlineStoryScripts[stage.id-1].map(([name,portrait,text])=>({name:name==='主角'?(state.name||'修士'):name,portrait:portraitFor(portrait),text}));
 }
-function openMainlineStory(id){mainlineStoryStage=mortalMainline[id-1];mainlineStoryStep=0;startMainlineBgm(mainlineStoryStage);showMainlineDialogue()}
+function openMainlineStory(id){if(!state.cultivationAwakened)return toast('完成新手教程後開啟九鎖封天');mainlineStoryStage=mortalMainline[id-1];mainlineStoryStep=0;startMainlineBgm(mainlineStoryStage);showMainlineDialogue()}
 function showMainlineDialogue(){
   const stage=mainlineStoryStage,lines=mainlineDialogue(stage),line=lines[mainlineStoryStep];let modal=$('#mainlineStoryModal');if(!modal){modal=document.createElement('div');modal.id='mainlineStoryModal';modal.className='mainline-story-modal';document.body.append(modal)}
   modal.innerHTML=`<div class="mainline-story-scene" style="--story-bg:url('${stage.image}')"><div class="story-location"><small>第 ${stage.id} 關</small><b>${stage.name}</b></div><img class="story-portrait" src="${line.portrait}" alt="${line.name}"><div class="story-dialogue"><strong>${line.name}</strong><p>${line.text}</p><button id="mainlineStoryNext">${mainlineStoryStep<lines.length-1?'繼續':'迎戰'}</button></div></div>`;modal.classList.add('show');$('#mainlineStoryNext').onclick=()=>{if(++mainlineStoryStep<lines.length)showMainlineDialogue();else{modal.classList.remove('show');startMainlineBattle(stage)}};
@@ -1037,6 +1039,7 @@ function toggleFeature(button) {
 
 function toggleMainlinePage(){
   const button=$('#mainlineButton');
+  if(!state.cultivationAwakened)return toast('完成新手教程、踏入聽息一層後開啟九鎖封天');
   if(currentFeature==='mainline'){currentFeature=null;button.classList.remove('active');$('#featurePanel').classList.add('hidden');$('#gameScreen').classList.remove('feature-open');startBgm('main');return}
   currentFeature='mainline';$$('.feature-tab').forEach(x=>x.classList.remove('active'));button.classList.add('active');$('#featurePanel').classList.remove('feature-locked','hidden');renderMainlinePage();$('#gameScreen').classList.add('feature-open');
 }
