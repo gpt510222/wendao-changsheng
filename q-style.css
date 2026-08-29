@@ -156,6 +156,43 @@
   .q-style .hero-stack[data-true-form="dari-buddha-hand"] .hero-character-hotspot{inset:28% 14% 0;width:72%;height:72%}
 }
 
+/* Final body-primary seal order: 肉身 / 鍛體 / 肉身試煉. */
+.q-style #gameScreen[data-first-path="body"] .path-actions #bodyStatusUp{left:5%!important;right:auto!important;transform:none!important}
+.q-style #gameScreen[data-first-path="body"] .path-actions #bodyUp{left:50%!important;right:auto!important;transform:translateX(-50%)!important}
+.q-style #gameScreen[data-first-path="body"] .path-actions #bodyTrialUp{left:auto!important;right:5%!important;transform:none!important}
+@media(max-width:540px){.q-style #gameScreen[data-first-path="body"] .path-actions #bodyStatusUp{left:0!important}.q-style #gameScreen[data-first-path="body"] .path-actions #bodyTrialUp{right:0!important}}
+
+/* Body-primary sanctum: three transparent seals, kept separate from dual-cultivation. */
+.q-style .body-primary-menu{display:none!important}
+.q-style #gameScreen[data-first-path="body"] .path-actions .body-primary-button{display:flex!important}
+.q-style .game-screen[data-first-path="body"] .path-actions #bodyStatusUp{left:5%;right:auto;bottom:8px;transform:none}
+.q-style .game-screen[data-first-path="body"] .path-actions #bodyUp{left:50%;right:auto;bottom:8px;transform:translateX(-50%)}
+.q-style .game-screen[data-first-path="body"] .path-actions #bodyTrialUp{left:auto;right:5%;bottom:8px;transform:none}
+.q-style .game-screen[data-first-path="body"] .path-actions #bodyStatusUp img,.q-style .game-screen[data-first-path="body"] .path-actions #bodyTrialUp img{background:transparent;border-color:#fff9dc}
+.q-style .primary-body-heading{text-align:center}.q-style .primary-body-heading small{color:#a37542;font-weight:900;letter-spacing:.2em}.q-style .primary-body-heading h2{margin:4px 0 14px;color:#286b65}
+.q-style .primary-body-return{display:block;margin:0 0 10px auto;padding:7px 13px;border:1px solid #a58960;background:#fff8e9;color:#3f7069;font-weight:900}
+@media(max-width:540px){.q-style .game-screen[data-first-path="body"] .path-actions #bodyStatusUp{left:0}.q-style .game-screen[data-first-path="body"] .path-actions #bodyTrialUp{right:0}.q-style .game-screen[data-first-path="body"] .path-actions #bodyStatusUp,.q-style .game-screen[data-first-path="body"] .path-actions #bodyUp,.q-style .game-screen[data-first-path="body"] .path-actions #bodyTrialUp{width:32%}}
+
+/* Three-path main sanctum and compact dual-cultivation sanctums. */
+.q-style .game-screen[data-first-path] .path-actions .path-button{display:none!important}
+.q-style .game-screen[data-first-path] .path-actions .path-button.primary-path-button{display:flex!important;left:50%;right:auto;bottom:15.5%;width:116px;height:116px;transform:translateX(-50%);filter:drop-shadow(0 8px 10px #173f3b80)}
+.q-style .game-screen[data-first-path="sword"] .hero-stack{filter:drop-shadow(0 0 18px #b9ecff)}
+.q-style .game-screen[data-first-path="body"] .hero-stack{filter:drop-shadow(0 9px 13px #d9894678)}
+.first-path-modal{position:fixed;z-index:100;inset:0;display:grid;place-items:center;padding:18px;background:#102f36d9;backdrop-filter:blur(8px)}
+.first-path-modal:not(.show){display:none}
+.first-path-window{width:min(960px,96vw);max-height:94vh;overflow:auto;padding:24px;border:3px solid #caa566;border-radius:28px;background:linear-gradient(180deg,#fffaf0,#e8f4ed);box-shadow:0 22px 70px #071c2399,inset 0 0 0 3px #fff8d9;text-align:center;color:#405c55}
+.first-path-window>small{color:#9b7848;font-weight:900;letter-spacing:.28em}.first-path-window h1{margin:6px 0;color:#286b65}.first-path-window>p{margin:0 auto 18px;max-width:680px;line-height:1.65}
+.first-path-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.first-path-card{position:relative;min-height:330px;overflow:hidden;padding:150px 16px 18px;border:2px solid #b99a6c;border-radius:22px;background:#f8f0df;color:#435b55;box-shadow:0 7px 16px #29453e2e;text-align:left}
+.first-path-card::before{content:"";position:absolute;inset:0 0 auto;height:145px;background:linear-gradient(180deg,transparent 55%,#f8f0df),var(--path-scene) center/cover}
+.first-path-card b,.first-path-card span,.first-path-card em,.first-path-card small,.first-path-card i{position:relative;display:block}.first-path-card b{margin:3px 0;color:#286b65;font-size:23px}.first-path-card span{color:#a66e35;font-weight:900}.first-path-card em{color:#7c6750;font-size:12px}.first-path-card small{min-height:58px;margin:8px 0;line-height:1.55}.first-path-card i{color:#39766d;font-style:normal;font-weight:900}.first-path-card:hover{transform:translateY(-3px);border-color:#4a9185}
+.compact-cultivation-head{text-align:center}.compact-cultivation-head h2{margin:4px 0;color:#286b65}.compact-cultivation-head p{margin:8px auto 16px;max-width:620px;line-height:1.65}
+.compact-sanctum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.compact-sanctum{position:relative;display:flex;min-width:0;min-height:360px;overflow:hidden;padding:0;border:2px solid #b99a6c;border-radius:24px;background:#f7efde;color:#435b55;box-shadow:0 10px 24px #24443f30;flex-direction:column;text-align:center;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.compact-sanctum:hover,.compact-sanctum:focus-visible{transform:translateY(-3px);border-color:#4a9185;box-shadow:0 14px 28px #24443f45;outline:none}
+.compact-sanctum-art{position:relative;display:block;flex:0 0 205px;overflow:hidden;background:linear-gradient(180deg,transparent 67%,#f7efde),var(--sanctum-bg) center/cover}.compact-sanctum-art img{position:absolute;left:50%;bottom:0;height:92%;max-width:72%;object-fit:contain;transform:translateX(-50%);filter:drop-shadow(0 5px 5px #18362f66)}
+.compact-sanctum-copy{position:relative;z-index:2;display:flex;flex:1;padding:8px 18px 16px;flex-direction:column;align-items:center}.compact-sanctum-copy b,.compact-sanctum-copy span,.compact-sanctum-copy i{display:block}.compact-sanctum-copy h2{margin:0 0 3px;color:#286b65}.compact-sanctum-copy>span{min-height:34px;margin:5px 0 8px;font-size:12px;line-height:1.45}.compact-sanctum-copy i{margin-top:auto;color:#39766d;font-size:12px;font-style:normal;font-weight:900}.compact-sanctum.locked{filter:saturate(.65)}.compact-sanctum.locked .compact-sanctum-copy i{color:#8b653d}
+@media(max-width:700px){.first-path-grid,.compact-sanctum-grid{grid-template-columns:1fr}.first-path-card{min-height:260px;padding-top:128px}.first-path-card::before{height:124px}.compact-sanctum{min-height:340px}.compact-sanctum-art{flex-basis:190px}.q-style .game-screen[data-first-path] .path-actions .path-button.primary-path-button{width:96px;height:96px}}
+
 /* Illustrated mailbox entrance and letter UI. */
 .q-style .mail-button{
   position:absolute;z-index:9;top:28.5%;right:3.5%;width:92px;height:92px;
@@ -385,3 +422,47 @@
   .q-style .market-tabs{gap:4px}.q-style .market-tabs button{padding:8px 1px;font-size:9px}
   .q-style .market-content{min-height:0;padding:10px 12px}.q-style .market-floor-button{top:5.8%;width:48px;height:48px}.q-style .market-floor-down{left:10%}.q-style .market-floor-up{right:10%}.q-style .market-floor-button span{font-size:8px}.q-style .market-floor-notice{font-size:10px}.q-style .market-product-grid{left:15.2%;right:15.2%;top:16.8%;bottom:33.7%;gap:0}.q-style .market-product>b{font-size:9px}.q-style .market-product em{font-size:9px}.q-style .market-product em img{width:15px;height:15px}
 }
+
+/* Definitive body-primary layout: a real three-column row, not absolute coordinates. */
+.q-style .path-action-group{display:none!important}
+.q-style #gameScreen[data-first-path="body"] #bodyPathActions:not(.hidden){
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;justify-items:center;column-gap:8px
+}
+.q-style #gameScreen[data-first-path="body"] .path-actions #bodyStatusUp,
+.q-style #gameScreen[data-first-path="body"] .path-actions #bodyUp,
+.q-style #gameScreen[data-first-path="body"] .path-actions #bodyTrialUp{
+  position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+  display:flex!important;width:100%!important;height:auto!important;transform:none!important;justify-self:stretch
+}
+.q-style #gameScreen[data-first-path="body"] .path-actions #bodyStatusUp{grid-column:1;grid-row:1}
+.q-style #gameScreen[data-first-path="body"] .path-actions #bodyUp{grid-column:2;grid-row:1}
+.q-style #gameScreen[data-first-path="body"] .path-actions #bodyTrialUp{grid-column:3;grid-row:1}
+.q-style #gameScreen.game-screen.feature-open[data-first-path="body"] #bodyPathActions{display:none!important}
+
+/* Sword-primary sanctum: 本命劍 / 淬劍 / 試劍境. */
+.q-style .sword-primary-menu{display:none!important}
+.q-style #gameScreen[data-first-path="sword"] #swordPathActions:not(.hidden){
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;justify-items:center;column-gap:8px
+}
+.q-style #gameScreen[data-first-path="sword"] .path-actions #swordLifeUp,
+.q-style #gameScreen[data-first-path="sword"] .path-actions #swordUp,
+.q-style #gameScreen[data-first-path="sword"] .path-actions #swordTrialUp{
+  position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+  display:flex!important;width:100%!important;height:auto!important;transform:none!important;justify-self:stretch
+}
+.q-style #gameScreen[data-first-path="sword"] .path-actions #swordLifeUp{grid-column:1;grid-row:1}
+.q-style #gameScreen[data-first-path="sword"] .path-actions #swordUp{grid-column:2;grid-row:1}
+.q-style #gameScreen[data-first-path="sword"] .path-actions #swordTrialUp{grid-column:3;grid-row:1}
+.q-style #gameScreen[data-first-path="sword"] .path-actions #swordUp img{content:url("assets/qstyle-v2/sword-temper-v1.png")}
+.q-style #gameScreen.game-screen.feature-open[data-first-path="sword"] #swordPathActions{display:none!important}
+
+/* Spirit-primary sanctum: one stable centered cultivation seal. */
+.q-style #gameScreen[data-first-path="spirit"] #spiritPathActions:not(.hidden){
+  display:block!important;left:50%!important;right:auto!important;width:128px!important;transform:translateX(-50%)!important
+}
+.q-style #gameScreen[data-first-path="spirit"] .path-actions #spiritUp{
+  position:absolute!important;inset:auto!important;left:0!important;right:auto!important;top:auto!important;bottom:8px!important;
+  display:flex!important;width:128px!important;height:auto!important;transform:none!important
+}
+.q-style #gameScreen.game-screen.feature-open[data-first-path="spirit"] #spiritPathActions{display:none!important}
+@media(max-width:540px){.q-style #gameScreen[data-first-path="spirit"] #spiritPathActions:not(.hidden),.q-style #gameScreen[data-first-path="spirit"] .path-actions #spiritUp{width:103px!important}}
