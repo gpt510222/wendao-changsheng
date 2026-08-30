@@ -187,6 +187,9 @@
         <img src="assets/qstyle-v2/mail-button.png" alt="信箱">
         <b id="mailUnreadBadge" class="mail-unread-badge hidden">0</b>
       </button>
+      <button id="encounterButton" class="encounter-button hidden" type="button" aria-label="查看奇遇">
+        <span>緣</span><small>因緣</small><b id="encounterBadge" class="mail-unread-badge hidden">0</b>
+      </button>
       <button id="mainlineButton" class="mainline-entry-button" type="button" aria-label="進入九鎖封天">
         <img src="assets/qstyle-v2/mainline/nine-locks-entry.png" alt="九鎖封天">
       </button>
@@ -311,6 +314,13 @@
         </div>
       </div>
 
+      <div id="encounterModal" class="modal hidden">
+        <div class="paper-panel modal-card encounter-card">
+          <div id="encounterContent"></div>
+          <button id="encounterCloseBtn" class="text-button">暫且收起</button>
+        </div>
+      </div>
+
       <div id="settingsModal" class="modal hidden">
         <div class="paper-panel modal-card settings-card">
           <div id="settingsMain">
@@ -338,7 +348,7 @@
         <div class="paper-panel modal-card help-card">
           <p class="eyebrow">問道指引</p><h2>幫助</h2>
           <div class="help-tabs">
-            <button class="active" data-help-tab="cultivation">修行</button><button data-help-tab="sword">淬劍</button><button data-help-tab="body">煉體</button><button data-help-tab="battle">戰鬥</button><button data-help-tab="arts">靈根功法</button><button data-help-tab="cave">洞府</button><button data-help-tab="sect">門派</button>
+            <button class="active" data-help-tab="cultivation">修行</button><button data-help-tab="sword">淬劍</button><button data-help-tab="encounter">因緣</button><button data-help-tab="body">煉體</button><button data-help-tab="battle">戰鬥</button><button data-help-tab="arts">靈根功法</button><button data-help-tab="cave">洞府</button><button data-help-tab="sect">門派</button>
           </div>
           <div id="helpContent" class="help-content"></div>
           <button id="helpCloseBtn" class="text-button">關閉</button>
