@@ -2047,6 +2047,36 @@ $('#battleResultClose').onclick=closeBattle;
 $$('[data-sword-trial-path]').forEach(button=>button.onclick=()=>chooseSwordTrialPath(button.dataset.swordTrialPath));
 document.addEventListener('click',event=>{if(event.target.closest?.('[data-experience-view],[data-road]'))queueMicrotask(renderSwordPathSummary)});
 document.addEventListener('click',event=>{if(event.target.closest?.('[data-task],[data-sect-view="tasks"]'))queueMicrotask(renderSectPathIncome)});
+const interfaceScrollMemory=new Map();let interfaceScrollInputUntil=0,interfaceScrollRestoreFrame=0;
+function interfaceViewKey(){
+  const helpTab=$('.help-tabs .active')?.dataset.helpTab||'',marketTab=typeof currentMarketTab==='string'?currentMarketTab:'',activeViews=[...document.querySelectorAll('[data-root-view].active,[data-bag-view].active,[data-cave-view].active,[data-sect-view].active,[data-arts-view].active,[data-experience-view].active,[data-market-tab].active')].map(element=>Object.values(element.dataset).join(':')).join(',');
+  return [currentFeature,currentRootView,currentCaveView,currentSectView,currentArtsView,currentExperienceView,helpTab,marketTab,activeViews].join('|');
+}
+function interfaceScrollPath(element){
+  const parts=[];let node=element;
+  while(node&&node!==document.body){
+    if(node.id){parts.unshift(`#${node.id}`);break}
+    const dataKey=[...node.attributes].find(attribute=>attribute.name.startsWith('data-')&&/(view|tab|tier|road)/.test(attribute.name));
+    const classes=[...node.classList].filter(name=>!['active','selected','running','hidden','disabled'].includes(name)).slice(0,3);
+    const siblings=node.parentElement?[...node.parentElement.children].filter(child=>child.tagName===node.tagName):[];
+    parts.unshift(`${node.tagName.toLowerCase()}${dataKey?`[${dataKey.name}="${dataKey.value}"]`:classes.length?`.${classes.join('.')}`:''}:nth-of-type(${Math.max(1,siblings.indexOf(node)+1)})`);
+    node=node.parentElement;
+  }
+  return parts.join('>');
+}
+function rememberInterfaceScroll(element){if(!(element instanceof Element))return;interfaceScrollMemory.set(`${interfaceViewKey()}::${interfaceScrollPath(element)}`,{top:element.scrollTop,left:element.scrollLeft})}
+function restoreInterfaceScroll(){
+  cancelAnimationFrame(interfaceScrollRestoreFrame);interfaceScrollRestoreFrame=requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const context=`${interfaceViewKey()}::`;
+    document.querySelectorAll('#featureDescription,.help-card,.mailbox-card,.mail-letter-card,.market-card,.battle-card,.sect-tabs,.cave-tabs,.help-tabs,[class*="tabs"],[class*="scroll"]').forEach(element=>{
+      const position=interfaceScrollMemory.get(context+interfaceScrollPath(element));if(!position)return;
+      if(element.scrollTop!==position.top)element.scrollTop=position.top;if(element.scrollLeft!==position.left)element.scrollLeft=position.left;
+    });
+  }))}
+['wheel','touchmove','pointerdown','keydown'].forEach(type=>document.addEventListener(type,()=>{interfaceScrollInputUntil=performance.now()+1500},{capture:true,passive:true}));
+document.addEventListener('pointermove',event=>{if(event.buttons)interfaceScrollInputUntil=performance.now()+1500},{capture:true,passive:true});
+document.addEventListener('scroll',event=>{if(performance.now()<=interfaceScrollInputUntil)rememberInterfaceScroll(event.target)},{capture:true,passive:true});
+new MutationObserver(restoreInterfaceScroll).observe($('#app'),{childList:true,subtree:true});
 new MutationObserver(()=>{if(currentFeature==='experience')queueMicrotask(renderSwordPathSummary)}).observe($('#featureDescription'),{childList:true,subtree:true});
 document.addEventListener('contextmenu',event=>{if(event.target.closest?.('img'))event.preventDefault()});
 document.addEventListener('dragstart',event=>{if(event.target.closest?.('img'))event.preventDefault()});
