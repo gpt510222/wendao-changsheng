@@ -669,7 +669,6 @@ async function deleteCurrentMail(){
 function addCultivation(amount,silent=false) {
   const gain=toBigInt(amount);state.free+=gain;state.totalEarned+=gain;
   if(!silent) { if(isPureCultivationView())toast(`修為+${formatLargeNumber(amount)}`,'cultivation'); playTone(); }
-  if(silent&&document.documentElement.classList.contains('mobile-performance'))return;
   render(); save();
 }
 function renderNoviceCultivation(){
@@ -2094,17 +2093,12 @@ new MutationObserver(()=>{if(currentFeature==='experience')queueMicrotask(render
 document.addEventListener('contextmenu',event=>{if(event.target.closest?.('img'))event.preventDefault()});
 document.addEventListener('dragstart',event=>{if(event.target.closest?.('img'))event.preventDefault()});
 $('#manualCultivateBtn').onclick=beginManualCultivation;
-const mobilePerformanceMode=document.documentElement.classList.contains('mobile-performance');
-function refreshLiveFeature(){if(mobilePerformanceMode)return;if(currentFeature==='root')renderSpiritRootView(currentRootView);if(currentFeature==='cave'&&state.cultivationAwakened)renderCavePanel(currentCaveView,true);if(currentFeature==='sect'&&currentSectView!=='npcs')renderSectPanel(currentSectView);if(currentFeature==='arts')updateArtsLive();if(currentFeature==='experience'&&currentExperienceView==='overview')renderExperiencePanel('overview');else if(currentFeature==='experience'&&currentExperienceView==='realm')renderExperiencePanel('realm')}
-let mobileLastSave=gameNow();
-function refreshMobileCounters(){if(!mobilePerformanceMode)return;const path=state.activePath||state.firstPath;if(path==='spirit')$('#totalQi').textContent=formatLargeNumber(state.free);else if(path==='sword')$('#totalQi').textContent=formatLargeNumber(state.swordEssence);$('#spiritStoneAmount').textContent=formatLargeNumber(state.spiritStone);$('#spiritJadeAmount').textContent=formatLargeNumber(state.spiritJade);$('#reputationAmount').textContent=formatLargeNumber(state.prestige)}
-setInterval(()=>{if(document.hidden||!sessionOnline||!$('#gameScreen').classList.contains('active'))return;if(state.cultivationAwakened){addAura(auraRate());const swordGain=state.swordPathOpened?swordEssenceRate():0;if(state.swordPathOpened)state.swordEssence+=BigInt(swordGain);runSettlementTick();processSectYears();if(state.spiritPathOpened)addCultivation(rate(),mobilePerformanceMode||state.activePath!=='spirit');if(state.activePath==='sword'&&swordGain>0&&isPureCultivationView()){toast(`劍元+${formatLargeNumber(swordGain)}`,'cultivation');playTone()}}processDivineRoaming();refreshLiveFeature();refreshMobileCounters();if(mobilePerformanceMode&&gameNow()-mobileLastSave>=60000){save();mobileLastSave=gameNow()}tickStart=gameNow()},5000);
-setInterval(()=>{if(document.hidden||!sessionOnline||!$('#gameScreen').classList.contains('active'))return;$('#tickBar').style.width=Math.min(100,(gameNow()-tickStart)/50)+'%'},mobilePerformanceMode?500:200);
-let displayedYears=experiencedYears();
-setInterval(()=>{if(document.hidden||!sessionOnline||!$('#gameScreen').classList.contains('active'))return;const years=experiencedYears();if(years!==displayedYears){displayedYears=years;$('#yearsElapsed').textContent=`${years.toLocaleString()} 年`}},1000);
-setInterval(()=>{if(!document.hidden&&sessionOnline)updatePracticeTimers()},1000);
-setInterval(()=>{if(!document.hidden&&sessionOnline)updateDivineRoamingTimer()},1000);
-setInterval(()=>{if(document.hidden||!sessionOnline)return;const today=dateKey()||'local';if(today!==lastScriptureDayKey){lastScriptureDayKey=today;if(!$('#marketModal').classList.contains('hidden')&&['scripture','reputation'].includes(currentMarketTab))renderMarket(currentMarketTab)}},1000);
+setInterval(()=>{if($('#gameScreen').classList.contains('active')){if(state.cultivationAwakened){addAura(auraRate());const swordGain=state.swordPathOpened?swordEssenceRate():0;if(state.swordPathOpened)state.swordEssence+=BigInt(swordGain);runSettlementTick();processSectYears();if(state.spiritPathOpened)addCultivation(rate(),state.activePath!=='spirit');if(state.activePath==='sword'&&swordGain>0&&isPureCultivationView()){toast(`劍元+${formatLargeNumber(swordGain)}`,'cultivation');playTone()}}processDivineRoaming();if(currentFeature==='root')renderSpiritRootView(currentRootView);if(currentFeature==='cave'&&state.cultivationAwakened)renderCavePanel(currentCaveView,true);if(currentFeature==='sect'&&currentSectView!=='npcs')renderSectPanel(currentSectView);if(currentFeature==='arts')updateArtsLive();if(currentFeature==='experience'&&currentExperienceView==='overview')renderExperiencePanel('overview');else if(currentFeature==='experience'&&currentExperienceView==='realm')renderExperiencePanel('realm');tickStart=gameNow()}},5000);
+setInterval(()=>{if($('#gameScreen').classList.contains('active'))$('#tickBar').style.width=Math.min(100,(gameNow()-tickStart)/50)+'%'},50);
+setInterval(()=>{if($('#gameScreen').classList.contains('active'))$('#yearsElapsed').textContent=`${experiencedYears().toLocaleString()} 年`},1000);
+setInterval(updatePracticeTimers,1000);
+setInterval(updateDivineRoamingTimer,1000);
+setInterval(()=>{const today=dateKey()||'local';if(today!==lastScriptureDayKey){lastScriptureDayKey=today;if(!$('#marketModal').classList.contains('hidden')&&['scripture','reputation'].includes(currentMarketTab))renderMarket(currentMarketTab)}},1000);
 setInterval(()=>{if(sessionOnline&&!document.hidden)syncTrustedTime()},600000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)forceOffline();else finishPause()});
 window.addEventListener('blur',forceOffline);window.addEventListener('focus',finishPause);window.addEventListener('pagehide',forceOffline);
