@@ -726,13 +726,15 @@ function updateBgmVolume() {
   const cinematic=$('#swordCinematicVideo');if(cinematic){cinematic.muted=state.muted;cinematic.volume=.82}
 }
 const cultivationBgmSources={tutorial:'assets/bgm-tutorial-user-v1.wav?v=3',main:'assets/bgm-main-user-v4.wav?v=3',swordCultivation:'assets/bgm-sword-cultivation-user-v1.wav?v=3',bodyCultivation:'assets/bgm-body-cultivation-user-v1.wav?v=3'};
+const battleBgmSources={battle:'assets/bgm-battle-user-v1.wav?v=2',swordTrial:'assets/bgm-sword-trial-user-v1.wav?v=1',bodyTrial:'assets/bgm-body-trial-user-v1.wav?v=1'};
 function bgmTracks(){return [['title',$('#titleBgm')],['cultivation',$('#mainBgm')],['battle',$('#battleBgm')],['tribulationSuccess',$('#tribulationSuccessBgm')],['tribulationFailure',$('#tribulationFailureBgm')],['swordBreakthrough',$('#swordBreakthroughBgm')],...Array.from({length:9},(_,index)=>[`mainline${index+1}`,$(`#mainlineBgm${index+1}`)])]}
 function startBgm(theme) {
-  const tracks=bgmTracks(),cultivationSource=cultivationBgmSources[theme],trackName=cultivationSource?'cultivation':theme,next=tracks.find(([name])=>name===trackName)?.[1];if(!next)return;
+  const tracks=bgmTracks(),cultivationSource=cultivationBgmSources[theme],battleSource=battleBgmSources[theme],dynamicSource=cultivationSource||battleSource,trackName=cultivationSource?'cultivation':battleSource?'battle':theme,next=tracks.find(([name])=>name===trackName)?.[1];if(!next)return;
   const changed=bgmTheme!==theme;tracks.forEach(([name,track])=>{if(name!==trackName){track.pause();track.currentTime=0}});
   if(cultivationSource&&next.dataset.cultivationTheme!==theme){next.pause();next.src=cultivationSource;next.dataset.cultivationTheme=theme;next.load();next.currentTime=0}
+  if(battleSource&&next.dataset.battleTheme!==theme){next.pause();next.src=battleSource;next.dataset.battleTheme=theme;next.load();next.currentTime=0}
   bgmTheme=theme; updateBgmVolume();
-  if(changed&&!cultivationSource){next.load();next.currentTime=0}
+  if(changed&&!dynamicSource){next.load();next.currentTime=0}
   next.play().catch(()=>document.addEventListener('pointerdown',()=>{if(bgmTheme===theme)next.play().catch(()=>{})},{once:true}));
 }
 function startMainlineBgm(stage){startBgm(`mainline${Math.ceil(stage.id/2)}`)}
@@ -1001,7 +1003,7 @@ function renderSwordPathSummary(){
 }
 function compactSanctumCard(path){
   const meta=cultivationPathMeta[path],opened=pathOpened(path),cost=path==='spirit'?'靜坐感氣・無材料':path==='sword'?'隕鐵 30':'食物 120';
-  return `<button type="button" data-switch-path="${path}" class="compact-sanctum path-${path} ${opened?'opened':'locked'}" aria-label="${opened?`前往${meta.name}道場`:`開啟${meta.name}之路，需要${cost}`}"><span class="compact-sanctum-art" style="background-image:linear-gradient(180deg,transparent 67%,#f7efde),url('${meta.scene}')"><img src="${characterAsset()}" alt="${state.name}於${meta.name}道場"></span><span class="compact-sanctum-copy"><h2>${meta.name}之路</h2><b>${opened?pathRealmName(path):`尚未開啟・${cost}`}</b><span>${opened?pathResourceLine(path):meta.description}</span><i>${opened?'點擊傳送至此道場':'點擊查看開啟條件'}</i></span></button>`;
+  return `<button type="button" data-switch-path="${path}" class="compact-sanctum path-${path} ${opened?'opened':'locked'}" aria-label="${opened?`前往${meta.name}道場`:`開啟${meta.name}之路，需要${cost}`}" style="--sanctum-bg:url('${meta.scene}')"><span class="compact-sanctum-art" role="img" aria-label="${meta.name}道場"></span><span class="compact-sanctum-copy"><h2>${meta.name}之路</h2><b>${opened?pathRealmName(path):`尚未開啟・${cost}`}</b><span>${opened?pathResourceLine(path):meta.description}</span><i>${opened?'點擊傳送至此道場':'點擊查看開啟條件'}</i></span></button>`;
 }
 function renderCompactCultivation(inner){
   const activePath=state.activePath||state.firstPath,paths=['spirit','sword','body'].filter(path=>path!==activePath);inner.innerHTML=`<section class="compact-cultivation-head"><small>目前道場・${cultivationPathMeta[activePath]?.name||'未定'}</small><h2>兼修道場</h2><p>點擊另外兩條道路即可切換修練主場景；最初選擇仍會永久保留，不受場景切換影響。</p></section><div class="compact-sanctum-grid">${paths.map(compactSanctumCard).join('')}</div>`;
@@ -1040,11 +1042,11 @@ function scheduleSwordTrialAdvance(){
 }
 function startSwordTrial(){
   clearSwordTrialAdvance();
-  const stage=(state.swordTrialWins||0)+1;if(!state.swordEmbryo||stage>maxSwordLevel+1||stage>(state.swordLevel||0)+1)return toast('目前淬劍層數尚未開放此關');clearTimeout(battleTimer);startBgm('battle');const player=battlePlayerStats(),generated=npcCoreFromPower(swordTrialPower(stage),{id:900000+stage,seedScope:'sword-trial'}),core=generated.core,enemy={combatPower:generated.combatPower,core,maxHp:combatHealth(core.rootBone),attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),evasion:combatEvasion(core.agility),accuracy:combatAccuracy(core.spiritualPower),crit:combatCritical(core.spiritualPower)};
+  const stage=(state.swordTrialWins||0)+1;if(!state.swordEmbryo||stage>maxSwordLevel+1||stage>(state.swordLevel||0)+1)return toast('目前淬劍層數尚未開放此關');clearTimeout(battleTimer);startBgm('swordTrial');const player=battlePlayerStats(),generated=npcCoreFromPower(swordTrialPower(stage),{id:900000+stage,seedScope:'sword-trial'}),core=generated.core,enemy={combatPower:generated.combatPower,core,maxHp:combatHealth(core.rootBone),attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),evasion:combatEvasion(core.agility),accuracy:combatAccuracy(core.spiritualPower),crit:combatCritical(core.spiritualPower)};
   battle={active:true,resolved:false,mode:'swordTrial',round:1,completedRounds:0,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'劍道幻影',npc:{id:`sword-trial-${state.swordTrialWins}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='劍道幻影';$('#battleLog').innerHTML=`<p><b>${state.name}</b>執起本命劍「${state.swordName}」，劍道幻影應念而生。</p>`;syncBattleWeapon();updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
 }
 function startBodyTrial(){
-  refreshBodyState();const need=bodyTemperNeed(),nextIsRealm=(state.bodyLevel+1)%10===0;if(!nextIsRealm||state.bodyTemper<need)return toast('尚未具備肉身試煉資格');clearTimeout(battleTimer);startBgm('battle');const player=bodyTrialPlayerStats(),targetRounds=5+Math.floor((state.bodyLevel+1)/20),enemy=bodyTrialEnemyStats(player,targetRounds);
+  refreshBodyState();const need=bodyTemperNeed(),nextIsRealm=(state.bodyLevel+1)%10===0;if(!nextIsRealm||state.bodyTemper<need)return toast('尚未具備肉身試煉資格');clearTimeout(battleTimer);startBgm('bodyTrial');const player=bodyTrialPlayerStats(),targetRounds=5+Math.floor((state.bodyLevel+1)/20),enemy=bodyTrialEnemyStats(player,targetRounds);
   battle={active:true,resolved:false,mode:'bodyTrial',round:1,completedRounds:0,targetRounds,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'煉體試煉化身',npc:{id:`body-trial-${state.bodyLevel}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='煉體試煉化身';$('#battleLog').innerHTML=`<p><b>${state.name}</b>踏入試煉，必須以肉身撐過 ${targetRounds} 回合。</p>`;syncBattleWeapon();updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
 }
 

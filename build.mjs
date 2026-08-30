@@ -12,6 +12,7 @@ for (const file of ["index.html", "styles.css", "q-style.css", "game.js"]) {
 const gameAssets = [
   "bgm-battle-user-v1.wav",
   "bgm-body-cultivation-user-v1.wav",
+  "bgm-body-trial-user-v1.wav",
   "bgm-main-user-v4.wav",
   "bgm-mainline-01.wav",
   "bgm-mainline-02.wav",
@@ -24,6 +25,7 @@ const gameAssets = [
   "bgm-mainline-09.wav",
   "bgm-sword-breakthrough-user-v1.wav",
   "bgm-sword-cultivation-user-v1.wav",
+  "bgm-sword-trial-user-v1.wav",
   "bgm-tutorial-user-v1.wav",
   "sword-breakthrough-righteous.mp4",
   "sword-breakthrough-evil.mp4",

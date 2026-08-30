@@ -242,7 +242,7 @@ html,body{width:100%;height:100%;min-height:0;overflow:hidden;overscroll-behavio
 .true-form-preview img{width:96%;height:96%;opacity:.9}
 .true-form-card[data-true-form="taixu-sword"] .true-form-preview img{width:84%;height:84%}
 .true-form-card[data-true-form="dari-buddha-hand"] .true-form-preview{background:radial-gradient(circle,#704d13 0,#30230f 57%,#e9dec9 59%)}.true-form-card[data-true-form="dari-buddha-hand"] .true-form-preview img{width:94%;height:94%;opacity:.88;filter:drop-shadow(0 0 7px #ffd96f)}
-.hero-stack .true-form-taixu-sword{inset:-5%;width:110%;height:110%;animation:trueFormSwordStable 5.2s ease-in-out infinite,trueFormPulse 3.8s ease-in-out infinite}
+.hero-stack .true-form-taixu-sword{inset:-20%;width:140%;height:140%;animation:trueFormSword 18s linear infinite,trueFormPulse 3.8s ease-in-out infinite}
 .hero-stack .true-form-dari-buddha-hand{opacity:.68;mix-blend-mode:screen;object-fit:contain;object-position:center bottom;animation:dariBuddhaHand 4.6s ease-in-out infinite}
 @keyframes dariBuddhaHand{0%,100%{transform:translateY(4%) scale(.965);filter:brightness(.9) saturate(1.04) drop-shadow(0 0 8px #e5ae32)}50%{transform:translateY(1.5%) scale(1.015);filter:brightness(1.12) saturate(1.16) drop-shadow(0 0 16px #ffd864) drop-shadow(0 0 30px #ad701f66)}}
 
