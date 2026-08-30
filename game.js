@@ -1040,14 +1040,20 @@ function scheduleSwordTrialAdvance(){
   swordTrialCountdownTimer=setInterval(()=>{remaining--;if(remaining>0)button.textContent=`下一關・${remaining}秒`},1000);
   swordTrialAdvanceTimer=setTimeout(advanceSwordTrial,3000);
 }
+const dedicatedBattleBackgrounds={
+  swordTrial:'assets/qstyle-v2/battle-bg-sword-trial-v1.png',
+  bodyTrial:'assets/qstyle-v2/battle-bg-body-trial-v1.png',
+  sect:'assets/qstyle-v2/battle-bg-sect-v1.png'
+};
+function setBattleBackground(type){const image=dedicatedBattleBackgrounds[type],arena=$('.battle-arena');if(arena&&image){arena.style.backgroundImage=`linear-gradient(#edf5ef42,#e4ddca24),url('${image}')`;arena.style.setProperty('background-position','center bottom','important')}}
 function startSwordTrial(){
   clearSwordTrialAdvance();
   const stage=(state.swordTrialWins||0)+1;if(!state.swordEmbryo||stage>maxSwordLevel+1||stage>(state.swordLevel||0)+1)return toast('目前淬劍層數尚未開放此關');clearTimeout(battleTimer);startBgm('swordTrial');const player=battlePlayerStats(),generated=npcCoreFromPower(swordTrialPower(stage),{id:900000+stage,seedScope:'sword-trial'}),core=generated.core,enemy={combatPower:generated.combatPower,core,maxHp:combatHealth(core.rootBone),attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),evasion:combatEvasion(core.agility),accuracy:combatAccuracy(core.spiritualPower),crit:combatCritical(core.spiritualPower)};
-  battle={active:true,resolved:false,mode:'swordTrial',round:1,completedRounds:0,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'劍道幻影',npc:{id:`sword-trial-${state.swordTrialWins}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='劍道幻影';$('#battleLog').innerHTML=`<p><b>${state.name}</b>執起本命劍「${state.swordName}」，劍道幻影應念而生。</p>`;syncBattleWeapon();updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
+  battle={active:true,resolved:false,mode:'swordTrial',round:1,completedRounds:0,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'劍道幻影',npc:{id:`sword-trial-${state.swordTrialWins}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');setBattleBackground('swordTrial');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='劍道幻影';$('#battleLog').innerHTML=`<p><b>${state.name}</b>執起本命劍「${state.swordName}」，劍道幻影應念而生。</p>`;syncBattleWeapon();updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
 }
 function startBodyTrial(){
   refreshBodyState();const need=bodyTemperNeed(),nextIsRealm=(state.bodyLevel+1)%10===0;if(!nextIsRealm||state.bodyTemper<need)return toast('尚未具備肉身試煉資格');clearTimeout(battleTimer);startBgm('bodyTrial');const player=bodyTrialPlayerStats(),targetRounds=5+Math.floor((state.bodyLevel+1)/20),enemy=bodyTrialEnemyStats(player,targetRounds);
-  battle={active:true,resolved:false,mode:'bodyTrial',round:1,completedRounds:0,targetRounds,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'煉體試煉化身',npc:{id:`body-trial-${state.bodyLevel}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='煉體試煉化身';$('#battleLog').innerHTML=`<p><b>${state.name}</b>踏入試煉，必須以肉身撐過 ${targetRounds} 回合。</p>`;syncBattleWeapon();updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
+  battle={active:true,resolved:false,mode:'bodyTrial',round:1,completedRounds:0,targetRounds,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'煉體試煉化身',npc:{id:`body-trial-${state.bodyLevel}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');setBattleBackground('bodyTrial');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='煉體試煉化身';$('#battleLog').innerHTML=`<p><b>${state.name}</b>踏入試煉，必須以肉身撐過 ${targetRounds} 回合。</p>`;syncBattleWeapon();updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
 }
 
 const divineRoamingStoneCost=50000,divineRoamingJadeCost=300,mindEmbodimentJadeCost=15,divineRoamingAttemptMs=900000;
@@ -1435,7 +1441,7 @@ function startNpcBattle(n,mode='spar'){
   startBgm('battle');
   const player=battlePlayerStats(),enemy=battleEnemyStats(n);
   battle={active:true,resolved:false,mode,round:1,completedRounds:0,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:n.name,npc:n,race:'human'},logs:[]};
-  $('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');
+  $('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');setBattleBackground('sect');
   $('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;
   $('#enemySilhouette').className='battle-silhouette silhouette-human';
   $('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent=n.name;
@@ -1535,7 +1541,7 @@ function finishBattle(won,reason){
   $('#battleResultText').textContent=resultText;
   if(battle.mode==='mainline')setTimeout(()=>won?showMainlineVictoryDialogue(battle.mainlineStage):showMainlineDefeatDialogue(battle.mainlineStage),180);
 }
-function closeBattle(){const npcId=battle?.enemy?.npc?.id,mode=battle?.mode;clearTimeout(battleTimer);clearSwordTrialAdvance();battle=null;$('#battleModal').classList.add('hidden');$('.battle-arena')?.style.removeProperty('background-image');startPathBgm();if(currentFeature==='sect'&&npcId!=null){const index=sectNpcs().findIndex(n=>n.id===npcId);renderSectPanel('npcs');if(index>=0)renderNpcDetail(index)}else if(currentFeature==='experience'&&mode==='swordTrial')renderExperiencePanel('trial');else if(currentFeature==='swordPrimary'&&mode==='swordTrial')renderPrimarySwordPanel('trial');else if(currentFeature==='experience'&&mode==='bodyTrial')renderExperiencePanel('bodyTrial');else if(currentFeature==='bodyPrimary'&&mode==='bodyTrial')renderPrimaryBodyPanel('bodyTrial');else if(currentFeature==='mainline'&&mode==='mainline')renderMainlinePage()}
+function closeBattle(){const npcId=battle?.enemy?.npc?.id,mode=battle?.mode,arena=$('.battle-arena');clearTimeout(battleTimer);clearSwordTrialAdvance();battle=null;$('#battleModal').classList.add('hidden');arena?.style.removeProperty('background-image');arena?.style.removeProperty('background-position');startPathBgm();if(currentFeature==='sect'&&npcId!=null){const index=sectNpcs().findIndex(n=>n.id===npcId);renderSectPanel('npcs');if(index>=0)renderNpcDetail(index)}else if(currentFeature==='experience'&&mode==='swordTrial')renderExperiencePanel('trial');else if(currentFeature==='swordPrimary'&&mode==='swordTrial')renderPrimarySwordPanel('trial');else if(currentFeature==='experience'&&mode==='bodyTrial')renderExperiencePanel('bodyTrial');else if(currentFeature==='bodyPrimary'&&mode==='bodyTrial')renderPrimaryBodyPanel('bodyTrial');else if(currentFeature==='mainline'&&mode==='mainline')renderMainlinePage()}
 function updatePracticeTimers(){
   if(currentFeature!=='sect'||currentSectView!=='practice')return;
   for(const [key,prefix] of [['practiceBuff','practice'],['transmissionBuff','transmission']]){const bar=$(`#${prefix}TimerBar`),text=$(`#${prefix}TimerText`);if(!bar||!text)continue;const active=buffActive(key);bar.style.width=`${buffPercent(key)}%`;text.textContent=active?buffClock(key):'未開啟';if(!active&&text.closest('.buff-timer')?.classList.contains('active')){renderSectView('practice');render();break}}
@@ -1566,7 +1572,7 @@ const caveFacilities={
 };
 function caveAreaLevel(area,level=state[area.level]){return Math.max(1,Math.min(caveAreaMaxLevel,Math.floor(level||1)))}
 function areaCapacity(area,level=state[area.level]){return Math.floor(area.baseCap*Math.pow(1.32,caveAreaLevel(area,level)-1))}
-function areaWorkerMax(area,level=state[area.level]){return 1+Math.floor((caveAreaLevel(area,level)-1)/3)}
+function areaWorkerMax(area,level=state[area.level]){return caveAreaLevel(area,level)}
 function areaOutput(area,level=state[area.level]){return 1+Math.floor((caveAreaLevel(area,level)-1)/2)}
 function areaUpgradeCost(area,level=state[area.level]){const current=caveAreaLevel(area,level);return Math.floor(areaCapacity(area,current)*(area.upgradeBase/100))}
 function normalizeCaveWorkers(){state.workerSpiritStone=0;Object.values(caveAreas).forEach(area=>{state[area.level]=caveAreaLevel(area);state[area.worker]=Math.max(0,Math.min(Math.floor(state[area.worker]||0),areaWorkerMax(area)))})}
@@ -1591,6 +1597,7 @@ function caveCoreUpgradeCost(){const level=state.caveCoreLevel;return {stone:Mat
 function caveFacilityUpgradeCost(key){const level=state[caveFacilities[key].level],weight={cultivation:1,sword:1.15,body:1.1}[key];return {stone:Math.floor(800*weight*Math.pow(level,1.65)),wood:Math.floor(240*weight*Math.pow(level,1.5)),iron:Math.floor(100*weight*Math.pow(level,1.45))}}
 function assignedChildren(){return Object.values(caveAreas).reduce((sum,a)=>sum+state[a.worker],0)}
 function availableChildren(){return Math.max(0,state.daoChildTotal-assignedChildren())}
+const daoChildMax=caveAreaMaxLevel*Object.keys(caveAreas).length;
 function daoChildCost(){return Math.floor(50*Math.pow(state.daoChildBought+1,1.35))}
 function renderCavePanel(view='dwelling',preserveScroll=false){
   currentCaveView=view;
@@ -1631,13 +1638,13 @@ function renderCaveView(view){
     if(!state.bodyPathOpened){const bodyToggle=$('[data-toggle-facility="body"]');if(bodyToggle){const card=bodyToggle.closest('.cave-facility');bodyToggle.disabled=true;bodyToggle.textContent='開啟煉體後開放';card?.classList.add('facility-locked');const upgrade=card?.querySelector('[data-upgrade-facility="body"]');if(upgrade)upgrade.disabled=true}}
     return;
   }
-    inner.innerHTML=`<section class="cave-section-title"><b>資源產地</b><small>產地最高 30 級；容量與產量平滑成長，每 3 級增加一名道童上限</small></section><section class="dao-child-yard"><img src="assets/qstyle-v2/dao-child.png" alt="道童"><div><small>可用道童</small><b>${availableChildren()} / ${state.daoChildTotal}</b><em>未安排的道童會在此等候</em></div><button id="buyDaoChild" ${state.food>=cost?'':'disabled'}>招募<br>食物 ${formatLargeNumber(cost)}</button></section><div class="resource-area-grid">${cards}</div>`;
+    inner.innerHTML=`<section class="cave-section-title"><b>資源產地</b><small>產地最高 30 級；每升 1 級增加 1 名道童上限，單區最多 30 名</small></section><section class="dao-child-yard"><img src="assets/qstyle-v2/dao-child.png" alt="道童"><div><small>可用道童</small><b>${availableChildren()} / ${state.daoChildTotal}</b><em>三處產地合計最多招募 ${daoChildMax} 名</em></div><button id="buyDaoChild" ${state.food>=cost&&state.daoChildTotal<daoChildMax?'':'disabled'}>${state.daoChildTotal>=daoChildMax?'已達上限':`招募<br>食物 ${formatLargeNumber(cost)}`}</button></section><div class="resource-area-grid">${cards}</div>`;
   $$('.worker-stepper button').forEach(b=>b.onclick=()=>assignWorker(b.dataset.worker,+b.dataset.change));
   $$('.area-upgrade').forEach(b=>b.onclick=()=>upgradeCaveArea(b.dataset.upgradeArea));
   $('#buyDaoChild').onclick=buyDaoChild;
 }
 function assignWorker(key,change){const a=caveAreas[key];if(change>0){if(availableChildren()<1)return toast('目前沒有閒置道童');if(state[a.worker]>=areaWorkerMax(a))return toast('此區域已達道童上限')}else if(state[a.worker]<=0)return;state[a.worker]+=change;renderCaveView('production');save()}
-function buyDaoChild(){const cost=daoChildCost();if(state.food<cost)return toast('食物不足');state.food-=cost;state.daoChildTotal++;state.daoChildBought++;toast('新道童前來投效');renderCaveView('production');render();save()}
+function buyDaoChild(){if(state.daoChildTotal>=daoChildMax)return toast(`道童已達 ${daoChildMax} 名上限`);const cost=daoChildCost();if(state.food<cost)return toast('食物不足');state.food-=cost;state.daoChildTotal++;state.daoChildBought++;toast('新道童前來投效');renderCaveView('production');render();save()}
 function upgradeCaveArea(key){const a=caveAreas[key];if(state[a.level]>=caveAreaMaxLevel)return toast('此產地已達最高級');const cost=areaUpgradeCost(a);if(state.wood<cost)return toast('木材不足');state.wood-=cost;state[a.level]++;toast(`${a.label}區域提升至${state[a.level]}級`);renderCaveView('production');save()}
 function toggleCaveFacility(key){
   const facility=caveFacilities[key];if(!facility)return;if(key==='sword'&&!state.swordEmbryo)return toast('凝聚本命劍後才能開啟洗劍池');if(key==='body'&&!state.bodyPathOpened)return toast('開啟煉體之路後才能使用鍛體室');
