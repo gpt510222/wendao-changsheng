@@ -466,3 +466,41 @@
 }
 .q-style #gameScreen.game-screen.feature-open[data-first-path="spirit"] #spiritPathActions{display:none!important}
 @media(max-width:540px){.q-style #gameScreen[data-first-path="spirit"] #spiritPathActions:not(.hidden),.q-style #gameScreen[data-first-path="spirit"] .path-actions #spiritUp{width:103px!important}}
+
+/* Four illustrated entrances share one scale and mirrored vertical rhythm. */
+.q-style .market-button,
+.q-style .mail-button,
+.q-style .mainline-entry-button,
+.q-style .encounter-button{
+  position:absolute;z-index:9;width:92px;height:92px;margin:0;padding:0;border:0!important;border-radius:0;
+  background:none!important;box-shadow:none!important;filter:drop-shadow(0 7px 8px #1c515766);
+  cursor:pointer;transition:transform .18s ease,filter .18s ease
+}
+.q-style .market-button,.q-style .mail-button{right:3.5%}
+.q-style .mainline-entry-button,.q-style .encounter-button{left:3.5%;right:auto}
+.q-style .market-button,.q-style .mainline-entry-button{top:19%}
+.q-style .mail-button,.q-style .encounter-button{top:32.5%}
+.q-style .mainline-entry-button{transform:none}
+.q-style .market-button img,
+.q-style .mail-button img,
+.q-style .mainline-entry-button img,
+.q-style .encounter-button img{display:block;width:100%;height:100%;object-fit:contain}
+.q-style .market-button:hover,.q-style .market-button:focus-visible,
+.q-style .mail-button:hover,.q-style .mail-button:focus-visible,
+.q-style .mainline-entry-button:hover,.q-style .mainline-entry-button:focus-visible,
+.q-style .encounter-button:hover,.q-style .encounter-button:focus-visible{
+  transform:translateY(-3px) scale(1.04);filter:drop-shadow(0 9px 12px #1c515788)
+}
+.q-style .market-button:active,.q-style .mail-button:active,
+.q-style .mainline-entry-button:active,.q-style .encounter-button:active{transform:translateY(1px) scale(.98)}
+.q-style .game-screen.feature-open .market-button,
+.q-style .game-screen.feature-open .mail-button,
+.q-style .game-screen.feature-open .mainline-entry-button,
+.q-style .game-screen.feature-open .encounter-button{display:none}
+@media(max-width:540px){
+  .q-style .market-button,.q-style .mail-button,.q-style .mainline-entry-button,.q-style .encounter-button{width:72px;height:72px}
+  .q-style .market-button,.q-style .mail-button{right:2%}
+  .q-style .mainline-entry-button,.q-style .encounter-button{left:2%;right:auto}
+  .q-style .market-button,.q-style .mainline-entry-button{top:20%}
+  .q-style .mail-button,.q-style .encounter-button{top:32%}
+}
