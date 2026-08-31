@@ -710,8 +710,9 @@ function buffClock(key){const seconds=Math.max(0,Math.ceil(buffRemaining(key)/10
 function buffPercent(key){const buff=state[key],total=Math.max(1,buff?.total||buffRemaining(key));return Math.max(0,Math.min(100,buffRemaining(key)/total*100))}
 function offlineCultivationGain(from,to){const base=baseRate(),ticks=Math.max(0,(to-from)/5000);let gain=base*ticks*(1+caveCultivationBonus());for(const [key,bonus] of [['practiceBuff',4],['transmissionBuff',7]]){const buff=state[key];if(buff?.active)gain+=base*bonus*Math.max(0,Math.min(to,buff.until||0)-from)/5000}return Math.floor(gain)}
 function offlineSwordEssenceGain(ticks){return state.swordPathOpened?Math.floor(Math.max(0,ticks)*swordEssenceRate()):0}
-function auraRate() { return Math.max(1,Math.floor(5+(state.spiritPoolLevel-1)*2+auraEfficiency())); }
-function poolStorageHours() { return Math.min(18,2+(state.spiritPoolLevel-1)*.75); }
+function spiritPoolProductionBonus(){const upgrades=Math.max(0,(state.spiritPoolLevel||1)-1);return Math.min(upgrades,9)*2+Math.min(Math.max(0,upgrades-9),10)*3+Math.max(0,upgrades-19)*4}
+function auraRate() { return Math.max(1,Math.floor(5+spiritPoolProductionBonus()+auraEfficiency())); }
+function poolStorageHours() { return Math.min(24,4+Math.max(0,(state.spiritPoolLevel||1)-1)); }
 function auraCapacity() { return Math.floor(auraRate()*720*poolStorageHours()); }
 function spiritRootReq(level) { return Math.floor(500*Math.pow(1.38,level)); }
 function poolWoodCost() { return Math.floor(120*Math.pow(state.spiritPoolLevel,1.55)); }
@@ -1881,7 +1882,7 @@ function renderSpiritRootView(view) {
   const inner=$('#rootInner'); if(!inner)return;
   if(view==='pool') {
     const woodCost=poolWoodCost(),ironCost=poolIronCost(),can=state.wood>=woodCost&&state.meteorIron>=ironCost;
-    inner.innerHTML=`<div class="pool-page"><div class="pool-level">${state.spiritPoolLevel}階靈池</div><div class="pool-art small"><span></span><img src="assets/qstyle-v2/spirit-pool.png" alt="靈池"></div><div class="pool-stats"><div><small>靈氣產量</small><b>${formatLargeNumber(auraRate())} / 5秒</b></div><div><small>儲存靈氣</small><b>${formatLargeNumber(state.aura)} / ${formatLargeNumber(auraCapacity())}</b></div></div><div class="pool-materials"><div class="pool-owned-materials"><span><img src="assets/qstyle-v2/wood-cutout.png" alt="木材"><em>木材</em><b>${formatLargeNumber(state.wood)}</b></span><i></i><span><img src="assets/qstyle-v2/meteor-iron-cutout.png" alt="隕鐵"><em>隕鐵</em><b>${formatLargeNumber(state.meteorIron)}</b></span></div><div class="pool-upgrade-cost">升階需要：木材 ${formatLargeNumber(woodCost)}・隕鐵 ${formatLargeNumber(ironCost)}</div></div><button id="upgradePoolBtn" class="jade-button" ${can?'':'disabled'}>靈池升階</button></div>`;
+    inner.innerHTML=`<div class="pool-page"><div class="pool-level">${state.spiritPoolLevel}階靈池</div><div class="pool-art small"><span></span><img src="assets/qstyle-v2/spirit-pool.png" alt="靈池"></div><div class="pool-stats"><div><small>靈氣產量</small><b>${formatLargeNumber(auraRate())} / 5秒</b></div><div><small>儲量上限・${poolStorageHours()}小時</small><b>${formatLargeNumber(state.aura)} / ${formatLargeNumber(auraCapacity())}</b></div></div><div class="pool-materials"><div class="pool-owned-materials"><span><img src="assets/qstyle-v2/wood-cutout.png" alt="木材"><em>木材</em><b>${formatLargeNumber(state.wood)}</b></span><i></i><span><img src="assets/qstyle-v2/meteor-iron-cutout.png" alt="隕鐵"><em>隕鐵</em><b>${formatLargeNumber(state.meteorIron)}</b></span></div><div class="pool-upgrade-cost">升階需要：木材 ${formatLargeNumber(woodCost)}・隕鐵 ${formatLargeNumber(ironCost)}</div></div><button id="upgradePoolBtn" class="jade-button" ${can?'':'disabled'}>靈池升階</button></div>`;
     $('#upgradePoolBtn').onclick=upgradeSpiritPool;
     return;
   }
