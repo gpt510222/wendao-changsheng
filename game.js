@@ -1987,6 +1987,7 @@ function updateMarketPurchaseModal(){
   $('#marketPurchaseQuantity').textContent=formatLargeNumber(marketPurchaseQuantity);
   $('#marketPurchaseQuantityPanel').classList.toggle('hidden',!offer.quantityEnabled);
   $('#marketPurchasePrice').innerHTML=`單價：<img src="${offer.currencyImage}" alt="${offer.currencyName}"> ${formatLargeNumber(offer.price)} ${offer.currencyName}`;
+  $('#marketPurchaseBalance').innerHTML=`當前持有：<img src="${offer.currencyImage}" alt="${offer.currencyName}"> <b>${formatLargeNumber(state[offer.currencyKey]||0)}</b> ${offer.currencyName}`;
   const limits=[];
   if(offer.dailyLimit!=null)limits.push(`每日限購：${marketDailyBought(offer).toLocaleString()} / ${offer.dailyLimit.toLocaleString()}`);
   if(offer.permanentLimit!=null)limits.push(`永久限購：${marketPermanentBought(offer).toLocaleString()} / ${offer.permanentLimit.toLocaleString()}`);

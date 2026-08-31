@@ -421,6 +421,7 @@
 .q-style .market-purchase-description{min-height:72px;margin:0;padding:13px 15px;border:1px solid #b99a6b;background:#f5ecd9;color:#586661;line-height:1.7;text-align:left;white-space:pre-line}
 .q-style .market-purchase-information{display:grid;gap:7px;margin:12px 0;padding:10px 12px;border-radius:12px;background:#dcefea;color:#445f5b}
 .q-style .market-purchase-information p{display:flex;align-items:center;justify-content:center;gap:5px;margin:0}
+.q-style .market-purchase-information .market-purchase-balance{color:#276864}.q-style .market-purchase-balance b{font-size:17px;color:#8a6737}
 .q-style .market-purchase-information img,.q-style .market-purchase-total img{width:22px;height:22px;object-fit:contain;vertical-align:middle}
 .q-style .market-purchase-quantity{margin:10px 0}.q-style .market-purchase-quantity.hidden{display:none!important}
 .q-style .market-purchase-total{margin:10px 0 3px;color:#775a32;font-size:17px;font-weight:900}
