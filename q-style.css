@@ -43,6 +43,8 @@
 .q-style .bottom-nav .feature-tab:nth-child(5) img{content:url("assets/qstyle-v2/nav-experience.png")}
 .q-style .bottom-nav .feature-tab:nth-child(6) img{content:url("assets/qstyle-v2/nav-bag-cutout.png")}
 .q-style .hero-stack .hero-character{object-fit:contain;object-position:center bottom;width:100%;height:100%}
+.q-style .hero-stack .hero-title{position:absolute;z-index:6;inset:auto auto auto 50%;top:-16%;width:84%;height:27%;object-fit:contain;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 4px 7px #173e365f)}
+.q-style .hero-stack[data-true-form="dari-buddha-hand"] .hero-title{display:none!important}
 .q-style .creator-preview img,.q-style .appearance-choice img,.q-style .outfit-choice img,.q-style .wardrobe-character img{object-fit:contain;object-position:center bottom}
 .q-style .npc-portrait{background-image:none!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;filter:none!important}
 .q-style .npc-portrait.p0{background-image:url("assets/qstyle-v2/npc-0.png")!important}.q-style .npc-portrait.p1{background-image:url("assets/qstyle-v2/npc-1.png")!important}.q-style .npc-portrait.p2{background-image:url("assets/qstyle-v2/npc-2.png")!important}.q-style .npc-portrait.p3{background-image:url("assets/qstyle-v2/npc-3.png")!important}.q-style .npc-portrait.p4{background-image:url("assets/qstyle-v2/npc-4.png")!important}
