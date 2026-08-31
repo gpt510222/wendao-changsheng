@@ -297,8 +297,19 @@ const trueFormCatalog=[
   {id:'jiuxiao-wings',name:'九霄靈翼',image:'assets/qstyle-v2/true-form-wings.png',description:'以清靈元息凝成的光翼，非羽非骨，如雲霞舒展。'},
   {id:'dari-buddha-hand',name:'大日佛掌',image:'assets/qstyle-v2/true-form-dari-buddha-v3.png',description:'半透明的大日佛影於修士身後顯化，垂下金光雙掌，安穩托持主角入定修練。'}
 ];
+const titleCatalog=[
+  {id:'qi-ascension',name:'羽化凌霄',image:'assets/qstyle-v2/titles/title-qi-v1.png',kind:'單途飛升',hint:'成功飛升時，只有練氣達到仙陣門檻。'},
+  {id:'sword-ascension',name:'劍開天門',image:'assets/qstyle-v2/titles/title-sword-v1.png',kind:'單途飛升',hint:'成功飛升時，只有淬劍達到仙陣門檻。'},
+  {id:'body-ascension',name:'金身破界',image:'assets/qstyle-v2/titles/title-body-v1.png',kind:'單途飛升',hint:'成功飛升時，只有煉體達到仙陣門檻。'},
+  {id:'qi-sword-ascension',name:'氣劍驚虹',image:'assets/qstyle-v2/titles/title-qi-sword-v1.png',kind:'雙途飛升',hint:'成功飛升時，練氣與淬劍同時達到仙陣門檻。'},
+  {id:'qi-body-ascension',name:'性命混元',image:'assets/qstyle-v2/titles/title-qi-body-v1.png',kind:'雙途飛升',hint:'成功飛升時，練氣與煉體同時達到仙陣門檻。'},
+  {id:'sword-body-ascension',name:'身劍無間',image:'assets/qstyle-v2/titles/title-sword-body-v1.png',kind:'雙途飛升',hint:'成功飛升時，淬劍與煉體同時達到仙陣門檻。'},
+  {id:'three-paths-ascension',name:'三途歸一',image:'assets/qstyle-v2/titles/title-three-paths-v1.png',kind:'三途飛升',hint:'成功飛升時，三條修行道路皆達到仙陣門檻。'},
+  {id:'nine-locks',name:'九鎖盡破',image:'assets/qstyle-v2/titles/title-nine-locks-v1.png',kind:'破鎖之證',hint:'完整通過九鎖封天全部十八關。'}
+];
 const defaults = { name:'', gender:'女', hair:1, outfit:1, trueForm:'none', origin:'家族子弟', muted:false, free:0, spiritLevel:0, bodyLevel:0, swordLevel:0, swordPathVersion:2,swordEmbryo:'',swordName:'',swordNurtureLevel:0,swordIntent:0,swordInsight:0,swordIntentType:'',swordMoves:['origin'],swordTrialWins:0,bodyPathVersion:1,bodyStamina:100,bodyStaminaUpdatedAt:0,bodyTemper:0,bodyInjury:'',bodyInjuryUntil:0,testTemporaryItemsMailVersion:0,testResourceSupplyMailVersion:0,testFoodAuraSupplyMailVersion:0,testSpiritMedicineMailVersion:0,testCultivationPillCount:0,testSpiritStoneTenMillionCount:0,spiritMedicineCount:0, ...tribulationPillDefaults, ...techniqueBookDefaults, tribulationPillMigration:1, testTribulationPillGrantVersion:1, totalEarned:0, rootBone:5, trueQi:5, physique:5, agility:5, spiritualPower:5, comprehension:5, fortune:5, attributeGrowthVersion:2, learnedArts:[],learnedBookIds:[],mailbox:[],scripturePurchases:{date:'',ids:[]},marketPermanentPurchases:{},marketDailyPurchases:{date:'',counts:{}},artsCapacity:8,bagRank:1,mendingSilk:0,metalArt:0, woodArt:0, waterArt:0, fireArt:0, earthArt:0, metalRoot:0, woodRoot:0, waterRoot:0, fireRoot:0, earthRoot:0, aura:0, spiritPoolLevel:1, spiritStone:0, spiritJade:0, testJadeGrantVersion:1, food:20, wood:20, meteorIron:20, daoChildTotal:1, daoChildBought:0, workerSpiritStone:0,workerFood:0, workerWood:0, workerMeteorIron:0, spiritStoneAreaLevel:1, foodAreaLevel:1, woodAreaLevel:1, meteorIronAreaLevel:1,caveCoreLevel:1,caveCultivationLevel:1,caveSwordLevel:1,caveBodyLevel:1,caveCultivationEnabled:true,caveSwordEnabled:false,caveBodyEnabled:false,caveSwordTicks:0,caveBodyTicks:0, sect:'', sectFaction:'', sectStar:0, sectContribution:0, sectRank:0, sectTask:'', sectJoinedAt:null, sectYearsProcessed:0, sectNpcSnapshot:null, righteousness:0, evilQi:0, prestige:0, actingLeader:false, npcAffinity:{},npcDaily:{date:'',exchanged:0},practiceBuff:{active:false,until:0,remaining:0,total:0},transmissionBuff:{active:false,until:0,remaining:0,total:0},lastGreetingDay:'',lastSalaryDay:'',lastPracticeDay:'',bornAt:null,lastTrustedTime:0,lastSave:Date.now() };
 Object.assign(defaults,{qiPathSystemVersion:1,qiCycleMode:'small',qiInsightDay:'',qiInsightCharges:3,qiTribulationFocus:0,qiFoundationMarks:{small:0,origin:0,still:0},qiHeartTrials:{},qiHeartTraits:{guard:0,benevolent:0,free:0}});
+Object.assign(defaults,{equippedTitle:'none',unlockedTitles:[]});
 defaults.npcDaily={};defaults.cultivationAwakened=false;defaults.firstPath='';defaults.activePath='';defaults.spiritPathOpened=false;defaults.tutorialCompleted=false;
 defaults.free=0n;defaults.swordEssence=0n;defaults.totalEarned=0n;defaults.swordPathOpened=null;defaults.bodyPathOpened=null;
 defaults.attributeGrowthVersion=3;
@@ -320,7 +331,8 @@ pillTypes.forEach(([key])=>{for(let tier=1;tier<=9;tier++)defaults[`pillCount_${
 let state = { ...defaults }, tickStart = Date.now(), manualCultivationStartedAt=0, manualCultivationTimer=null, breakthroughInProgress=false;
 const saveKey = 'wendao-idle-v2';
 let createGender='女', createAppearance=1, createOutfit=1, createOrigin='家族子弟', audioContext=null, currentFeature=null, currentRootView='root', currentCaveView='dwelling', currentSectView='home', currentArtsView='sect', currentExperienceView='sword', currentMarketTab='market', suppressSave=false,mainlineStoryStep=0,mainlineStoryStage=null;
-let currentSpiritView='realm',activeHeartTrial=null;
+let currentSpiritView='realm',activeHeartTrial=null,currentWardrobeView='outfits';
+const wardrobeScrollMemory={tabs:0,outfits:0,trueForms:0,titles:0};
 const marketFloors={market:1,scripture:1,reputation:1};
 const marketFloorLevels=[0,20,40,60,80];
 const chineseFloorNames=['一','二','三','四','五'];
@@ -347,6 +359,19 @@ function appearanceAsset(gender,appearance,outfit){
   return `assets/${g}-appearance-${appearance||1}-outfit-${outfit||1}-${version}.png`;
 }
 function characterAsset(){return appearanceAsset(state.gender,state.appearance||1,state.outfit||1)}
+function titleUnlocked(id){return id==='nine-locks'?(state.mainlineCleared||0)>=18:(state.unlockedTitles||[]).includes(id)}
+function syncTitleUnlocks(){
+  state.unlockedTitles=Array.isArray(state.unlockedTitles)?state.unlockedTitles:[];
+  if((state.mainlineCleared||0)>=18&&!state.unlockedTitles.includes('nine-locks'))state.unlockedTitles.push('nine-locks');
+  if(state.equippedTitle!=='none'&&!titleUnlocked(state.equippedTitle))state.equippedTitle='none';
+}
+function unlockAscensionTitle(paths){
+  const key=[...new Set(paths)].sort().join('-'),map={qi:'qi-ascension',sword:'sword-ascension',body:'body-ascension','qi-sword':'qi-sword-ascension','body-qi':'qi-body-ascension','body-sword':'sword-body-ascension','body-qi-sword':'three-paths-ascension'},id=map[key];
+  if(!id)return null;
+  state.unlockedTitles=Array.isArray(state.unlockedTitles)?state.unlockedTitles:[];
+  if(!state.unlockedTitles.includes(id))state.unlockedTitles.push(id);
+  return id;
+}
 function applyCharacterVisual(){
   const hero=$('#heroCharacter');if(hero)hero.src=characterAsset();
   const outfit=wardrobeOutfits[state.gender]?.find(item=>item.id===(Number(state.outfit)||1));
@@ -357,6 +382,10 @@ function applyCharacterVisual(){
   form.className=`hero-true-form true-form-${selected?.id||'none'}`;
   if(selected?.image){form.src=selected.image;form.alt=selected.name;form.classList.remove('hidden')}
   else{form.removeAttribute('src');form.alt='';form.classList.add('hidden')}
+  syncTitleUnlocks();
+  const title=$('#heroTitle'),equipped=titleCatalog.find(item=>item.id===state.equippedTitle),showTitle=title&&equipped&&titleUnlocked(equipped.id)&&selected?.id!=='dari-buddha-hand';
+  if(title&&showTitle){title.src=equipped.image;title.alt=equipped.name;title.classList.remove('hidden')}
+  else if(title){title.removeAttribute('src');title.alt='';title.classList.add('hidden')}
 }
 async function syncTrustedTime(){
   if(location.protocol==='file:'){setClockAnchor(Date.now(),true);return true}
@@ -1890,7 +1919,7 @@ function renderBagView(view) {
     $$('[data-bag-item]').forEach(button=>button.onclick=()=>openItemModal(button.dataset.bagItem));if(state.bagRank<16)$('#upgradeBagBtn').onclick=upgradeBag;
     return;
   }
-  if(view==='wardrobe'){renderWardrobeView('outfits');return}
+  if(view==='wardrobe'){renderWardrobeView(currentWardrobeView);return}
   const src=characterAsset();
   const slotKeys=[...equipmentSlots.map(x=>x[0]),'treasure'],slotHtml=key=>{const id=state.equippedItems?.[key],e=(state.equipmentInventory||[]).find(x=>x.id===id),meta=equipmentSlots.find(x=>x[0]===key),name=meta?.[1]||'法寶';return `<button type="button" class="equip-slot ${e?'filled':''}" ${e?`data-equipped-item="${e.id}"`:'disabled'}>${e?`<img src="assets/qstyle-v2/production/equipment/${e.slot}-t${e.tier}.png" alt="${name}">${e.quality==='rare'?'<i>「極」</i>':''}<small>${equipmentSets[e.tier-1]}${name}</small>`:`<b>${name}</b>`}</button>`},left=slotKeys.slice(0,4).map(slotHtml).join(''),right=slotKeys.slice(4).map(slotHtml).join('');
   inner.innerHTML=`<div class="equipment-layout"><div class="equipment-side">${left}</div><div class="equipment-character"><img src="${src}" alt="人物"><button id="characterAttributesBtn">人物屬性</button></div><div class="equipment-side">${right}</div></div>`;
@@ -1898,21 +1927,42 @@ function renderBagView(view) {
 }
 function renderWardrobeView(section='outfits'){
   const inner=$('#bagInner');if(!inner)return;
-  inner.innerHTML=`<div class="wardrobe-tabs"><button data-wardrobe-view="outfits">服裝</button><button data-wardrobe-view="true-forms">真身</button></div><div id="wardrobeInner"></div>`;
-  $$('.wardrobe-tabs button').forEach(button=>button.onclick=()=>renderWardrobeSection(button.dataset.wardrobeView));
+  rememberWardrobeStrips();
+  inner.innerHTML=`<div class="wardrobe-tabs"><button data-wardrobe-view="outfits">服裝</button><button data-wardrobe-view="true-forms">真身</button><button data-wardrobe-view="titles">稱號</button></div><div id="wardrobeInner"></div>`;
+  $$('.wardrobe-tabs button').forEach(button=>button.onclick=event=>{event.preventDefault();event.stopPropagation();renderWardrobeSection(button.dataset.wardrobeView)});
+  bindWardrobeStrip($('.wardrobe-tabs'),'tabs');
   renderWardrobeSection(section);
 }
+function rememberWardrobeStrips(){
+  const entries=[['tabs','.wardrobe-tabs'],['outfits','[data-wardrobe-strip="outfits"]'],['trueForms','[data-wardrobe-strip="true-forms"]'],['titles','[data-wardrobe-strip="titles"]']];
+  entries.forEach(([key,selector])=>{const element=$(selector);if(element)wardrobeScrollMemory[key]=element.scrollLeft});
+}
+function bindWardrobeStrip(element,key){
+  if(!element)return;element.scrollLeft=wardrobeScrollMemory[key]||0;
+  element.addEventListener('scroll',()=>wardrobeScrollMemory[key]=element.scrollLeft,{passive:true});
+  element.addEventListener('wheel',event=>{if(Math.abs(event.deltaY)<=Math.abs(event.deltaX))return;event.preventDefault();element.scrollLeft+=event.deltaY;wardrobeScrollMemory[key]=element.scrollLeft},{passive:false});
+}
 function renderWardrobeSection(section){
+  rememberWardrobeStrips();currentWardrobeView=section;
   $$('.wardrobe-tabs button').forEach(button=>button.classList.toggle('active',button.dataset.wardrobeView===section));
   const inner=$('#wardrobeInner');if(!inner)return;
   if(section==='outfits'){
     const g=state.gender==='男'?'male':'female',appearance=state.appearance||1;
-    inner.innerHTML=`<div class="wardrobe-intro"><b>衣閣藏衣</b><span>服裝只改變外觀，不影響人物屬性。</span></div><div class="wardrobe-grid">${wardrobeOutfits[state.gender].map(outfit=>`<button class="wardrobe-card ${outfit.effect?'mythic':''} ${state.outfit===outfit.id?'selected':''}" data-outfit="${outfit.id}" data-outfit-effect="${outfit.effect||'none'}"><span class="wardrobe-preview"><img src="${appearanceAsset(state.gender,appearance,outfit.id)}" alt="${outfit.name}"></span><b>${outfit.name}</b><small>${outfit.kind}</small><em>${state.outfit===outfit.id?'穿戴中':'更換'}</em></button>`).join('')}</div>`;
+    inner.innerHTML=`<div class="wardrobe-intro"><b>衣閣藏衣</b><span>服裝只改變外觀，不影響人物屬性。</span></div><div class="wardrobe-showcase-strip" data-wardrobe-strip="outfits">${wardrobeOutfits[state.gender].map(outfit=>`<button class="wardrobe-card ${outfit.effect?'mythic':''} ${state.outfit===outfit.id?'selected':''}" data-outfit="${outfit.id}" data-outfit-effect="${outfit.effect||'none'}"><span class="wardrobe-preview"><img src="${appearanceAsset(state.gender,appearance,outfit.id)}" alt="${outfit.name}"></span><b>${outfit.name}</b><small>${outfit.kind}</small><em>${state.outfit===outfit.id?'穿戴中':'更換'}</em></button>`).join('')}</div>`;
+    bindWardrobeStrip($('[data-wardrobe-strip="outfits"]'),'outfits');
     $$('[data-outfit]').forEach(button=>button.onclick=()=>{state.outfit=+button.dataset.outfit;applyCharacterVisual();renderWardrobeSection('outfits');save()});
     return;
   }
-  inner.innerHTML=`<div class="wardrobe-intro"><b>真身異象</b><span>真身為半透明元息異象，不屬於實體裝備。</span></div><div class="true-form-grid">${trueFormCatalog.map(form=>`<button class="true-form-card ${state.trueForm===form.id?'selected':''}" data-true-form="${form.id}"><span class="true-form-preview ${form.id==='none'?'empty':''}">${form.image?`<img src="${form.image}" alt="${form.name}">`:'<i>無相</i>'}</span><span><b>${form.name}</b><small>${form.description}</small></span><em>${state.trueForm===form.id?'顯化中':'顯化'}</em></button>`).join('')}</div>`;
-  $$('[data-true-form]').forEach(button=>button.onclick=()=>{state.trueForm=button.dataset.trueForm;applyCharacterVisual();renderWardrobeSection('true-forms');save()});
+  if(section==='true-forms'){
+    inner.innerHTML=`<div class="wardrobe-intro"><b>真身異象</b><span>真身為半透明元息異象，不屬於實體裝備。</span></div><div class="wardrobe-showcase-strip" data-wardrobe-strip="true-forms">${trueFormCatalog.map(form=>`<button class="true-form-card ${state.trueForm===form.id?'selected':''}" data-true-form="${form.id}"><span class="true-form-preview ${form.id==='none'?'empty':''}">${form.image?`<img src="${form.image}" alt="${form.name}">`:'<i>無相</i>'}</span><span><b>${form.name}</b><small>${form.description}</small></span><em>${state.trueForm===form.id?'顯化中':'顯化'}</em></button>`).join('')}</div>`;
+    bindWardrobeStrip($('[data-wardrobe-strip="true-forms"]'),'trueForms');
+    $$('[data-true-form]').forEach(button=>button.onclick=()=>{state.trueForm=button.dataset.trueForm;applyCharacterVisual();renderWardrobeSection('true-forms');save()});
+    return;
+  }
+  syncTitleUnlocks();
+  inner.innerHTML=`<div class="wardrobe-intro"><b>道號仙章</b><span>佩戴後顯於修士頭頂；大日佛掌顯化時自動隱藏。</span></div><div class="title-strip" data-wardrobe-strip="titles"><button class="title-card title-none ${state.equippedTitle==='none'?'selected':''}" data-title="none"><span class="title-empty-seal">無名</span><span><b>不彰其名</b><small>卸下目前佩戴的稱號，收斂所有名號異象。</small></span><em>${state.equippedTitle==='none'?'未佩戴':'卸下'}</em></button>${titleCatalog.map(title=>{const unlocked=titleUnlocked(title.id),selected=state.equippedTitle===title.id;return `<button class="title-card ${unlocked?'':'locked'} ${selected?'selected':''}" data-title="${title.id}" ${unlocked?'':`aria-label="尚未取得；${title.hint}"`}><span class="title-art"><img src="${title.image}" alt="${unlocked?title.name:'未取得稱號'}"></span><span class="title-copy">${unlocked?`<small>${title.kind}</small><p>佩戴此稱號後，將顯示於人物頭頂。</p>`:`<small>取得方式</small><p>${title.hint}</p>`}</span><em>${unlocked?(selected?'佩戴中':'佩戴'):'尚未取得'}</em></button>`}).join('')}</div>`;
+  bindWardrobeStrip($('[data-wardrobe-strip="titles"]'),'titles');
+  $$('[data-title]').forEach(button=>button.onclick=()=>{const id=button.dataset.title;if(id!=='none'&&!titleUnlocked(id))return toast(titleCatalog.find(item=>item.id===id)?.hint||'尚未取得');state.equippedTitle=id;applyCharacterVisual();renderWardrobeSection('titles');save()});
 }
 function showCharacterAttributes() {
   const inner=$('#bagInner');
