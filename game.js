@@ -332,7 +332,6 @@ let state = { ...defaults }, tickStart = Date.now(), manualCultivationStartedAt=
 const saveKey = 'wendao-idle-v2';
 let createGender='女', createAppearance=1, createOutfit=1, createOrigin='家族子弟', audioContext=null, currentFeature=null, currentRootView='root', currentCaveView='dwelling', currentSectView='home', currentArtsView='sect', currentExperienceView='sword', currentMarketTab='market', suppressSave=false,mainlineStoryStep=0,mainlineStoryStage=null;
 let currentSpiritView='realm',activeHeartTrial=null,currentWardrobeView='outfits';
-const wardrobeScrollMemory={tabs:0,outfits:0,trueForms:0,titles:0};
 const marketFloors={market:1,scripture:1,reputation:1};
 const marketFloorLevels=[0,20,40,60,80];
 const chineseFloorNames=['一','二','三','四','五'];
@@ -1935,20 +1934,9 @@ function renderBagView(view) {
 }
 function renderWardrobeView(section='outfits'){
   const inner=$('#bagInner');if(!inner)return;
-  rememberWardrobeStrips();
   inner.innerHTML=`<div class="wardrobe-tabs"><button data-wardrobe-view="outfits">服裝</button><button data-wardrobe-view="true-forms">真身</button><button data-wardrobe-view="titles">稱號</button></div><div id="wardrobeInner"></div>`;
   $$('.wardrobe-tabs button').forEach(button=>button.onclick=event=>{event.preventDefault();event.stopPropagation();renderWardrobeSection(button.dataset.wardrobeView)});
-  bindWardrobeStrip($('.wardrobe-tabs'),'tabs');
   renderWardrobeSection(section);
-}
-function rememberWardrobeStrips(){
-  const entries=[['tabs','.wardrobe-tabs'],['outfits','[data-wardrobe-strip="outfits"]'],['trueForms','[data-wardrobe-strip="true-forms"]'],['titles','[data-wardrobe-strip="titles"]']];
-  entries.forEach(([key,selector])=>{const element=$(selector);if(element)wardrobeScrollMemory[key]=element.scrollLeft});
-}
-function bindWardrobeStrip(element,key){
-  if(!element)return;element.scrollLeft=wardrobeScrollMemory[key]||0;
-  element.addEventListener('scroll',()=>wardrobeScrollMemory[key]=element.scrollLeft,{passive:true});
-  element.addEventListener('wheel',event=>{if(Math.abs(event.deltaY)<=Math.abs(event.deltaX))return;event.preventDefault();element.scrollLeft+=event.deltaY;wardrobeScrollMemory[key]=element.scrollLeft},{passive:false});
 }
 function replaceWardrobeContent(inner,markup){
   inner.replaceChildren();
@@ -1956,25 +1944,22 @@ function replaceWardrobeContent(inner,markup){
   inner.innerHTML=markup;
 }
 function renderWardrobeSection(section){
-  rememberWardrobeStrips();currentWardrobeView=section;
+  currentWardrobeView=section;
   $$('.wardrobe-tabs button').forEach(button=>button.classList.toggle('active',button.dataset.wardrobeView===section));
   const inner=$('#wardrobeInner');if(!inner)return;
   if(section==='outfits'){
     const g=state.gender==='男'?'male':'female',appearance=state.appearance||1;
     replaceWardrobeContent(inner,`<div class="wardrobe-intro"><b>衣閣藏衣</b><span>服裝只改變外觀，不影響人物屬性。</span></div><div class="wardrobe-showcase-strip" data-wardrobe-strip="outfits">${wardrobeOutfits[state.gender].map(outfit=>`<button class="wardrobe-card ${outfit.effect?'mythic':''} ${state.outfit===outfit.id?'selected':''}" data-outfit="${outfit.id}" data-outfit-effect="${outfit.effect||'none'}"><span class="wardrobe-preview"><img src="${appearanceAsset(state.gender,appearance,outfit.id)}" alt="${outfit.name}"></span><b>${outfit.name}</b><small>${outfit.kind}</small><em>${state.outfit===outfit.id?'穿戴中':'更換'}</em></button>`).join('')}</div>`);
-    bindWardrobeStrip($('[data-wardrobe-strip="outfits"]'),'outfits');
     $$('[data-outfit]').forEach(button=>button.onclick=()=>{state.outfit=+button.dataset.outfit;applyCharacterVisual();renderWardrobeSection('outfits');save()});
     return;
   }
   if(section==='true-forms'){
     replaceWardrobeContent(inner,`<div class="wardrobe-intro"><b>真身異象</b><span>真身為半透明元息異象，不屬於實體裝備。</span></div><div class="wardrobe-showcase-strip" data-wardrobe-strip="true-forms">${trueFormCatalog.map(form=>`<button class="true-form-card ${state.trueForm===form.id?'selected':''}" data-true-form="${form.id}"><span class="true-form-preview ${form.id==='none'?'empty':''}">${form.image?`<img src="${form.image}" alt="${form.name}">`:'<i>無相</i>'}</span><span><b>${form.name}</b><small>${form.description}</small></span><em>${state.trueForm===form.id?'顯化中':'顯化'}</em></button>`).join('')}</div>`);
-    bindWardrobeStrip($('[data-wardrobe-strip="true-forms"]'),'trueForms');
     $$('[data-true-form]').forEach(button=>button.onclick=()=>{state.trueForm=button.dataset.trueForm;applyCharacterVisual();renderWardrobeSection('true-forms');save()});
     return;
   }
   syncTitleUnlocks();
   replaceWardrobeContent(inner,`<div class="wardrobe-intro"><b>道號仙章</b><span>佩戴後顯於修士頭頂；大日佛掌顯化時自動隱藏。</span></div><div class="title-strip" data-wardrobe-strip="titles"><button class="title-card title-none ${state.equippedTitle==='none'?'selected':''}" data-title="none"><span class="title-empty-seal">無名</span><span><b>不彰其名</b><small>卸下目前佩戴的稱號，收斂所有名號異象。</small></span><em>${state.equippedTitle==='none'?'未佩戴':'卸下'}</em></button>${titleCatalog.map(title=>{const unlocked=titleUnlocked(title.id),selected=state.equippedTitle===title.id;return `<button class="title-card ${unlocked?'':'locked'} ${selected?'selected':''}" ${unlocked?`data-title="${title.id}"`:`disabled aria-disabled="true" aria-label="尚未取得；${title.hint}"`}><span class="title-art"><img src="${title.image}" alt="${unlocked?title.name:'未取得稱號'}"></span><span class="title-copy">${unlocked?`<small>${title.kind}</small><p>佩戴此稱號後，將顯示於人物頭頂。</p>`:`<small>取得方式</small><p>${title.hint}</p>`}</span><em>${unlocked?(selected?'佩戴中':'佩戴'):'尚未取得'}</em></button>`}).join('')}</div>`);
-  bindWardrobeStrip($('[data-wardrobe-strip="titles"]'),'titles');
   $$('[data-title]').forEach(button=>button.onclick=()=>{state.equippedTitle=button.dataset.title;applyCharacterVisual();renderWardrobeSection('titles');save()});
 }
 function showCharacterAttributes() {
