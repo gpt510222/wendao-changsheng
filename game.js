@@ -1293,10 +1293,17 @@ function grantMainlineDrops(stage){
   const normalChance=stage.id===18?.02:odd?.008:.015,rareChance=stage.id===18?.0015:odd?.0005:.001;roll(normalChance,()=>addLoot(`${stage.realm}階凡品裝備`));roll(rareChance,()=>addLoot(`${stage.realm}階極品裝備`));return results.join('、');
 }
 function setFeaturePanelStandalone(standalone){$('#featurePanel')?.classList.toggle('standalone-feature',!!standalone)}
+function clearWardrobeLayers(){
+  const wardrobeInner=$('#wardrobeInner'),bagInner=$('#bagInner'),description=$('#featureDescription');
+  if(wardrobeInner)wardrobeInner.replaceChildren();
+  if(bagInner)bagInner.replaceChildren();
+  if(description){description.classList.add('wardrobe-cleared');void description.offsetHeight}
+}
 function toggleFeature(button) {
   const page=button.dataset.page;
   $('#mainlineButton')?.classList.remove('active');
   if(!state.cultivationAwakened)return toast('完成新手教程、踏入聽息一層後開啟此功能');
+  if(currentFeature==='bag')clearWardrobeLayers();
   if(currentFeature===page) {
     currentFeature=null;
     $('#featurePanel').classList.add('hidden');
@@ -1306,6 +1313,7 @@ function toggleFeature(button) {
   }
   currentFeature=page;
   setFeaturePanelStandalone(false);
+  $('#featureDescription').classList.remove('wardrobe-cleared');
   $$('.feature-tab').forEach(x=>x.classList.toggle('active',x===button));
   if(page==='root') {
     $('#featurePanel').classList.remove('feature-locked'); renderSpiritRootPanel('root');
