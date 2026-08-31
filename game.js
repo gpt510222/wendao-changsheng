@@ -1508,6 +1508,7 @@ function damageRoll(attacker,defender,multiplier=1){
   const crit=Math.random()<attacker.crit,raw=attacker.attack*multiplier*(crit?1.5:1),offensePressure=Math.max(160,attacker.attack*.8),mitigation=Math.max(.15,offensePressure/(offensePressure+defender.defense));
   return {damage:Math.max(1,Math.round(raw*mitigation)),dodged:false,crit};
 }
+function formatBattleNumber(value){return formatLargeNumber(Math.max(0,Math.round(Number(value)||0)))}
 function syncBattleWeapon(){
   const arena=$('.battle-arena'),lifeSword=$('#playerLifeSword'),hasSword=!!state.swordEmbryo;
   arena?.classList.toggle('has-player-sword',hasSword);lifeSword?.classList.toggle('visible',hasSword);
@@ -1536,7 +1537,7 @@ function animateBattleStrike(attacker,target,damage,technique){
   fx.style.left=`${Math.min(sourceX,targetX)}px`;fx.style.right='auto';fx.style.width=`${Math.abs(targetX-sourceX)}px`;fx.style.top=`${targetY-61}px`;
   fx.classList.add(enemyCast?'enemy-cast':'player-cast',`${technique.kind}-technique`,`${technique.id}-move`,`path-${pathProfile.path}`);
   const parts=damage.parts||[damage];
-  damageEl.innerHTML=parts.map((part,index)=>`<i style="--hit-index:${index}">${part.dodged?'閃避':`-${part.damage}${part.crit?' <em>暴擊</em>':''}`}</i>`).join('');damageEl.classList.toggle('multi-hit',parts.length>1);damageEl.classList.add('show');
+  damageEl.innerHTML=parts.map((part,index)=>`<i style="--hit-index:${index}">${part.dodged?'閃避':`-${formatBattleNumber(part.damage)}${part.crit?' <em>暴擊</em>':''}`}</i>`).join('');damageEl.classList.toggle('multi-hit',parts.length>1);damageEl.classList.add('show');
   setTimeout(()=>{attackEl.classList.remove('attacking');targetEl.classList.remove('hit');lifeSword?.classList.remove('striking',`strike-${technique.kind}`);lifeSword?.removeAttribute('style');damageEl.classList.remove('show','multi-hit');damageEl.replaceChildren();arena?.classList.remove('clashing','player-strike','enemy-strike');fx.className='battle-technique-fx';fx.removeAttribute('style')},parts.length>1?1250:860);
 }
 function appendBattleLog(text,side='player'){
@@ -1546,15 +1547,15 @@ function appendBattleLog(text,side='player'){
 function playerBattleTurn(){
   if(!battle?.active)return;const moves=battle.mode==='bodyTrial'?[startingTechniques[1]]:equippedCombatTechniques(),slot=battle.playerMoveIndex%moves.length,technique=moves[slot]||startingTechniques.find(move=>combatTechniqueAvailable(move))||startingTechniques[0];battle.playerMoveIndex++;const balanceBonus=battle.mode!=='bodyTrial'&&slot===1?1+(technique.embryo?Math.min(.5,swordPathMarkCounts().balance*.05):0)+(battle.player.alignmentSecondMove||0):1,mult=(technique.min+Math.random()*(technique.max-technique.min))*balanceBonus,hit=technique.embryo?swordTechniqueRoll(battle.player,battle.enemy,technique,mult):technique.kind==='body'?bodyTechniqueRoll(battle.player,battle.enemy,technique,mult):damageRoll({...battle.player,attack:battle.player.qiAttack||battle.player.attack},battle.enemy,mult);
   battle.enemy.hp=Math.max(battle.mode==='bodyTrial'?1:0,battle.enemy.hp-hit.damage);animateBattleStrike('#playerSilhouette','#enemySilhouette',hit,technique);
-  const healed=hit.dodged?0:Math.min(battle.player.maxHp-battle.player.hp,Math.max(0,Math.round(hit.damage*(technique.lifeSteal||0))));if(healed>0)battle.player.hp+=healed;const repeatText=hit.repeated?'，殘影返斬觸發':'';const healText=healed?`，本命回流恢復 ${healed} 氣血`:'';
-  appendBattleLog(hit.dodged?`${battle.enemy.name}看破招式來勢，避開了${state.name}的${technique.name}。`:`${state.name}${technique.embryo?'催動本命劍':'凝神馭元'}，使出${technique.name}，對${battle.enemy.name}造成了${hit.damage}傷害${repeatText}${healText}。`,'player');updateBattleUi();
+  const healed=hit.dodged?0:Math.min(battle.player.maxHp-battle.player.hp,Math.max(0,Math.round(hit.damage*(technique.lifeSteal||0))));if(healed>0)battle.player.hp+=healed;const repeatText=hit.repeated?'，殘影返斬觸發':'';const healText=healed?`，本命回流恢復 ${formatBattleNumber(healed)} 氣血`:'';
+  appendBattleLog(hit.dodged?`${battle.enemy.name}看破招式來勢，避開了${state.name}的${technique.name}。`:`${state.name}${technique.embryo?'催動本命劍':'凝神馭元'}，使出${technique.name}，對${battle.enemy.name}造成了${formatBattleNumber(hit.damage)}傷害${repeatText}${healText}。`,'player');updateBattleUi();
   if(battle.enemy.hp<=0){if(battle.mode==='mainline'&&battle.waveIndex<2)return setTimeout(advanceMainlineWave,650);return setTimeout(()=>finishBattle(true,'對手氣息已散，無力再戰。'),650)}
   battleTimer=setTimeout(enemyBattleTurn,950);
 }
 function enemyBattleTurn(){
   if(!battle?.active)return;if(battle.mode==='mainline'){const stage=battle.mainlineStage;if(battle.completedRounds>0&&battle.completedRounds%3===0){battle.enemy.attack=Math.round(battle.enemy.attack*1.06);appendBattleLog(`${stage.boss}引動「${mainlineMechanics[stage.id-1].split('：')[0]}」，攻勢再度提升。`,'enemy')}if(!battle.mechanicTriggered&&[7,17,18].includes(stage.id)&&battle.enemy.hp<=battle.enemy.maxHp*.5){battle.mechanicTriggered=true;battle.enemy.attack=Math.round(battle.enemy.attack*1.15);battle.enemy.defense=Math.round(battle.enemy.defense*1.1);appendBattleLog(`${stage.boss}氣息驟變，關卡核心機制進入第二階段。`,'enemy')}}const technique=startingTechniques[0],mult=technique.min+Math.random()*(technique.max-technique.min),hit=damageRoll(battle.enemy,battle.player,mult);
   const damage=Math.max(hit.dodged?0:1,Math.round(hit.damage*(1-(battle.player.damageReduction||0)))),minimumHp=battle.mode==='bodyTrial'&&battle.guaranteedBodyTrial?1:0;battle.player.hp=Math.max(minimumHp,battle.player.hp-damage);animateBattleStrike('#enemySilhouette','#playerSilhouette',{...hit,damage},technique);
-  appendBattleLog(hit.dodged?`${state.name}踏影側身，避開了${battle.enemy.name}的${technique.name}。`:`${battle.enemy.name}${technique.kind==='sword'?'引氣淬鋒':'凝神引元'}，使出${technique.name}，對${state.name}造成了${damage}傷害。`,'enemy');
+  appendBattleLog(hit.dodged?`${state.name}踏影側身，避開了${battle.enemy.name}的${technique.name}。`:`${battle.enemy.name}${technique.kind==='sword'?'引氣淬鋒':'凝神引元'}，使出${technique.name}，對${state.name}造成了${formatBattleNumber(damage)}傷害。`,'enemy');
   battle.completedRounds++;updateBattleUi();
   if(battle.player.hp<=0)return setTimeout(()=>finishBattle(false,battle.mode==='master'?'你氣力不支，本次掌門挑戰落敗。':battle.mode==='swordTrial'?'劍道幻影破去招式，本次試劍落敗。':battle.mode==='bodyTrial'?'肉身未能撐住試煉化身的攻勢。':'你氣力不支，本次切磋落敗。'),650);
   if(battle.mode==='bodyTrial'&&battle.completedRounds>=battle.targetRounds)return setTimeout(()=>finishBattle(true,`你以肉身承受猛攻，成功撐過 ${battle.targetRounds} 回合。`),650);
