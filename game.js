@@ -467,7 +467,7 @@ function renderPrimarySanctum(){
   else{refreshBodyState();refreshBodyTrainingCharges();resourceLabel.textContent='鍛體時機';$('#totalQi').textContent=`${state.bodyTrainingCharges} / 14`;rateLabel.textContent='肉身狀態';$('#rateText').textContent=`體力 ${Math.floor(state.bodyStamina)} / 100`}
 }
 function renderPrimaryBodyPanel(view='body'){
-  currentFeature='bodyPrimary';currentExperienceView=view;const paired=view==='body'||view==='passives';
+  currentFeature='bodyPrimary';setFeaturePanelStandalone(true);currentExperienceView=view;const paired=view==='body'||view==='passives';
   $('#featureDescription').innerHTML=`<button id="closePrimaryBodyPanel" class="primary-body-return">返回煉體道場</button>${paired?`<div class="experience-tabs body-primary-tabs"><button data-primary-body-view="body" class="${view==='body'?'active':''}">肉身</button><button data-primary-body-view="passives" class="${view==='passives'?'active':''}">體魄</button></div>`:`<section class="primary-body-heading"><small>煉體主修</small><h2>${view==='training'?'鍛體場':'肉身試煉'}</h2></section>`}<div id="experienceInner"></div>`;
   $('#closePrimaryBodyPanel').onclick=closePrimaryBodyPanel;$$('[data-primary-body-view]').forEach(button=>button.onclick=()=>renderPrimaryBodyPanel(button.dataset.primaryBodyView));renderBodyExperienceView(view,$('#experienceInner'));
 }
@@ -477,7 +477,7 @@ function openPrimaryBodyView(view='body'){
 }
 function renderBodyDestination(view){return currentFeature==='bodyPrimary'?renderPrimaryBodyPanel(view):renderExperiencePanel(view)}
 function renderPrimarySwordPanel(view='sword'){
-  currentFeature='swordPrimary';renderExperiencePanel(view);currentFeature='swordPrimary';
+  currentFeature='swordPrimary';setFeaturePanelStandalone(true);renderExperiencePanel(view);currentFeature='swordPrimary';
   const description=$('#featureDescription');description.querySelector('.experience-road-tabs')?.remove();description.querySelector('.experience-tabs')?.remove();description.insertAdjacentHTML('afterbegin','<button id="closePrimarySwordPanel" class="primary-body-return">返回淬劍道場</button>');$('#closePrimarySwordPanel').onclick=closePrimarySwordPanel;
 }
 function openPrimarySwordView(view='sword'){
@@ -986,6 +986,7 @@ function openHeroCharacterAttributes(){
   if(!isPureCultivationView()||!hasMindEmbodiment())return;
   const bagButton=$('.feature-tab[data-page="bag"]');
   currentFeature='bag';
+  setFeaturePanelStandalone(false);
   $$('.feature-tab').forEach(button=>button.classList.toggle('active',button===bagButton));
   $('#featurePanel').classList.remove('feature-locked','hidden');
   $('#gameScreen').classList.add('feature-open');
@@ -1063,7 +1064,7 @@ function setSwordMove(id,slot){
   const move=combatTechniqueById(id);if(!move||slot<0||slot>1)return;if(move.embryo&&move.embryo!==state.swordEmbryo)return toast(`此招只屬於${swordEmbryos[move.embryo].name}，目前尚未掌握`);if(!combatTechniqueAvailable(move))return toast(move.kind==='sectSkill'?'尚未習得此門派招式':`通過試劍境第${swordTechniqueUnlockStage(id)}關後解鎖`);state.swordMoves=[...(state.swordMoves||['origin'])];const other=slot===0?1:0;if(state.swordMoves[other]===id){const displaced=state.swordMoves[slot];state.swordMoves[slot]=id;state.swordMoves[other]=displaced;toast(`${move.name}已調整為第${slot+1}式`)}else{state.swordMoves[slot]=id;toast(`${move.name}已設為第${slot+1}式`)}renderArtsPanel('moves');save();
 }
 function openExperienceView(view='sword'){
-  const button=$('.feature-tab[data-page="experience"]');currentFeature='experience';$$('.feature-tab').forEach(item=>item.classList.toggle('active',item===button));$('#featurePanel').classList.remove('hidden','feature-locked');$('#gameScreen').classList.add('feature-open');renderExperiencePanel(view);renderSwordPathSummary();
+  const button=$('.feature-tab[data-page="experience"]');currentFeature='experience';setFeaturePanelStandalone(false);$$('.feature-tab').forEach(item=>item.classList.toggle('active',item===button));$('#featurePanel').classList.remove('hidden','feature-locked');$('#gameScreen').classList.add('feature-open');renderExperiencePanel(view);renderSwordPathSummary();
 }
 function swordProgressCard(){
   const level=state.swordLevel||0,maxed=level>=mortalSwordMaxLevel,cost=maxed?null:swordReq(level),next=level+1,trialRequired=next%10===0&&(state.swordTrialWins||0)<next,ready=!maxed&&!trialRequired&&state.swordEssence>=cost;
@@ -1210,6 +1211,7 @@ function grantMainlineDrops(stage){
   const bag=mainlineBagRanges[stage.id-1],bagDefs=[['mainlineSpiritStoneBag','靈石袋',1,bag[0],bag[1]],['mainlineWoodBag','木材袋',.75,bag[2],bag[3]],['mainlineIronBag','隕鐵袋',.6,bag[4],bag[5]],['mainlineFoodBag','食物袋',.75,bag[6],bag[7]]];bagDefs.forEach(([key,name,chance,min,max])=>roll(chance,()=>{const amount=range(min,max);state[key]=(state[key]||0)+amount;results.push(`${name} ×${amount}`)}));
   const normalChance=stage.id===18?.02:odd?.008:.015,rareChance=stage.id===18?.0015:odd?.0005:.001;roll(normalChance,()=>addLoot(`${stage.realm}階凡品裝備`));roll(rareChance,()=>addLoot(`${stage.realm}階極品裝備`));return results.join('、');
 }
+function setFeaturePanelStandalone(standalone){$('#featurePanel')?.classList.toggle('standalone-feature',!!standalone)}
 function toggleFeature(button) {
   const page=button.dataset.page;
   $('#mainlineButton')?.classList.remove('active');
@@ -1222,6 +1224,7 @@ function toggleFeature(button) {
     return;
   }
   currentFeature=page;
+  setFeaturePanelStandalone(false);
   $$('.feature-tab').forEach(x=>x.classList.toggle('active',x===button));
   if(page==='root') {
     $('#featurePanel').classList.remove('feature-locked'); renderSpiritRootPanel('root');
@@ -1248,8 +1251,8 @@ function toggleFeature(button) {
 function toggleMainlinePage(){
   const button=$('#mainlineButton');
   if(!state.cultivationAwakened)return toast('完成新手教程、踏入聽息一層後開啟九鎖封天');
-  if(currentFeature==='mainline'){currentFeature=null;button.classList.remove('active');$('#featurePanel').classList.add('hidden');$('#gameScreen').classList.remove('feature-open');startPathBgm();return}
-  currentFeature='mainline';$$('.feature-tab').forEach(x=>x.classList.remove('active'));button.classList.add('active');$('#featurePanel').classList.remove('feature-locked','hidden');renderMainlinePage();$('#gameScreen').classList.add('feature-open');
+  if(currentFeature==='mainline'){currentFeature=null;setFeaturePanelStandalone(false);button.classList.remove('active');$('#featurePanel').classList.add('hidden');$('#gameScreen').classList.remove('feature-open');startPathBgm();return}
+  currentFeature='mainline';setFeaturePanelStandalone(true);$$('.feature-tab').forEach(x=>x.classList.remove('active'));button.classList.add('active');$('#featurePanel').classList.remove('feature-locked','hidden');renderMainlinePage();$('#gameScreen').classList.add('feature-open');
 }
 
 function textSeed(text){return [...text].reduce((sum,char,index)=>sum+char.charCodeAt(0)*(index+3),0)}
