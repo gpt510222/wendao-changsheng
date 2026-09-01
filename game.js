@@ -2224,7 +2224,21 @@ $('#tribPillMinus').onclick=()=>adjustTribulationPills(-1);$('#tribPillPlus').on
 $('#heroCharacterHotspot').onclick=openHeroCharacterAttributes;
 $$('.feature-tab').forEach(b=>b.onclick=()=>toggleFeature(b));
 $('#mainlineButton').onclick=toggleMainlinePage;
-$('#menuBtn').onclick=()=>$('#gameMenu').classList.toggle('hidden');
+function closeGameMenu(){
+  $('#gameMenu').classList.add('hidden');
+  $('#menuBtn').setAttribute('aria-expanded','false');
+}
+$('#menuBtn').setAttribute('aria-expanded','false');
+$('#menuBtn').onclick=event=>{
+  event.stopPropagation();
+  const menu=$('#gameMenu'),opening=menu.classList.contains('hidden');
+  menu.classList.toggle('hidden');
+  $('#menuBtn').setAttribute('aria-expanded',String(opening));
+};
+document.addEventListener('click',event=>{
+  if(!$('#gameMenu').classList.contains('hidden')&&!event.target.closest('#gameMenu'))closeGameMenu();
+});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeGameMenu()});
 $('#settingsBtn').onclick=openSettings;
 $('#helpBtn').onclick=openHelp;
 $$('[data-help-tab]').forEach(button=>button.onclick=()=>renderHelp(button.dataset.helpTab));
