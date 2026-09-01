@@ -153,6 +153,9 @@
 .q-style .hero-stack .hero-true-form.true-form-dari-buddha-hand{
   inset:-24%;width:148%;height:148%;object-position:center bottom
 }
+@media(min-width:900px){
+  .q-style .hero-stack .hero-true-form.true-form-wanjie-demon{top:-30%}
+}
 .q-style .hero-stack[data-true-form="dari-buddha-hand"] .hero-character{
   transform:scale(.78);transform-origin:50% 100%
 }
