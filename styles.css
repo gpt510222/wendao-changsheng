@@ -273,10 +273,25 @@ html,body{width:100%;height:100%;min-height:0;overflow:hidden;overscroll-behavio
 @media(max-width:540px){.wardrobe-showcase-strip>.true-form-card{grid-template-rows:230px 1fr 34px}.wardrobe-showcase-strip .true-form-preview{min-height:230px}}
 .item-quality{display:block;margin:3px 0 6px;color:#81725c;font-size:12px;font-weight:700;letter-spacing:.12em}
 .wardrobe-card[data-quality="spirit"],.true-form-card[data-quality="spirit"]{border-color:#5e9b8d}.wardrobe-card[data-quality="spirit"] .item-quality,.true-form-card[data-quality="spirit"] .item-quality{color:#28796d}
+.wardrobe-card[data-quality="good"],.true-form-card[data-quality="good"]{border-color:#8fa77b}.wardrobe-card[data-quality="good"] .item-quality,.true-form-card[data-quality="good"] .item-quality{color:#63814d}
 .wardrobe-card[data-quality="mystic"],.true-form-card[data-quality="mystic"]{border-color:#7385ad}.wardrobe-card[data-quality="mystic"] .item-quality,.true-form-card[data-quality="mystic"] .item-quality{color:#526a9b}
 .wardrobe-card[data-quality="masterwork"],.true-form-card[data-quality="masterwork"]{border-color:#b58a3f;box-shadow:inset 0 0 15px #fff8cf70,0 0 8px #b9934d40}.wardrobe-card[data-quality="masterwork"] .item-quality,.true-form-card[data-quality="masterwork"] .item-quality{color:#a16f22}
 .hero-stack .true-form-taixu-sword{inset:-20%;width:140%;height:140%;animation:trueFormSword 18s linear infinite,trueFormPulse 3.8s ease-in-out infinite}
-.hero-stack .true-form-dari-buddha-hand{opacity:.68;mix-blend-mode:screen;object-fit:contain;object-position:center bottom;animation:dariBuddhaHand 4.6s ease-in-out infinite}
+.hero-stack .hero-true-form{z-index:1;opacity:.42;mix-blend-mode:screen;filter:drop-shadow(0 0 10px #bdfaff88)}
+.hero-stack .true-form-qingmu-deer{inset:-12%;width:124%;height:124%;animation:deerSpirit 5.2s ease-in-out infinite}
+.hero-stack .true-form-xuanjia-tortoise{inset:-13%;width:126%;height:126%;animation:tortoiseSpirit 6.4s ease-in-out infinite}
+.hero-stack .true-form-chixiao-phoenix{inset:-22%;width:144%;height:144%;animation:phoenixSpirit 4.1s ease-in-out infinite}
+.hero-stack .true-form-canghai-dragon{inset:-22%;width:144%;height:144%;animation:dragonSpirit 8.5s ease-in-out infinite}
+.hero-stack .true-form-zhoutian-swords{inset:-21%;width:142%;height:142%;animation:starSwordSpirit 20s linear infinite,trueFormPulse 4.2s ease-in-out infinite}
+.hero-stack .true-form-dari-buddha-hand,.hero-stack .true-form-wanjie-demon{inset:-34%;width:168%;height:168%;opacity:.46;object-fit:contain;object-position:center bottom;mix-blend-mode:screen}
+.hero-stack .true-form-dari-buddha-hand{animation:dariBuddhaHand 4.6s ease-in-out infinite}
+.hero-stack .true-form-wanjie-demon{filter:drop-shadow(0 0 13px #c34cff88);animation:wanjieDemon 5.1s ease-in-out infinite}
+@keyframes deerSpirit{0%,100%{transform:translateY(1%) scale(.97);filter:brightness(.92) drop-shadow(0 0 8px #9fffc2)}50%{transform:translateY(-2%) scale(1.02);filter:brightness(1.14) drop-shadow(0 0 18px #baffcf)}}
+@keyframes tortoiseSpirit{0%,100%{transform:translateY(2%) scale(.98);filter:brightness(.9) drop-shadow(0 0 7px #e3bd62)}50%{transform:translateY(0) scale(1.01);filter:brightness(1.08) drop-shadow(0 0 14px #ffd87d)}}
+@keyframes phoenixSpirit{0%,100%{transform:translateY(2%) scale(.96);filter:brightness(.92) drop-shadow(0 0 9px #ff7a35)}50%{transform:translateY(-2%) scale(1.035);filter:brightness(1.18) drop-shadow(0 0 21px #ffb137)}}
+@keyframes dragonSpirit{0%,100%{transform:rotate(-2deg) translateY(1%) scale(.98);filter:brightness(.92) drop-shadow(0 0 9px #55dfff)}50%{transform:rotate(2deg) translateY(-1%) scale(1.02);filter:brightness(1.12) drop-shadow(0 0 18px #8beaff)}}
+@keyframes starSwordSpirit{to{transform:rotate(360deg)}}
+@keyframes wanjieDemon{0%,100%{transform:translateY(4%) scale(.96);filter:brightness(.86) saturate(1.05) drop-shadow(0 0 10px #9e30d5)}50%{transform:translateY(1%) scale(1.015);filter:brightness(1.1) saturate(1.2) drop-shadow(0 0 20px #e04cff)}}
 @keyframes dariBuddhaHand{0%,100%{transform:translateY(4%) scale(.965);filter:brightness(.9) saturate(1.04) drop-shadow(0 0 8px #e5ae32)}50%{transform:translateY(1.5%) scale(1.015);filter:brightness(1.12) saturate(1.16) drop-shadow(0 0 16px #ffd864) drop-shadow(0 0 30px #ad701f66)}}
 
 /* V36 full-screen tribulation sequence */

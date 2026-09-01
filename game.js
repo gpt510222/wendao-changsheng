@@ -281,21 +281,27 @@ const mainlineBagRanges=[[20,40,15,30,10,20,15,30],[25,50,20,35,12,24,20,35],[35
 [['mainlineSpiritStoneBag','靈石袋','spiritStone','靈石','assets/qstyle-v2/spirit-stone.png'],['mainlineWoodBag','木材袋','wood','木材','assets/qstyle-v2/wood-cutout.png'],['mainlineIronBag','隕鐵袋','meteorIron','隕鐵','assets/qstyle-v2/meteor-iron-cutout.png'],['mainlineFoodBag','食物袋','food','食物','assets/qstyle-v2/food-cutout.png']].forEach(([count,name,resource,label,image])=>itemCatalog[count]={name,image,description:`副本取得的${name}。使用後每個轉換為 1 點${label}。`,count,usable:true,giftable:false,sellPrice:1,resourceBundle:{resource,label,amount:1}});
 const wardrobeOutfits={
   女:[
-    {id:1,name:'雲水袍',kind:'凡品',quality:'common'},{id:2,name:'月華袍',kind:'凡品',quality:'common'},{id:3,name:'丹霞袍',kind:'凡品',quality:'common'},
-    {id:4,name:'星河鳳羽衣',kind:'靈品',quality:'spirit'},{id:5,name:'九霄玄凰裳',kind:'靈品',quality:'spirit'},
-    {id:6,name:'星海月神綃',kind:'天工絕品',quality:'masterwork',effect:'star'},{id:7,name:'燼凰涅槃裳',kind:'天工絕品',quality:'masterwork',effect:'flame'},{id:8,name:'萬象瑤光衣',kind:'天工絕品',quality:'masterwork',effect:'myriad'}
+    {id:1,name:'雲水道袍',kind:'凡品',quality:'common'},{id:2,name:'月華輕袍',kind:'凡品',quality:'common'},{id:3,name:'丹霞法衣',kind:'凡品',quality:'common'},
+    {id:4,name:'星河鳳衣',kind:'靈品',quality:'spirit'},{id:5,name:'九霄凰裳',kind:'靈品',quality:'spirit'},
+    {id:6,name:'星海神綃',kind:'天工絕品',quality:'masterwork',effect:'star'},{id:7,name:'燼凰天裳',kind:'天工絕品',quality:'masterwork',effect:'flame'},{id:8,name:'萬象瑤衣',kind:'天工絕品',quality:'masterwork',effect:'myriad'}
   ],
   男:[
-    {id:1,name:'青雲袍',kind:'凡品',quality:'common'},{id:2,name:'玄劍袍',kind:'凡品',quality:'common'},{id:3,name:'山嶽袍',kind:'凡品',quality:'common'},
-    {id:4,name:'太虛星辰袍',kind:'靈品',quality:'spirit'},{id:5,name:'天衍劍尊衣',kind:'靈品',quality:'spirit'},
-    {id:6,name:'太初星帝袍',kind:'天工絕品',quality:'masterwork',effect:'star'},{id:7,name:'鴻蒙劫火袞',kind:'天工絕品',quality:'masterwork',effect:'flame'},{id:8,name:'萬象道君服',kind:'天工絕品',quality:'masterwork',effect:'myriad'}
+    {id:1,name:'青雲道袍',kind:'凡品',quality:'common'},{id:2,name:'玄劍法袍',kind:'凡品',quality:'common'},{id:3,name:'山嶽戰袍',kind:'凡品',quality:'common'},
+    {id:4,name:'太虛星袍',kind:'靈品',quality:'spirit'},{id:5,name:'天衍劍衣',kind:'靈品',quality:'spirit'},
+    {id:6,name:'太初帝袍',kind:'天工絕品',quality:'masterwork',effect:'star'},{id:7,name:'鴻蒙火袞',kind:'天工絕品',quality:'masterwork',effect:'flame'},{id:8,name:'萬象道服',kind:'天工絕品',quality:'masterwork',effect:'myriad'}
   ]
 };
 const trueFormCatalog=[
   {id:'none',name:'返璞歸真',quality:'none',kind:'無品',description:'收斂真身異象，以本來面目示人。'},
+  {id:'qingmu-deer',name:'青木鹿靈',quality:'good',kind:'良品',image:'assets/qstyle-v2/true-form-qingmu-deer-v1.png',description:'青木靈息凝成鹿形，枝角生花，隨吐納灑落清潤生機。'},
+  {id:'xuanjia-tortoise',name:'玄甲鎮岳',quality:'good',kind:'良品',image:'assets/qstyle-v2/true-form-xuanjia-tortoise-v1.png',description:'玄甲負岳而行，地脈金環緩轉，鎮住周身浮動元息。'},
   {id:'taixu-sword',name:'太虛劍相',quality:'spirit',kind:'靈品',image:'assets/qstyle-v2/true-form-sword-v2.png',description:'八方虛靈古劍結成劍陣，隨吐納明滅共鳴。'},
+  {id:'chixiao-phoenix',name:'赤霄炎凰',quality:'spirit',kind:'靈品',image:'assets/qstyle-v2/true-form-chixiao-phoenix-v1.png',description:'赤金炎凰展翼盤旋，尾焰化作霞帶，映照修士周身。'},
   {id:'jiuxiao-wings',name:'九霄靈翼',quality:'mystic',kind:'玄品',image:'assets/qstyle-v2/true-form-wings.png',description:'以清靈元息凝成的光翼，非羽非骨，如雲霞舒展。'},
-  {id:'dari-buddha-hand',name:'大日佛掌',quality:'masterwork',kind:'天工絕品',image:'assets/qstyle-v2/true-form-dari-buddha-v3.png',description:'半透明的大日佛影於修士身後顯化，垂下金光雙掌，安穩托持主角入定修練。'}
+  {id:'canghai-dragon',name:'滄海蛟龍',quality:'mystic',kind:'玄品',image:'assets/qstyle-v2/true-form-canghai-dragon-v1.png',description:'滄海蛟影銜珠盤身，水雲沿周天流轉，似潮息往復不止。'},
+  {id:'zhoutian-swords',name:'周天星劍',quality:'mystic',kind:'玄品',image:'assets/qstyle-v2/true-form-zhoutian-swords-v1.png',description:'九劍循星軌列成周天，劍光隨呼吸聚散，如夜河環身。'},
+  {id:'dari-buddha-hand',name:'大日佛掌',quality:'masterwork',kind:'天工絕品',hideTitle:true,image:'assets/qstyle-v2/true-form-dari-buddha-v3.png',description:'半透明的大日佛影於修士身後顯化，垂下金光雙掌，安穩托持主角入定修練。'},
+  {id:'wanjie-demon',name:'萬劫魔尊',quality:'masterwork',kind:'天工絕品',hideTitle:true,image:'assets/qstyle-v2/true-form-wanjie-demon-v1.png',description:'萬劫魔影自黑蓮中顯化，四臂結印，幽焰與破碎劫輪緩緩迴轉。'}
 ];
 const titleCatalog=[
   {id:'first-inquiry',name:'初心問道',image:'assets/qstyle-v2/titles/title-first-inquiry-v1.png',kind:'初入仙途',hint:'初入修行即可取得。',alwaysUnlocked:true},
@@ -387,7 +393,7 @@ function applyCharacterVisual(){
   if(selected?.image){form.src=selected.image;form.alt=selected.name;form.classList.remove('hidden')}
   else{form.removeAttribute('src');form.alt='';form.classList.add('hidden')}
   syncTitleUnlocks();
-  const title=$('#heroTitle'),equipped=titleCatalog.find(item=>item.id===state.equippedTitle),showTitle=title&&equipped&&titleUnlocked(equipped.id)&&selected?.id!=='dari-buddha-hand';
+  const title=$('#heroTitle'),equipped=titleCatalog.find(item=>item.id===state.equippedTitle),showTitle=title&&equipped&&titleUnlocked(equipped.id)&&!selected?.hideTitle;
   if(title&&showTitle){title.src=equipped.image;title.alt=equipped.name;title.classList.remove('hidden')}
   else if(title){title.removeAttribute('src');title.alt='';title.classList.add('hidden')}
 }
