@@ -392,6 +392,9 @@ function applyCharacterVisual(){
   form.className=`hero-true-form true-form-${selected?.id||'none'}`;
   if(selected?.image){form.src=selected.image;form.alt=selected.name;form.classList.remove('hidden')}
   else{form.removeAttribute('src');form.alt='';form.classList.add('hidden')}
+  const formFront=$('#heroTrueFormFront');
+  if(formFront&&selected?.id==='wanjie-demon'){formFront.src='assets/qstyle-v2/true-form-wanjie-demon-hands-v1.png';formFront.alt='萬劫魔尊前景雙手';formFront.classList.remove('hidden')}
+  else if(formFront){formFront.removeAttribute('src');formFront.alt='';formFront.classList.add('hidden')}
   syncTitleUnlocks();
   const title=$('#heroTitle'),equipped=titleCatalog.find(item=>item.id===state.equippedTitle),showTitle=title&&equipped&&titleUnlocked(equipped.id)&&!selected?.hideTitle;
   if(title&&showTitle){title.src=equipped.image;title.alt=equipped.name;title.classList.remove('hidden')}
