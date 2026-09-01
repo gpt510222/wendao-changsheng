@@ -281,21 +281,21 @@ const mainlineBagRanges=[[20,40,15,30,10,20,15,30],[25,50,20,35,12,24,20,35],[35
 [['mainlineSpiritStoneBag','靈石袋','spiritStone','靈石','assets/qstyle-v2/spirit-stone.png'],['mainlineWoodBag','木材袋','wood','木材','assets/qstyle-v2/wood-cutout.png'],['mainlineIronBag','隕鐵袋','meteorIron','隕鐵','assets/qstyle-v2/meteor-iron-cutout.png'],['mainlineFoodBag','食物袋','food','食物','assets/qstyle-v2/food-cutout.png']].forEach(([count,name,resource,label,image])=>itemCatalog[count]={name,image,description:`副本取得的${name}。使用後每個轉換為 1 點${label}。`,count,usable:true,giftable:false,sellPrice:1,resourceBundle:{resource,label,amount:1}});
 const wardrobeOutfits={
   女:[
-    {id:1,name:'雲水袍',kind:'初始服裝'},{id:2,name:'月華袍',kind:'初始服裝'},{id:3,name:'丹霞袍',kind:'初始服裝'},
-    {id:4,name:'星河鳳羽衣',kind:'華服'},{id:5,name:'九霄玄凰裳',kind:'華服'},
-    {id:6,name:'星海月神綃',kind:'太初仙品',effect:'star'},{id:7,name:'燼凰涅槃裳',kind:'太初仙品',effect:'flame'},{id:8,name:'萬象瑤光衣',kind:'太初仙品',effect:'myriad'}
+    {id:1,name:'雲水袍',kind:'凡品',quality:'common'},{id:2,name:'月華袍',kind:'凡品',quality:'common'},{id:3,name:'丹霞袍',kind:'凡品',quality:'common'},
+    {id:4,name:'星河鳳羽衣',kind:'靈品',quality:'spirit'},{id:5,name:'九霄玄凰裳',kind:'靈品',quality:'spirit'},
+    {id:6,name:'星海月神綃',kind:'天工絕品',quality:'masterwork',effect:'star'},{id:7,name:'燼凰涅槃裳',kind:'天工絕品',quality:'masterwork',effect:'flame'},{id:8,name:'萬象瑤光衣',kind:'天工絕品',quality:'masterwork',effect:'myriad'}
   ],
   男:[
-    {id:1,name:'青雲袍',kind:'初始服裝'},{id:2,name:'玄劍袍',kind:'初始服裝'},{id:3,name:'山嶽袍',kind:'初始服裝'},
-    {id:4,name:'太虛星辰袍',kind:'華服'},{id:5,name:'天衍劍尊衣',kind:'華服'},
-    {id:6,name:'太初星帝袍',kind:'太初仙品',effect:'star'},{id:7,name:'鴻蒙劫火袞',kind:'太初仙品',effect:'flame'},{id:8,name:'萬象道君服',kind:'太初仙品',effect:'myriad'}
+    {id:1,name:'青雲袍',kind:'凡品',quality:'common'},{id:2,name:'玄劍袍',kind:'凡品',quality:'common'},{id:3,name:'山嶽袍',kind:'凡品',quality:'common'},
+    {id:4,name:'太虛星辰袍',kind:'靈品',quality:'spirit'},{id:5,name:'天衍劍尊衣',kind:'靈品',quality:'spirit'},
+    {id:6,name:'太初星帝袍',kind:'天工絕品',quality:'masterwork',effect:'star'},{id:7,name:'鴻蒙劫火袞',kind:'天工絕品',quality:'masterwork',effect:'flame'},{id:8,name:'萬象道君服',kind:'天工絕品',quality:'masterwork',effect:'myriad'}
   ]
 };
 const trueFormCatalog=[
-  {id:'none',name:'返璞歸真',description:'收斂真身異象，以本來面目示人。'},
-  {id:'taixu-sword',name:'太虛劍相',image:'assets/qstyle-v2/true-form-sword-v2.png',description:'八方虛靈古劍結成劍陣，隨吐納明滅共鳴。'},
-  {id:'jiuxiao-wings',name:'九霄靈翼',image:'assets/qstyle-v2/true-form-wings.png',description:'以清靈元息凝成的光翼，非羽非骨，如雲霞舒展。'},
-  {id:'dari-buddha-hand',name:'大日佛掌',image:'assets/qstyle-v2/true-form-dari-buddha-v3.png',description:'半透明的大日佛影於修士身後顯化，垂下金光雙掌，安穩托持主角入定修練。'}
+  {id:'none',name:'返璞歸真',quality:'none',kind:'無品',description:'收斂真身異象，以本來面目示人。'},
+  {id:'taixu-sword',name:'太虛劍相',quality:'spirit',kind:'靈品',image:'assets/qstyle-v2/true-form-sword-v2.png',description:'八方虛靈古劍結成劍陣，隨吐納明滅共鳴。'},
+  {id:'jiuxiao-wings',name:'九霄靈翼',quality:'mystic',kind:'玄品',image:'assets/qstyle-v2/true-form-wings.png',description:'以清靈元息凝成的光翼，非羽非骨，如雲霞舒展。'},
+  {id:'dari-buddha-hand',name:'大日佛掌',quality:'masterwork',kind:'天工絕品',image:'assets/qstyle-v2/true-form-dari-buddha-v3.png',description:'半透明的大日佛影於修士身後顯化，垂下金光雙掌，安穩托持主角入定修練。'}
 ];
 const titleCatalog=[
   {id:'first-inquiry',name:'初心問道',image:'assets/qstyle-v2/titles/title-first-inquiry-v1.png',kind:'初入仙途',hint:'初入修行即可取得。',alwaysUnlocked:true},
@@ -1962,13 +1962,13 @@ function renderWardrobeSection(section,preserveScroll=false){
   const inner=$('#wardrobeInner');if(!inner)return;
   if(section==='outfits'){
     const g=state.gender==='男'?'male':'female',appearance=state.appearance||1;
-    replaceWardrobeContent(inner,`<div class="wardrobe-intro"><b>衣閣藏衣</b><span>服裝只改變外觀，不影響人物屬性。</span></div><div class="wardrobe-showcase-strip" data-wardrobe-strip="outfits">${wardrobeOutfits[state.gender].map(outfit=>`<article class="wardrobe-card ${outfit.effect?'mythic':''} ${state.outfit===outfit.id?'selected':''}" data-outfit-effect="${outfit.effect||'none'}"><span class="wardrobe-preview"><img src="${appearanceAsset(state.gender,appearance,outfit.id)}" alt="${outfit.name}"></span><b>${outfit.name}</b><small>${outfit.kind}</small><button type="button" class="wardrobe-action" data-outfit-action="${outfit.id}">${state.outfit===outfit.id?'穿戴中':'穿戴'}</button></article>`).join('')}</div>`);
+    replaceWardrobeContent(inner,`<div class="wardrobe-intro"><b>衣閣藏衣</b><span>品質依序為凡品、良品、靈品、玄品、天工絕品；服裝不影響人物屬性。</span></div><div class="wardrobe-showcase-strip" data-wardrobe-strip="outfits">${wardrobeOutfits[state.gender].map(outfit=>`<article class="wardrobe-card ${outfit.effect?'mythic':''} ${state.outfit===outfit.id?'selected':''}" data-quality="${outfit.quality}" data-outfit-effect="${outfit.effect||'none'}"><span class="wardrobe-preview"><img src="${appearanceAsset(state.gender,appearance,outfit.id)}" alt="${outfit.name}"></span><b>${outfit.name}</b><small class="item-quality">${outfit.kind}</small><button type="button" class="wardrobe-action" data-outfit-action="${outfit.id}">${state.outfit===outfit.id?'穿戴中':'穿戴'}</button></article>`).join('')}</div>`);
     $$('[data-outfit-action]').forEach(button=>button.onclick=()=>{state.outfit=+button.dataset.outfitAction;applyCharacterVisual();renderWardrobeSection('outfits',true);save()});
     restoreWardrobeScroll(scrollTop);
     return;
   }
   if(section==='true-forms'){
-    replaceWardrobeContent(inner,`<div class="wardrobe-intro"><b>真身異象</b><span>真身為半透明元息異象，不屬於實體裝備。</span></div><div class="wardrobe-showcase-strip" data-wardrobe-strip="true-forms">${trueFormCatalog.map(form=>`<article class="true-form-card ${state.trueForm===form.id?'selected':''}" data-true-form-card="${form.id}"><span class="true-form-preview ${form.id==='none'?'empty':''}">${form.image?`<img src="${form.image}" alt="${form.name}">`:'<i>無相</i>'}</span><span><b>${form.name}</b><small>${form.description}</small></span><button type="button" class="true-form-action" data-true-form-action="${form.id}">${state.trueForm===form.id?'顯化中':'顯化'}</button></article>`).join('')}</div>`);
+    replaceWardrobeContent(inner,`<div class="wardrobe-intro"><b>真身異象</b><span>真身與衣裝共用凡品至天工絕品的品質規則。</span></div><div class="wardrobe-showcase-strip" data-wardrobe-strip="true-forms">${trueFormCatalog.map(form=>`<article class="true-form-card ${state.trueForm===form.id?'selected':''}" data-quality="${form.quality}" data-true-form-card="${form.id}"><span class="true-form-preview ${form.id==='none'?'empty':''}">${form.image?`<img src="${form.image}" alt="${form.name}">`:'<i>無相</i>'}</span><span><b>${form.name}</b><strong class="item-quality">${form.kind}</strong><small>${form.description}</small></span><button type="button" class="true-form-action" data-true-form-action="${form.id}">${state.trueForm===form.id?'顯化中':'顯化'}</button></article>`).join('')}</div>`);
     $$('[data-true-form-action]').forEach(button=>button.onclick=()=>{state.trueForm=button.dataset.trueFormAction;applyCharacterVisual();renderWardrobeSection('true-forms',true);save()});
     restoreWardrobeScroll(scrollTop);
     return;
