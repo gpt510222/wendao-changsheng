@@ -764,8 +764,8 @@ function playEntrance(target){
   entranceTransitionTimes.set(element,now);
   element.classList.remove('entry-arriving');void element.offsetWidth;element.classList.add('entry-arriving');
   document.documentElement.classList.remove('entry-transition');void document.documentElement.offsetWidth;document.documentElement.classList.add('entry-transition');
-  clearTimeout(entranceTransitionTimer);entranceTransitionTimer=setTimeout(()=>document.documentElement.classList.remove('entry-transition'),460);
-  setTimeout(()=>element.classList.remove('entry-arriving'),460);
+  clearTimeout(entranceTransitionTimer);entranceTransitionTimer=setTimeout(()=>document.documentElement.classList.remove('entry-transition'),300);
+  setTimeout(()=>element.classList.remove('entry-arriving'),300);
 }
 function show(id,animate=false) { $$('.screen').forEach(x=>x.classList.remove('active'));const screen=$(id);screen.classList.add('active');if(animate)playEntrance(screen); }
 new MutationObserver(records=>records.forEach(record=>{
