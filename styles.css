@@ -285,13 +285,13 @@ html,body{width:100%;height:100%;min-height:0;overflow:hidden;overscroll-behavio
 .hero-stack .true-form-zhoutian-swords{inset:-21%;width:142%;height:142%;animation:starSwordSpirit 20s linear infinite,trueFormPulse 4.2s ease-in-out infinite}
 .hero-stack .true-form-dari-buddha-hand,.hero-stack .true-form-wanjie-demon{inset:-34%;width:168%;height:168%;opacity:.46;object-fit:contain;object-position:center bottom;mix-blend-mode:screen}
 .hero-stack .true-form-dari-buddha-hand{animation:dariBuddhaHand 4.6s ease-in-out infinite}
-.hero-stack .true-form-wanjie-demon{filter:drop-shadow(0 0 13px #c34cff88);animation:wanjieDemon 5.1s ease-in-out infinite}
+.hero-stack .true-form-wanjie-demon{inset:auto;top:-52%;left:-48%;width:196%;height:196%;object-position:center top;opacity:.5;filter:drop-shadow(0 0 13px #c34cff88);animation:wanjieDemon 5.1s ease-in-out infinite}
 @keyframes deerSpirit{0%,100%{transform:translateY(1%) scale(.97);filter:brightness(.92) drop-shadow(0 0 8px #9fffc2)}50%{transform:translateY(-2%) scale(1.02);filter:brightness(1.14) drop-shadow(0 0 18px #baffcf)}}
 @keyframes tortoiseSpirit{0%,100%{transform:translateY(2%) scale(.98);filter:brightness(.9) drop-shadow(0 0 7px #e3bd62)}50%{transform:translateY(0) scale(1.01);filter:brightness(1.08) drop-shadow(0 0 14px #ffd87d)}}
 @keyframes phoenixSpirit{0%,100%{transform:translateY(2%) scale(.96);filter:brightness(.92) drop-shadow(0 0 9px #ff7a35)}50%{transform:translateY(-2%) scale(1.035);filter:brightness(1.18) drop-shadow(0 0 21px #ffb137)}}
 @keyframes dragonSpirit{0%,100%{transform:rotate(-2deg) translateY(1%) scale(.98);filter:brightness(.92) drop-shadow(0 0 9px #55dfff)}50%{transform:rotate(2deg) translateY(-1%) scale(1.02);filter:brightness(1.12) drop-shadow(0 0 18px #8beaff)}}
 @keyframes starSwordSpirit{to{transform:rotate(360deg)}}
-@keyframes wanjieDemon{0%,100%{transform:translateY(4%) scale(.96);filter:brightness(.86) saturate(1.05) drop-shadow(0 0 10px #9e30d5)}50%{transform:translateY(1%) scale(1.015);filter:brightness(1.1) saturate(1.2) drop-shadow(0 0 20px #e04cff)}}
+@keyframes wanjieDemon{0%,100%{transform:translateY(1.5%) scale(.97);filter:brightness(.86) saturate(1.05) drop-shadow(0 0 10px #9e30d5)}50%{transform:translateY(-1%) scale(1.015);filter:brightness(1.1) saturate(1.2) drop-shadow(0 0 20px #e04cff)}}
 @keyframes dariBuddhaHand{0%,100%{transform:translateY(4%) scale(.965);filter:brightness(.9) saturate(1.04) drop-shadow(0 0 8px #e5ae32)}50%{transform:translateY(1.5%) scale(1.015);filter:brightness(1.12) saturate(1.16) drop-shadow(0 0 16px #ffd864) drop-shadow(0 0 30px #ad701f66)}}
 
 /* V36 full-screen tribulation sequence */
