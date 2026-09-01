@@ -697,7 +697,8 @@ function artTotalEffect(art){return artBaseEffect(art)+artRootEffect(art)}
 function artSecondarySpiritualPower(art){return art.kind==='ultimate'?Math.round(artTotalEffect(art)*.25):0}
 function artBonusFor(attribute){return (state.learnedArts||[]).reduce((sum,art)=>sum+(artKinds[art.kind]?.attribute===attribute?artTotalEffect(art):0)+(attribute==='spiritualPower'?artSecondarySpiritualPower(art):0),0)}
 function equippedAttributeBonus(attribute){return Object.values(state.equippedItems||{}).reduce((sum,id)=>{const e=(state.equipmentInventory||[]).find(x=>x.id===id);return sum+(e?.label&&equipmentSlots.find(x=>x[0]===e.slot)?.[2]===attribute?(e.value||0):0)},0)}
-function effectiveCore(attribute){let total=(state[attribute]||0)+artBonusFor(attribute)+swordPathBonus(attribute)+equippedAttributeBonus(attribute);if(attribute==='trueQi'&&state.spiritPathOpened)total*=qiTrueQiMultiplier();return attribute==='agility'&&activeBodyInjury()==='tendon'?total*.85:total}
+function effectiveCore(attribute){let total=(state[attribute]||0)+artBonusFor(attribute)+swordPathBonus(attribute)+equippedAttributeBonus(attribute);if(attribute==='trueQi'&&state.spiritPathOpened)total*=qiTrueQiMultiplier();if(attribute==='agility'&&activeBodyInjury()==='tendon')total*=.85;return Math.max(0,total)}
+function displayedCore(attribute){return Math.round(effectiveCore(attribute))}
 const combatPowerWeights={rootBone:10,trueQi:25,physique:20,agility:15,spiritualPower:30};
 function combatPower(){return Math.round(Object.entries(combatPowerWeights).reduce((sum,[key,weight])=>sum+Math.max(0,effectiveCore(key))*weight,0))}
 function formatCombatPower(value){
@@ -709,7 +710,7 @@ function formatCombatPower(value){
   if(rest||!parts.length)parts.push(rest.toString());
   return parts.join(' ');
 }
-function cultivationEfficiency() { return effectiveCore('comprehension')*.5; }
+function cultivationEfficiency() { return Math.floor(effectiveCore('comprehension')*.5); }
 function auraEfficiency() { return Math.floor(1.25*Math.sqrt(Math.max(0,effectiveCore('fortune')))); }
 function pathEfficiency(level){const realm=Math.min(Math.floor(level/10),realmEfficiencyMultipliers.length-1),layer=level%10;return realmEfficiencyMultipliers[realm]*(1+layer*.035)}
 function realmEfficiency(){return Math.max(1,pathEfficiency(state.spiritLevel))}
@@ -1990,7 +1991,7 @@ function renderWardrobeSection(section,preserveScroll=false){
 }
 function showCharacterAttributes() {
   const inner=$('#bagInner');
-  const rootBone=effectiveCore('rootBone'),trueQi=effectiveCore('trueQi'),physique=effectiveCore('physique'),agility=effectiveCore('agility'),spiritualPower=effectiveCore('spiritualPower'),comprehension=effectiveCore('comprehension'),fortune=effectiveCore('fortune'),health=combatHealth(rootBone),attack=trueQi*5,defense=physique*20,evasion=combatEvasion(agility),accuracy=combatAccuracy(spiritualPower),critical=(combatCritical(spiritualPower)*100).toFixed(1);
+  const rootBone=displayedCore('rootBone'),trueQi=displayedCore('trueQi'),physique=displayedCore('physique'),agility=displayedCore('agility'),spiritualPower=displayedCore('spiritualPower'),comprehension=displayedCore('comprehension'),fortune=displayedCore('fortune'),health=combatHealth(rootBone),attack=trueQi*5,defense=physique*20,evasion=combatEvasion(agility),accuracy=combatAccuracy(spiritualPower),critical=Math.round(combatCritical(spiritualPower)*100);
   inner.innerHTML=`<section class="character-sheet"><div class="sheet-header"><div><small>姓名</small><b>${state.name}</b></div><div><small>修煉歲月</small><b>${experiencedYears().toLocaleString()}年</b></div><div><small>練氣境界</small><b>${realmName(state.spiritLevel,spiritRealms)}</b></div><div><small>煉體境界</small><b>${realmName(state.bodyLevel,bodyRealms)}</b></div><div><small>出生</small><b>${state.origin}</b></div><div><small>門派</small><b>${state.sect||'無門無派'}${state.actingLeader?'・代理掌門':''}</b></div></div><div class="sheet-title">屬性</div><div class="sheet-attributes"><div><span>命骨：${rootBone}</span><strong>氣血：${health}</strong></div><div><span>元息：${trueQi}</span><strong>攻擊：${attack}</strong></div><div><span>玄軀：${physique}</span><strong>防禦：${defense}</strong></div><div><span>游影：${agility}</span><strong>閃避評級：${evasion}</strong></div><div><span>銳識：${spiritualPower}</span><strong>暴擊：${critical}%</strong></div><div><span>道悟：${comprehension}</span><strong>修練效率：+${cultivationEfficiency()}</strong></div><div><span>天契：${fortune}</span><strong>靈氣獲取：+${auraEfficiency()}</strong></div><div><span>正氣：${Math.floor(state.righteousness)}</span><strong>邪氣：${Math.floor(state.evilQi)}</strong></div></div><div class="five-arts"><b>五系功法屬性</b><span>金 +${state.metalArt}</span><span>木 +${state.woodArt}</span><span>水 +${state.waterArt}</span><span>火 +${state.fireArt}</span><span>土 +${state.earthArt}</span></div></section><button id="attributeBackBtn" class="text-button">返回人物</button>`;
   inner.querySelector('.character-sheet').insertAdjacentHTML('afterbegin',`<div class="sheet-combat-power"><small>人物戰力</small><b>${formatCombatPower(combatPower())}</b></div>`);
   const alignment=cultivationAlignment();inner.querySelector('.sheet-combat-power').insertAdjacentHTML('afterend',`<div class="sheet-combat-power path-${alignment.id}"><small>處世之道・${alignment.tier?`${alignment.tier}階`:'未定'}</small><b>${alignment.name}</b><span>${alignment.description}</span></div>`);
