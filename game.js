@@ -334,7 +334,7 @@ pillTypes.forEach(([key])=>{for(let tier=1;tier<=9;tier++)defaults[`pillCount_${
 let state = { ...defaults }, tickStart = Date.now(), manualCultivationStartedAt=0, manualCultivationTimer=null, breakthroughInProgress=false;
 const saveKey = 'wendao-idle-v2';
 let createGender='女', createAppearance=1, createOutfit=1, createOrigin='家族子弟', audioContext=null, currentFeature=null, currentRootView='root', currentCaveView='dwelling', currentSectView='home', currentArtsView='sect', currentExperienceView='sword', currentMarketTab='market', suppressSave=false,mainlineStoryStep=0,mainlineStoryStage=null;
-let currentSpiritView='realm',activeHeartTrial=null,currentWardrobeView='outfits';
+let currentSpiritView='realm',activeHeartTrial=null,currentWardrobeView='outfits',currentCharacterView='equipment';
 const marketFloors={market:1,scripture:1,reputation:1};
 const marketFloorLevels=[0,20,40,60,80];
 const chineseFloorNames=['一','二','三','四','五'];
@@ -693,7 +693,14 @@ function swordNurtureTechniqueBonus(technique){return technique?.embryo?Math.max
 function swordRealmEffectText(level=state.swordLevel||0){const profile=swordRealmProfile(level);return `劍勢 ${profile.level} 重・劍招傷害 +${Math.round((profile.damage+profile.techniqueDamage)*100)}%・破防 +${Math.round(profile.armorPierce*100)}%・命中 +${Math.round(profile.accuracy*100)}%`}
 function artBaseEffect(art){return Math.round(artTierMax[art.tier-1]*(art.level/10))}
 function artRootEffect(art){return Math.round((state[`${art.element}Art`]||0)*art.tier*art.level)}
-function artTotalEffect(art){return artBaseEffect(art)+artRootEffect(art)}
+function equippedElementBonus(element){
+  const label={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'}[element]||element;
+  return Object.values(state.equippedItems||{}).reduce((sum,id)=>{
+    const equipment=(state.equipmentInventory||[]).find(item=>item.id===id);
+    return sum+(equipment?.affixes||[]).filter(affix=>affix.element===label).reduce((total,affix)=>total+(Number(affix.value)||0),0);
+  },0);
+}
+function artTotalEffect(art){return Math.round((artBaseEffect(art)+artRootEffect(art))*(1+equippedElementBonus(art.element)/100))}
 function artSecondarySpiritualPower(art){return art.kind==='ultimate'?Math.round(artTotalEffect(art)*.25):0}
 function artBonusFor(attribute){return (state.learnedArts||[]).reduce((sum,art)=>sum+(artKinds[art.kind]?.attribute===attribute?artTotalEffect(art):0)+(attribute==='spiritualPower'?artSecondarySpiritualPower(art):0),0)}
 function equippedAttributeBonus(attribute){return Object.values(state.equippedItems||{}).reduce((sum,id)=>{const e=(state.equipmentInventory||[]).find(x=>x.id===id);return sum+(e?.label&&equipmentSlots.find(x=>x[0]===e.slot)?.[2]===attribute?(e.value||0):0)},0)}
@@ -1108,8 +1115,7 @@ function openHeroCharacterAttributes(){
   $$('.feature-tab').forEach(button=>button.classList.toggle('active',button===bagButton));
   $('#featurePanel').classList.remove('feature-locked','hidden');
   $('#gameScreen').classList.add('feature-open');
-  renderBagPanel('character');
-  showCharacterAttributes();
+  currentCharacterView='attributes';renderBagPanel('character');
 }
 function rewardSnapshot(){return {free:state.free,swordEssence:state.swordEssence,aura:state.aura,spiritStone:state.spiritStone,food:state.food,wood:state.wood,meteorIron:state.meteorIron,swordIntent:state.swordIntent,bodyTemper:state.bodyTemper,sectContribution:state.sectContribution,prestige:state.prestige}}
 function rewardDelta(after,before){return typeof after==='bigint'||typeof before==='bigint'?toBigInt(after)-toBigInt(before):Math.max(0,Math.floor(after-before))}
@@ -1831,7 +1837,7 @@ function daoChildCost(){return Math.floor(50*Math.pow(state.daoChildBought+1,1.3
 function renderCavePanel(view='dwelling',preserveScroll=false){
   currentCaveView=view;
   const description=$('#featureDescription'),savedScrollTop=preserveScroll?description.scrollTop:0,savedScrollLeft=preserveScroll?description.scrollLeft:0,savedTabScroll=preserveScroll?description.querySelector('.cave-tabs')?.scrollLeft||0:0;
-  const tabs=[['dwelling','靈脈'],['production','資源生產'],['study','書房'],['alchemy','丹房'],['forge','器室'],['brew','仙釀'],['partner','道侶']];
+  const tabs=[['dwelling','靈脈'],['production','資源生產'],['study','書房'],['alchemy','丹房'],['forge','器室'],['brew','釀坊'],['partner','道侶']];
   description.innerHTML=`<div class="cave-tabs">${tabs.map(([key,label])=>`<button data-cave-view="${key}" class="${key===view?'active':''}">${label}</button>`).join('')}</div><div id="caveInner"></div>`;
   $$('.cave-tabs button').forEach(b=>b.onclick=()=>renderCavePanel(b.dataset.caveView));
   const tabBar=$('.cave-tabs'),activeTab=$('.cave-tabs .active');if(tabBar){tabBar.addEventListener('wheel',event=>{if(Math.abs(event.deltaY)<=Math.abs(event.deltaX))return;tabBar.scrollLeft+=event.deltaY;event.preventDefault()},{passive:false});if(activeTab)tabBar.scrollLeft=activeTab.offsetLeft-tabBar.offsetLeft-(tabBar.clientWidth-activeTab.clientWidth)/2}
@@ -1852,7 +1858,7 @@ function renderCaveView(view){
   $$('.cave-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.caveView===view));
   const inner=$('#caveInner');if(!inner)return;
   if(!['dwelling','production'].includes(view)){
-    if(view==='alchemy'){renderAlchemyProduction(inner);return}if(view==='forge'){renderForgeProduction(inner);return}if(view==='brew'){inner.innerHTML='<div class="cave-placeholder"><b>仙釀</b><small>釀造內容將於後續版本開放</small></div>';return}
+    if(view==='alchemy'){renderAlchemyProduction(inner);return}if(view==='forge'){renderForgeProduction(inner);return}if(view==='brew'){inner.innerHTML='<div class="cave-placeholder"><b>靈釀</b><small>釀坊內容將於後續版本開放</small></div>';return}
     const names={study:'書房',partner:'道侶'};inner.innerHTML=`<div class="cave-placeholder"><b>${names[view]}</b><small>相關內容將於後續版本開放</small></div>`;return;
   }
   const cards=Object.entries(caveAreas).map(([key,a])=>{const level=state[a.level],cap=areaCapacity(a),max=areaWorkerMax(a),output=areaOutput(a),maxed=level>=caveAreaMaxLevel,upgrade=areaUpgradeCost(a),nextCap=areaCapacity(a,level+1),stored=Math.floor(state[a.value]),full=stored>=cap,percent=Math.min(100,stored/Math.max(1,cap)*100);return `<article class="resource-area ${full?'storage-full':''}"><header><img src="${a.icon}" alt="${a.label}"><div><b>${a.label}</b><small>${level}級產地</small></div><em>${full?'倉滿':'生產中'}</em></header><div class="resource-storage"><span><small>目前儲量</small><strong title="${stored.toLocaleString()}">${formatCaveAmount(stored)}</strong></span><i>／</i><span><small>儲存上限</small><strong title="${cap.toLocaleString()}">${formatCaveAmount(cap)}</strong></span></div><div class="resource-capacity-bar"><i style="width:${percent}%"></i></div><p>${full?'倉儲已滿，已暫停生產':`每名道童每 5 秒產出 ${formatCaveAmount(output)}${a.foodCost?`，消耗食物 ${formatCaveAmount(a.foodCost)}`:''}`}</p><div class="worker-stepper"><button data-worker="${key}" data-change="-1">−</button><span>道童 ${state[a.worker]} / ${max}</span><button data-worker="${key}" data-change="1">＋</button></div><button class="area-upgrade" data-upgrade-area="${key}" ${!maxed&&state.wood>=upgrade?'':'disabled'}><span>${maxed?'產地已達最高級':`擴建上限至 ${formatCaveAmount(nextCap)}`}</span><small>${maxed?'30 級圓滿':`木材 ${formatCaveAmount(upgrade)}`}</small></button></article>`}).join('');
@@ -1966,10 +1972,27 @@ function renderBagView(view) {
     return;
   }
   if(view==='wardrobe'){renderWardrobeView(currentWardrobeView);return}
-  const src=characterAsset();
-  const slotKeys=[...equipmentSlots.map(x=>x[0]),'treasure'],slotHtml=key=>{const id=state.equippedItems?.[key],e=(state.equipmentInventory||[]).find(x=>x.id===id),meta=equipmentSlots.find(x=>x[0]===key),name=meta?.[1]||'法寶';return `<button type="button" class="equip-slot ${e?'filled':''}" ${e?`data-equipped-item="${e.id}"`:'disabled'}>${e?`<img src="assets/qstyle-v2/production/equipment/${e.slot}-t${e.tier}.png" alt="${name}">${e.quality==='rare'?'<i>「極」</i>':''}<small>${equipmentSets[e.tier-1]}${name}</small>`:`<b>${name}</b>`}</button>`},left=slotKeys.slice(0,4).map(slotHtml).join(''),right=slotKeys.slice(4).map(slotHtml).join('');
-  inner.innerHTML=`<div class="equipment-layout"><div class="equipment-side">${left}</div><div class="equipment-character"><img src="${src}" alt="人物"><button id="characterAttributesBtn">人物屬性</button></div><div class="equipment-side">${right}</div></div>`;
-  $('#characterAttributesBtn').onclick=()=>hasMindEmbodiment()?showCharacterAttributes():toast('習得意念入體以後方能查看。');$$('[data-equipped-item]').forEach(button=>button.onclick=()=>openEquippedItemModal(button.dataset.equippedItem));
+  renderCharacterView(currentCharacterView);
+}
+function renderCharacterView(view='equipment'){
+  currentCharacterView=view;
+  const inner=$('#bagInner');if(!inner)return;
+  inner.innerHTML=`<div class="character-tabs"><button data-character-view="equipment">裝備</button><button data-character-view="attributes">人物屬性${hasMindEmbodiment()?'':'・未悟'}</button><button data-character-view="dosage">丹釀</button></div><div id="characterInner"></div>`;
+  $$('.character-tabs button').forEach(button=>{button.classList.toggle('active',button.dataset.characterView===view);button.onclick=()=>renderCharacterView(button.dataset.characterView)});
+  const content=$('#characterInner');
+  if(view==='attributes'){
+    if(!hasMindEmbodiment()){content.innerHTML='<div class="character-view-lock"><b>人物屬性尚未開啟</b><small>習得「意念入體」後方能內觀命骨、元息與其餘基礎白值；未提前習得者會在化念一層自動領悟。</small></div>';return}
+    showCharacterAttributes();return;
+  }
+  if(view==='dosage'){renderDosageLedger(content);return}
+  const src=characterAsset(),slotKeys=[...equipmentSlots.map(x=>x[0]),'treasure'],slotHtml=key=>{const id=state.equippedItems?.[key],e=(state.equipmentInventory||[]).find(x=>x.id===id),meta=equipmentSlots.find(x=>x[0]===key),name=meta?.[1]||'法寶';return `<button type="button" class="equip-slot ${e?'filled':''}" ${e?`data-equipped-item="${e.id}"`:'disabled'}>${e?`<img src="assets/qstyle-v2/production/equipment/${e.slot}-t${e.tier}.png" alt="${name}">${e.quality==='rare'?'<i>「極」</i>':''}<small>${equipmentSets[e.tier-1]}${name}</small>`:`<b>${name}</b>`}</button>`},left=slotKeys.slice(0,4).map(slotHtml).join(''),right=slotKeys.slice(4).map(slotHtml).join('');
+  content.innerHTML=`<div class="equipment-layout"><div class="equipment-side">${left}</div><div class="equipment-character"><img src="${src}" alt="人物"></div><div class="equipment-side">${right}</div></div>`;
+  $$('[data-equipped-item]').forEach(button=>button.onclick=()=>openEquippedItemModal(button.dataset.equippedItem));
+}
+function renderDosageLedger(inner){
+  const numerals=['一','二','三','四','五','六','七','八','九'];
+  const tiers=Array.from({length:9},(_,index)=>{const tier=index+1,rows=pillTypes.map(([key,name,,label])=>{const used=Math.max(0,state.pillUsage?.[`${key}_${tier}`]||0),owned=Math.max(0,state[`pillCount_${key}_${tier}`]||0),percent=Math.min(100,used/50*100);return `<article><img src="assets/qstyle-v2/production/pills/${key}-t${tier}.png" alt="${numerals[index]}階${name}"><span><b>${name}</b><small>${label}永久白值＋${used}</small><i><em style="width:${percent}%"></em></i></span><strong>${used}／50<small>持有 ${formatLargeNumber(owned)}</small></strong></article>`}).join('');return `<details class="dosage-tier" ${tier===worldProgressTier()?'open':''}><summary><b>${numerals[index]}階丹藥</b><span>本階各類皆可服用 50 顆</span></summary><div>${rows}</div></details>`}).join('');
+  inner.innerHTML=`<section class="dosage-ledger"><header><small>永久服用紀錄</small><h2>丹藥與靈釀</h2><p>各階、各類上限分開計算；服用所得會直接計入人物基礎白值。</p></header>${tiers}<details class="spirit-brew-ledger"><summary><b>靈釀紀錄</b><span>釀坊尚未開放</span></summary><div><b>尚無靈釀紀錄</b><small>未來取得數量與品飲上限會集中記錄於此。</small></div></details></section>`;
 }
 function renderWardrobeView(section='outfits'){
   const inner=$('#bagInner');if(!inner)return;
@@ -2012,16 +2035,17 @@ function renderWardrobeSection(section,preserveScroll=false){
   restoreWardrobeScroll(scrollTop);
 }
 function showCharacterAttributes() {
-  const inner=$('#bagInner');
-  const rootBone=displayedCore('rootBone'),trueQi=displayedCore('trueQi'),physique=displayedCore('physique'),agility=displayedCore('agility'),spiritualPower=displayedCore('spiritualPower'),comprehension=displayedCore('comprehension'),fortune=displayedCore('fortune'),health=combatHealth(rootBone),attack=trueQi*5,defense=physique*20,evasion=combatEvasion(agility),accuracy=combatAccuracy(spiritualPower),critical=Math.round(combatCritical(spiritualPower)*100);
-  inner.innerHTML=`<section class="character-sheet"><div class="sheet-header"><div><small>姓名</small><b>${state.name}</b></div><div><small>修煉歲月</small><b>${experiencedYears().toLocaleString()}年</b></div><div><small>練氣境界</small><b>${realmName(state.spiritLevel,spiritRealms)}</b></div><div><small>煉體境界</small><b>${realmName(state.bodyLevel,bodyRealms)}</b></div><div><small>出生</small><b>${state.origin}</b></div><div><small>門派</small><b>${state.sect||'無門無派'}${state.actingLeader?'・代理掌門':''}</b></div></div><div class="sheet-title">屬性</div><div class="sheet-attributes"><div><span>命骨：${rootBone}</span><strong>氣血：${health}</strong></div><div><span>元息：${trueQi}</span><strong>攻擊：${attack}</strong></div><div><span>玄軀：${physique}</span><strong>防禦：${defense}</strong></div><div><span>游影：${agility}</span><strong>閃避評級：${evasion}</strong></div><div><span>銳識：${spiritualPower}</span><strong>暴擊：${critical}%</strong></div><div><span>道悟：${comprehension}</span><strong>修練效率：+${cultivationEfficiency()}</strong></div><div><span>天契：${fortune}</span><strong>靈氣獲取：+${auraEfficiency()}</strong></div><div><span>正氣：${Math.floor(state.righteousness)}</span><strong>邪氣：${Math.floor(state.evilQi)}</strong></div></div><div class="five-arts"><b>五系功法屬性</b><span>金 +${state.metalArt}</span><span>木 +${state.woodArt}</span><span>水 +${state.waterArt}</span><span>火 +${state.fireArt}</span><span>土 +${state.earthArt}</span></div></section><button id="attributeBackBtn" class="text-button">返回人物</button>`;
+  currentCharacterView='attributes';const inner=$('#characterInner')||$('#bagInner');
+  const base=attribute=>Math.max(0,Math.floor(Number(state[attribute])||0));
+  const rootBone=base('rootBone'),trueQi=base('trueQi'),physique=base('physique'),agility=base('agility'),spiritualPower=base('spiritualPower'),comprehension=base('comprehension'),fortune=base('fortune'),health=combatHealth(rootBone),attack=trueQi*5,defense=physique*20,evasion=combatEvasion(agility),accuracy=combatAccuracy(spiritualPower),critical=Math.round(combatCritical(spiritualPower)*100);
+  const final={rootBone:displayedCore('rootBone'),trueQi:displayedCore('trueQi'),physique:displayedCore('physique'),agility:displayedCore('agility'),spiritualPower:displayedCore('spiritualPower'),comprehension:displayedCore('comprehension'),fortune:displayedCore('fortune')};
+  const elements=[['metal','金','metalArt'],['wood','木','woodArt'],['water','水','waterArt'],['fire','火','fireArt'],['earth','土','earthArt']];
+  inner.innerHTML=`<section class="character-sheet"><div class="sheet-header"><div><small>姓名</small><b>${state.name}</b></div><div><small>修煉歲月</small><b>${experiencedYears().toLocaleString()}年</b></div><div><small>練氣境界</small><b>${realmName(state.spiritLevel,spiritRealms)}</b></div><div><small>煉體境界</small><b>${realmName(state.bodyLevel,bodyRealms)}</b></div><div><small>出生</small><b>${state.origin}</b></div><div><small>門派</small><b>${state.sect||'無門無派'}${state.actingLeader?'・代理掌門':''}</b></div></div><details class="sheet-fold"><summary><b>基礎白值</b><span>不含功法、裝備、周天與其他倍率</span></summary><div class="sheet-attributes"><div><span>命骨：${rootBone}</span><strong>氣血：${health}</strong></div><div><span>元息：${trueQi}</span><strong>攻擊：${attack}</strong></div><div><span>玄軀：${physique}</span><strong>防禦：${defense}</strong></div><div><span>游影：${agility}</span><strong><button id="evasionHelpBtn" class="attribute-help-button">閃避評級：${evasion}<i>？</i></button></strong></div><div><span>銳識：${spiritualPower}</span><strong>命中評級：${accuracy}・暴擊：${critical}%</strong></div><div><span>道悟：${comprehension}</span><strong>基礎修練效率：+${Math.floor(comprehension*.5)}</strong></div><div><span>天契：${fortune}</span><strong>基礎靈氣獲取：+${Math.floor(1.25*Math.sqrt(fortune))}</strong></div><div><span>正氣：${Math.floor(state.righteousness)}</span><strong>邪氣：${Math.floor(state.evilQi)}</strong></div></div></details><details class="sheet-fold"><summary><b>五系功法屬性</b><span>白值與裝備加成分開顯示</span></summary><div class="five-arts">${elements.map(([key,label,stateKey])=>`<span><b>${label}系功法＋${Math.max(0,Math.floor(state[stateKey]||0))}</b><small>${label}系加成＋${equippedElementBonus(key).toFixed(1)}%</small></span>`).join('')}</div></details><details class="sheet-fold"><summary><b>加成後實戰屬性</b><span>功法、裝備、劍道與當前狀態均已計入</span></summary><div class="final-attribute-grid"><span>命骨 <b>${final.rootBone}</b></span><span>元息 <b>${final.trueQi}</b></span><span>玄軀 <b>${final.physique}</b></span><span>游影 <b>${final.agility}</b></span><span>銳識 <b>${final.spiritualPower}</b></span><span>道悟 <b>${final.comprehension}</b></span><span>天契 <b>${final.fortune}</b></span><span>最終攻擊 <b>${final.trueQi*5}</b></span></div></details></section>`;
   inner.querySelector('.character-sheet').insertAdjacentHTML('afterbegin',`<div class="sheet-combat-power"><small>人物戰力</small><b>${formatCombatPower(combatPower())}</b></div>`);
   const alignment=cultivationAlignment();inner.querySelector('.sheet-combat-power').insertAdjacentHTML('afterend',`<div class="sheet-combat-power path-${alignment.id}"><small>處世之道・${alignment.tier?`${alignment.tier}階`:'未定'}</small><b>${alignment.name}</b><span>${alignment.description}</span></div>`);
-  const attributeRows=inner.querySelectorAll('.sheet-attributes>div');attributeRows[3].querySelector('strong').innerHTML=`<button id="evasionHelpBtn" class="attribute-help-button">閃避評級：${evasion}<i>？</i></button>`;attributeRows[4].querySelector('strong').textContent=`命中評級：${accuracy}・暴擊：${critical}%`;
   inner.querySelector('.sheet-header').insertAdjacentHTML('beforeend',`<div><small>淬劍境界</small><b>${realmName(state.swordLevel||0,swordRealms)}</b></div>`);
-  if(state.swordEmbryo)inner.querySelector('.sheet-title').insertAdjacentHTML('beforebegin',`<div class="sheet-sword"><small>本命劍・${swordEmbryos[state.swordEmbryo].name}</small><b>${state.swordName}</b><span>養劍 ${state.swordNurtureLevel} 階${state.swordIntentType?`・${swordIntents[state.swordIntentType].name}`:''}・劍格 ${swordPathTitle()}</span><span>${swordRealmEffectText()}</span></div>`);
+  if(state.swordEmbryo)inner.querySelector('.sheet-header').insertAdjacentHTML('afterend',`<div class="sheet-sword"><small>本命劍・${swordEmbryos[state.swordEmbryo].name}</small><b>${state.swordName}</b><span>養劍 ${state.swordNurtureLevel} 階${state.swordIntentType?`・${swordIntents[state.swordIntentType].name}`:''}・劍格 ${swordPathTitle()}</span><span>${swordRealmEffectText()}</span></div>`);
   $('#evasionHelpBtn').onclick=()=>gameConfirm(`【評級來源】\n每 1 點游影提供 3 點閃避評級。\n每 1 點銳識提供 3 點命中評級。\n\n【閃避率公式】\n閃避率＝防守方閃避評級 ÷（防守方閃避評級＋攻擊方命中評級×4＋1000）\n最終閃避率最高為 35%。\n\n【如何理解】\n防守方閃避評級越高，越容易避開攻擊；攻擊方命中評級越高，越能壓低對方的閃避率。命中評級並不是固定命中百分比，實際結果必須同時比較交戰雙方。\n\n當雙方評級相近時，中後期閃避率會逐漸接近 20%；只有防守方的閃避評級明顯高於攻擊方命中評級時，才會接近 35%上限。\n\n具有「命中評級提高」效果的招式，會先提高本次攻擊的命中評級，再代入公式。例如命中評級＋25%，代表該次攻擊以原命中評級的 125% 計算。\n\n多段攻擊的每一擊都會各自判定閃避，因此可能出現部分命中、部分閃避。暴擊則是另一項獨立判定，命中後才會顯示其傷害結果。`,{title:'命中與閃避說明',confirmText:'明白了',info:true});
-  $('#attributeBackBtn').onclick=()=>renderBagView('character');
 }
 
 function finishPause(){
