@@ -259,6 +259,18 @@ html,body{width:100%;height:100%;min-height:0;overflow:hidden;overscroll-behavio
 .true-form-card[data-true-form="taixu-sword"] .true-form-preview img{width:84%;height:84%}
 .true-form-card[data-true-form="dari-buddha-hand"] .true-form-preview{background:radial-gradient(circle,#704d13 0,#30230f 57%,#e9dec9 59%)}.true-form-card[data-true-form="dari-buddha-hand"] .true-form-preview img{width:94%;height:94%;opacity:.88;filter:drop-shadow(0 0 7px #ffd96f)}
 .wardrobe-showcase-strip .true-form-preview,.true-form-card[data-true-form="dari-buddha-hand"] .true-form-preview{padding:10px;background:linear-gradient(135deg,#f1eadb,#ddd2bc)}.wardrobe-showcase-strip .true-form-preview img,.true-form-card[data-true-form="taixu-sword"] .true-form-preview img,.true-form-card[data-true-form="dari-buddha-hand"] .true-form-preview img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;opacity:.9;animation:none}
+.wardrobe-showcase-strip>.wardrobe-card,.wardrobe-showcase-strip>.true-form-card{pointer-events:none}
+.wardrobe-action,.true-form-action,.title-action{pointer-events:auto;justify-self:center;align-self:end;min-width:92px;padding:6px 15px;border:1px solid #9d8966;border-radius:18px;background:#f2ead8;color:#2d746a;text-align:center;font:inherit;font-size:12px;cursor:pointer}
+.wardrobe-showcase-strip>.wardrobe-card{grid-template-rows:154px auto auto 34px}
+.wardrobe-showcase-strip .wardrobe-action{grid-column:1;grid-row:4}
+.wardrobe-showcase-strip>.true-form-card{grid-template-rows:minmax(220px,38vw) 1fr 34px;padding:12px}
+.wardrobe-showcase-strip .true-form-preview{box-sizing:border-box;grid-column:1;grid-row:1;width:100%;height:100%;min-height:220px;padding:14px;overflow:hidden;background:linear-gradient(135deg,#f1eadb,#ddd2bc)}
+.wardrobe-showcase-strip .true-form-preview img{position:static;display:block;width:100%;height:100%;max-width:100%;max-height:100%;margin:auto;object-fit:contain;object-position:center;opacity:.92;animation:none;transform:none;filter:none}
+.wardrobe-showcase-strip .true-form-card>span:nth-child(2){grid-column:1;grid-row:2}
+.wardrobe-showcase-strip .true-form-action{grid-column:1;grid-row:3}
+.true-form-card[data-true-form-card="dari-buddha-hand"] .true-form-preview{padding:0;background:#eadfca}
+.true-form-card[data-true-form-card="dari-buddha-hand"] .true-form-preview img{width:100%;height:100%;object-fit:cover;object-position:center 15%;opacity:.9;filter:none}
+@media(max-width:540px){.wardrobe-showcase-strip>.true-form-card{grid-template-rows:230px 1fr 34px}.wardrobe-showcase-strip .true-form-preview{min-height:230px}}
 .hero-stack .true-form-taixu-sword{inset:-20%;width:140%;height:140%;animation:trueFormSword 18s linear infinite,trueFormPulse 3.8s ease-in-out infinite}
 .hero-stack .true-form-dari-buddha-hand{opacity:.68;mix-blend-mode:screen;object-fit:contain;object-position:center bottom;animation:dariBuddhaHand 4.6s ease-in-out infinite}
 @keyframes dariBuddhaHand{0%,100%{transform:translateY(4%) scale(.965);filter:brightness(.9) saturate(1.04) drop-shadow(0 0 8px #e5ae32)}50%{transform:translateY(1.5%) scale(1.015);filter:brightness(1.12) saturate(1.16) drop-shadow(0 0 16px #ffd864) drop-shadow(0 0 30px #ad701f66)}}
