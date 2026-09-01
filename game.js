@@ -754,7 +754,28 @@ function migrateSectName(){
   const group=sectCatalog.find(g=>g.star===state.sectStar)||sectCatalog[0],pool=state.sectFaction==='邪'?group.evil:group.good;
   const seed=[...state.sect].reduce((n,c)=>n+c.charCodeAt(0),0);state.sect=pool[seed%pool.length];
 }
-function show(id) { $$('.screen').forEach(x=>x.classList.remove('active')); $(id).classList.add('active'); }
+let entranceTransitionTimer=0;
+const entranceTransitionTimes=new WeakMap();
+function playEntrance(target){
+  const element=typeof target==='string'?$(target):target;
+  if(!element||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const now=performance.now();
+  if(now-(entranceTransitionTimes.get(element)||0)<120)return;
+  entranceTransitionTimes.set(element,now);
+  element.classList.remove('entry-arriving');void element.offsetWidth;element.classList.add('entry-arriving');
+  document.documentElement.classList.remove('entry-transition');void document.documentElement.offsetWidth;document.documentElement.classList.add('entry-transition');
+  clearTimeout(entranceTransitionTimer);entranceTransitionTimer=setTimeout(()=>document.documentElement.classList.remove('entry-transition'),460);
+  setTimeout(()=>element.classList.remove('entry-arriving'),460);
+}
+function show(id,animate=false) { $$('.screen').forEach(x=>x.classList.remove('active'));const screen=$(id);screen.classList.add('active');if(animate)playEntrance(screen); }
+new MutationObserver(records=>records.forEach(record=>{
+  const element=record.target;
+  if(!(element instanceof Element))return;
+  const oldClasses=new Set((record.oldValue||'').split(/\s+/));
+  const justOpened=element.matches('.modal,#featurePanel,#gameMenu')&&oldClasses.has('hidden')&&!element.classList.contains('hidden');
+  const divineOpened=element.id==='divineRoamingModal'&&!oldClasses.has('show')&&element.classList.contains('show');
+  if(justOpened||divineOpened)playEntrance(element);
+})).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class'],attributeOldValue:true});
 function isPureCultivationView() {
   return $('#gameScreen').classList.contains('active')
     && currentFeature===null
@@ -1104,7 +1125,7 @@ async function startGame() {
   const clockOkay=await syncTrustedTime(),now=gameNow(),clockRollback=(savedTrusted&&now+120000<savedTrusted)||(savedLast&&savedLast>now+120000);
   if(clockRollback){if(state.bornAt>now)state.bornAt=now;if(state.sectJoinedAt>now)state.sectJoinedAt=now}
   ['practiceBuff','transmissionBuff'].forEach(key=>{const buff=state[key];if(!buff.active&&buff.remaining>0)state[key]={active:true,until:now+buff.remaining,remaining:0,total:buff.total||buff.remaining}});
-  show('#gameScreen');
+  show('#gameScreen',true);
   state.activePath=state.activePath||state.firstPath;startBgm(state.firstPath?pathBgmTheme():'tutorial');
   const offlineBefore=rewardSnapshot();
   processSectYears();
@@ -1351,13 +1372,14 @@ function toggleFeature(button) {
   }
   $('#featurePanel').classList.remove('hidden');
   $('#gameScreen').classList.add('feature-open');
+  playEntrance($('#featurePanel'));
 }
 
 function toggleMainlinePage(){
   const button=$('#mainlineButton');
   if(!state.cultivationAwakened)return toast('完成新手教程、踏入聽息一層後開啟九鎖封天');
   if(currentFeature==='mainline'){currentFeature=null;setFeaturePanelStandalone(false);button.classList.remove('active');$('#featurePanel').classList.add('hidden');$('#gameScreen').classList.remove('feature-open');startPathBgm();return}
-  currentFeature='mainline';setFeaturePanelStandalone(true);$$('.feature-tab').forEach(x=>x.classList.remove('active'));button.classList.add('active');$('#featurePanel').classList.remove('feature-locked','hidden');renderMainlinePage();$('#gameScreen').classList.add('feature-open');
+  currentFeature='mainline';setFeaturePanelStandalone(true);$$('.feature-tab').forEach(x=>x.classList.remove('active'));button.classList.add('active');$('#featurePanel').classList.remove('feature-locked','hidden');renderMainlinePage();$('#gameScreen').classList.add('feature-open');playEntrance($('#featurePanel'));
 }
 
 function textSeed(text){return [...text].reduce((sum,char,index)=>sum+char.charCodeAt(0)*(index+3),0)}
@@ -2012,10 +2034,10 @@ function forceOffline(){
 }
 function finishCreationPrologue(){
   clearTimeout(prologueTimer);prologueTimer=null;
-  $('#prologueScreen').classList.remove('playing');startBgm('title');show('#createScreen');
+  $('#prologueScreen').classList.remove('playing');startBgm('title');show('#createScreen',true);
 }
 function showCreationPrologue(){
-  clearTimeout(prologueTimer);show('#prologueScreen');
+  clearTimeout(prologueTimer);show('#prologueScreen',true);
   const screen=$('#prologueScreen');screen.classList.remove('playing');void screen.offsetWidth;screen.classList.add('playing');
   prologueTimer=setTimeout(finishCreationPrologue,5200);
 }
@@ -2341,4 +2363,18 @@ setInterval(()=>{const today=dateKey()||'local';if(today!==lastScriptureDayKey){
 setInterval(()=>{if(sessionOnline&&!document.hidden)syncTrustedTime()},600000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)forceOffline();else finishPause()});
 window.addEventListener('blur',forceOffline);window.addEventListener('focus',finishPause);window.addEventListener('pagehide',forceOffline);
+async function initializeAssetCache(){
+  if(!('serviceWorker' in navigator)||!/^https?:$/.test(location.protocol))return;
+  try{
+    await navigator.serviceWorker.register('./sw.js',{scope:'./'});
+    const registration=await navigator.serviceWorker.ready;
+    const preload=()=>{
+      const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+      if(connection?.saveData||/2g/.test(connection?.effectiveType||''))return;
+      registration.active?.postMessage({type:'PRECACHE_VISUALS'});
+    };
+    if('requestIdleCallback' in window)requestIdleCallback(preload,{timeout:5000});else setTimeout(preload,2500);
+  }catch{}
+}
+window.addEventListener('load',initializeAssetCache,{once:true});
 window.addEventListener('beforeunload',()=>{if(!suppressSave)save()}); updateCreator(); updateOriginPreview(); render();

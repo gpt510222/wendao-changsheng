@@ -673,5 +673,12 @@ html,body{width:100%;height:100%;min-height:0;overflow:hidden;overscroll-behavio
 .arts-book-tabs{display:flex;grid-template-columns:none;gap:5px;max-width:540px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scroll-behavior:smooth;overscroll-behavior-x:contain;touch-action:pan-x}
 .arts-book-tabs button{flex:0 0 112px;white-space:nowrap}
 
+/* Major entrances share one soft transition; closing and inner-tab changes stay immediate. */
+.entry-arriving{animation:interfaceEntryIn .44s cubic-bezier(.2,.72,.24,1) both;will-change:opacity,filter}
+html.entry-transition body::after{content:"";position:fixed;z-index:9999;inset:0;pointer-events:none;background:#f5edda;animation:interfaceEntryVeil .44s ease both}
+@keyframes interfaceEntryIn{0%{opacity:0;filter:blur(3px) brightness(.88)}42%{opacity:.58;filter:blur(1px) brightness(1.03)}100%{opacity:1;filter:blur(0) brightness(1)}}
+@keyframes interfaceEntryVeil{0%,100%{opacity:0}24%{opacity:.24}48%{opacity:.11}}
+@media(prefers-reduced-motion:reduce){.entry-arriving,html.entry-transition body::after{animation:none!important}}
+
 /* Divine roaming can be recalled after the current expedition finishes. */
 .divine-return-button{padding:9px 14px;border:1px solid #8f6957;border-radius:12px;background:#9a6253;color:#fff}.divine-return-button:disabled{opacity:.55}.divine-harvest-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:9px}.divine-harvest-actions #claimDivineHarvest{margin:0}
