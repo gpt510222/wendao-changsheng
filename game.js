@@ -1,6 +1,8 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const qStyleMode=true;
+const leaderboardConfig={url:'https://oxzuunzhsbvumxxbezev.supabase.co',publishableKey:'sb_publishable_u2rmM6v1-AdjRLMZSVetRw_MgjeWSL3',sessionKey:'wendao-supabase-session-v1',gameVersion:'20260902-49',limit:50};
+let leaderboardSyncTimer=0,leaderboardSyncInFlight=false,leaderboardKnownPower=null,leaderboardKnownName='';
 
 const spiritRealms = ['聽息','引霞','凝曜','靈胎','化念','歸流','照虛','踏霄','遊穹','蛻凡','玄闕','天衡','玉宸','羅穹','神庭','寂空','渡厄','渾天','近聖','證聖','長明','道尊','天序'];
 const bodyRealms = ['塵軀','納勁','纏筋','玉骨','鳴髓','曜身','擎嶽','撼霄','鎮陸','渡星','寰甲','無量'];
@@ -729,6 +731,28 @@ function effectiveCore(attribute){let total=(state[attribute]||0)+artBonusFor(at
 function displayedCore(attribute){return Math.round(effectiveCore(attribute))}
 const combatPowerWeights={rootBone:10,trueQi:25,physique:20,agility:15,spiritualPower:30};
 function combatPower(){return Math.round(Object.entries(combatPowerWeights).reduce((sum,[key,weight])=>sum+Math.max(0,effectiveCore(key))*weight,0))}
+function leaderboardHeaders(accessToken=''){const headers={apikey:leaderboardConfig.publishableKey,'Content-Type':'application/json'};if(accessToken)headers.Authorization=`Bearer ${accessToken}`;return headers}
+function readLeaderboardSession(){try{return JSON.parse(localStorage.getItem(leaderboardConfig.sessionKey))}catch{return null}}
+function storeLeaderboardSession(session){if(!session?.access_token||!session?.user?.id)return null;const stored={access_token:session.access_token,refresh_token:session.refresh_token,user:{id:session.user.id},expires_at:Date.now()+Math.max(60,session.expires_in||3600)*1000};localStorage.setItem(leaderboardConfig.sessionKey,JSON.stringify(stored));return stored}
+async function ensureLeaderboardSession(){
+  let session=readLeaderboardSession();if(session?.access_token&&session?.user?.id&&session.expires_at>Date.now()+60000)return session;
+  if(session?.refresh_token){try{const response=await fetch(`${leaderboardConfig.url}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:leaderboardHeaders(),body:JSON.stringify({refresh_token:session.refresh_token})});if(response.ok)return storeLeaderboardSession(await response.json())}catch{}}
+  const response=await fetch(`${leaderboardConfig.url}/auth/v1/signup`,{method:'POST',headers:leaderboardHeaders(),body:'{}'});if(!response.ok)throw new Error('anonymous sign-in failed');return storeLeaderboardSession(await response.json());
+}
+async function loadOwnLeaderboardRecord(session){const query=`user_id=eq.${encodeURIComponent(session.user.id)}&select=combat_power,player_name&limit=1`;const response=await fetch(`${leaderboardConfig.url}/rest/v1/player_rankings?${query}`,{headers:leaderboardHeaders(session.access_token)});if(!response.ok)throw new Error('ranking lookup failed');const [record]=await response.json();leaderboardKnownPower=record?Number(record.combat_power):0;leaderboardKnownName=record?.player_name||''}
+async function syncLeaderboard(){
+  if(leaderboardSyncInFlight||!state.name||!state.cultivationAwakened)return;leaderboardSyncInFlight=true;
+  try{const session=await ensureLeaderboardSession();if(leaderboardKnownPower===null)await loadOwnLeaderboardRecord(session);const power=Math.max(0,Math.round(combatPower())),playerName=state.name.trim().slice(0,20)||'無名修士';if(power<leaderboardKnownPower||(power===leaderboardKnownPower&&playerName===leaderboardKnownName))return;const payload={user_id:session.user.id,player_name:playerName,combat_power:power,spirit_level:state.spiritLevel||0,sword_level:state.swordLevel||0,body_level:state.bodyLevel||0,game_version:leaderboardConfig.gameVersion,updated_at:new Date().toISOString()};const response=await fetch(`${leaderboardConfig.url}/rest/v1/player_rankings?on_conflict=user_id`,{method:'POST',headers:{...leaderboardHeaders(session.access_token),Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(payload)});if(!response.ok)throw new Error('ranking upload failed');leaderboardKnownPower=power;leaderboardKnownName=playerName}catch{}finally{leaderboardSyncInFlight=false}
+}
+function queueLeaderboardSync(){if(!state.name||!state.cultivationAwakened||leaderboardSyncTimer)return;leaderboardSyncTimer=setTimeout(()=>{leaderboardSyncTimer=0;syncLeaderboard()},2500)}
+function escapeLeaderboardText(value){const node=document.createElement('span');node.textContent=String(value??'');return node.innerHTML}
+function leaderboardHighestRealm(record){const paths=[{label:'修氣',level:Number(record.spirit_level)||0,realms:spiritRealms},{label:'淬劍',level:Number(record.sword_level)||0,realms:swordRealms},{label:'煉體',level:Number(record.body_level)||0,realms:bodyRealms}];const highest=paths.reduce((best,path)=>path.level>best.level?path:best,paths[0]);return `${highest.label}・${realmName(highest.level,highest.realms)}`}
+async function fetchCombatLeaderboard(){const query=`select=player_name,combat_power,spirit_level,sword_level,body_level,updated_at&order=combat_power.desc,updated_at.asc&limit=${leaderboardConfig.limit}`;const response=await fetch(`${leaderboardConfig.url}/rest/v1/player_rankings?${query}`,{headers:leaderboardHeaders()});if(!response.ok)throw new Error('ranking fetch failed');return response.json()}
+function renderLeaderboardTabs(modal,active='combat'){modal.querySelectorAll('[data-leaderboard-tab]').forEach(button=>button.classList.toggle('active',button.dataset.leaderboardTab===active))}
+async function openLeaderboard(){
+  closeGameMenu();let modal=$('#leaderboardModal');if(!modal){modal=document.createElement('div');modal.id='leaderboardModal';modal.className='leaderboard-modal';modal.innerHTML='<section class="leaderboard-window"><button class="leaderboard-close" aria-label="關閉">×</button><header><small>問道諸天・前五十名</small><h2>諸天榜</h2><p>戰力榜記錄修士曾達到的最高戰力</p></header><nav class="leaderboard-tabs"><button data-leaderboard-tab="combat" class="active">戰力榜</button><button data-leaderboard-tab="ascension">飛升榜</button></nav><div class="leaderboard-list"><p class="leaderboard-loading">正在觀星推演……</p></div></section>';document.body.appendChild(modal);modal.querySelector('.leaderboard-close').onclick=()=>modal.classList.remove('show');modal.onclick=event=>{if(event.target===modal)modal.classList.remove('show')};modal.querySelector('[data-leaderboard-tab="combat"]').onclick=()=>openLeaderboard();modal.querySelector('[data-leaderboard-tab="ascension"]').onclick=()=>{renderLeaderboardTabs(modal,'ascension');modal.querySelector('.leaderboard-list').innerHTML='<div class="leaderboard-coming"><b>飛升榜・前五十名</b><p>待飛升玩法正式開放後啟用</p><small>屆時將依成功飛升的先後順序排名，並保留飛升類型與飛升境界。</small></div>'}}modal.classList.add('show');renderLeaderboardTabs(modal,'combat');const list=modal.querySelector('.leaderboard-list');list.innerHTML='<p class="leaderboard-loading">正在觀星推演……</p>';queueLeaderboardSync();
+  try{await syncLeaderboard();const records=await fetchCombatLeaderboard();list.innerHTML=records.length?records.map((record,index)=>`<article class="leaderboard-rank rank-${index+1}"><strong>${index+1}</strong><div><b>${escapeLeaderboardText(record.player_name||'無名修士')}</b><small>${escapeLeaderboardText(leaderboardHighestRealm(record))}</small></div><span><small>戰力</small>${formatCombatPower(Number(record.combat_power)||0)}</span></article>`).join(''):'<p class="leaderboard-empty">榜上尚無修士留名</p>'}catch{list.innerHTML='<p class="leaderboard-empty">天機暫受遮蔽，請稍後再試</p>'}
+}
 function formatCombatPower(value){
   const amount=Math.max(0,Math.floor(value));
   if(amount<10000)return amount.toLocaleString();
@@ -988,6 +1012,7 @@ function render() {
   $('#headerSect').textContent=state.sect||'無門無派';
   $('#yearsElapsed').textContent=`${experiencedYears().toLocaleString()} 年`;
   $('#headerCombatPower').textContent=formatCombatPower(combatPower());
+  queueLeaderboardSync();
   $('#rateText').textContent=formatLargeNumber(rate())+' / 5秒';
   $('#spiritRealm').textContent=realmName(state.spiritLevel,spiritRealms);
   $('#bodyRealm').textContent=state.bodyPathOpened?realmName(state.bodyLevel,bodyRealms):'尚未開啟';
@@ -2098,6 +2123,7 @@ function showCharacterAttributes() {
   inner.querySelector('.character-sheet').insertAdjacentHTML('afterbegin',`<div class="sheet-combat-power"><small>人物戰力</small><b>${formatCombatPower(combatPower())}</b></div>`);
   const alignment=cultivationAlignment();inner.querySelector('.sheet-combat-power').insertAdjacentHTML('afterend',`<div class="sheet-combat-power path-${alignment.id}"><small>處世之道・${alignment.tier?`${alignment.tier}階`:'未定'}</small><b>${alignment.name}</b><span>${alignment.description}</span></div>`);
   inner.querySelector('.sheet-header').insertAdjacentHTML('beforeend',`<div><small>淬劍境界</small><b>${realmName(state.swordLevel||0,swordRealms)}</b></div>`);
+  inner.querySelector('.sheet-header').insertAdjacentHTML('beforeend','<div class="sheet-ascension-rank"><small>飛升榜</small><b>尚未飛升</b></div>');
   if(state.swordEmbryo)inner.querySelector('.sheet-header').insertAdjacentHTML('afterend',`<div class="sheet-sword"><small>本命劍・${swordEmbryos[state.swordEmbryo].name}</small><b>${state.swordName}</b><span>養劍 ${state.swordNurtureLevel} 階${state.swordIntentType?`・${swordIntents[state.swordIntentType].name}`:''}・劍格 ${swordPathTitle()}</span><span>${swordRealmEffectText()}</span></div>`);
   $('#evasionHelpBtn').onclick=()=>gameConfirm(`【評級來源】\n每 1 點游影提供 3 點閃避評級。\n每 1 點銳識提供 3 點命中評級。\n\n【閃避率公式】\n閃避率＝防守方閃避評級 ÷（防守方閃避評級＋攻擊方命中評級×4＋1000）\n最終閃避率最高為 35%。\n\n【如何理解】\n防守方閃避評級越高，越容易避開攻擊；攻擊方命中評級越高，越能壓低對方的閃避率。命中評級並不是固定命中百分比，實際結果必須同時比較交戰雙方。\n\n當雙方評級相近時，中後期閃避率會逐漸接近 20%；只有防守方的閃避評級明顯高於攻擊方命中評級時，才會接近 35%上限。\n\n具有「命中評級提高」效果的招式，會先提高本次攻擊的命中評級，再代入公式。例如命中評級＋25%，代表該次攻擊以原命中評級的 125% 計算。\n\n多段攻擊的每一擊都會各自判定閃避，因此可能出現部分命中、部分閃避。暴擊則是另一項獨立判定，命中後才會顯示其傷害結果。`,{title:'命中與閃避說明',confirmText:'明白了',info:true});
 }
@@ -2354,6 +2380,7 @@ document.addEventListener('click',event=>{
 });
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeGameMenu()});
 $('#settingsBtn').onclick=openSettings;
+$('#leaderboardBtn').onclick=openLeaderboard;
 $('#helpBtn').onclick=openHelp;
 $$('[data-help-tab]').forEach(button=>button.onclick=()=>renderHelp(button.dataset.helpTab));
 $('#settingsCloseBtn').onclick=()=>$('#settingsModal').classList.add('hidden');
