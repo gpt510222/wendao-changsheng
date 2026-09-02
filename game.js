@@ -1389,10 +1389,31 @@ function grantMainlineDrops(stage){
 }
 function setFeaturePanelStandalone(standalone){$('#featurePanel')?.classList.toggle('standalone-feature',!!standalone)}
 function clearWardrobeLayers(){
-  const wardrobeInner=$('#wardrobeInner'),bagInner=$('#bagInner'),description=$('#featureDescription');
+  const wardrobeInner=$('#wardrobeInner'),bagInner=$('#bagInner');
   if(wardrobeInner)wardrobeInner.replaceChildren();
   if(bagInner)bagInner.replaceChildren();
-  if(description){description.classList.add('wardrobe-cleared');void description.offsetHeight}
+}
+let featureRecoveryFrame=0;
+function resetFeatureContentLayer(){
+  const description=$('#featureDescription');if(!description)return;
+  description.classList.remove('wardrobe-cleared');
+  description.style.removeProperty('visibility');description.style.removeProperty('opacity');description.style.removeProperty('filter');description.style.removeProperty('transform');
+}
+function recoverFeaturePanel(page){
+  cancelAnimationFrame(featureRecoveryFrame);featureRecoveryFrame=requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const panel=$('#featurePanel'),description=$('#featureDescription');
+    if(currentFeature!==page||!panel||panel.classList.contains('hidden')||!description)return;
+    resetFeatureContentLayer();
+    if(description.childElementCount||description.textContent.trim())return;
+    if(page==='root')renderSpiritRootPanel(currentRootView||'root');
+    else if(page==='cave')renderCavePanel(currentCaveView||'dwelling');
+    else if(page==='bag')renderBagPanel('bag');
+    else if(page==='sect')renderSectPanel(currentSectView||'home');
+    else if(page==='arts')renderArtsPanel(currentArtsView||'sect');
+    else if(page==='experience')renderExperiencePanel(currentExperienceView||'overview');
+    else if(page==='mainline')renderMainlinePage();
+    else description.textContent=descriptions[page]||'此頁面暫時無法顯示，請重新切換頁籤。';
+  }));
 }
 function toggleFeature(button) {
   const page=button.dataset.page;
@@ -1408,7 +1429,8 @@ function toggleFeature(button) {
   }
   currentFeature=page;
   setFeaturePanelStandalone(false);
-  $('#featureDescription').classList.remove('wardrobe-cleared');
+  resetFeatureContentLayer();
+  recoverFeaturePanel(page);
   $$('.feature-tab').forEach(x=>x.classList.toggle('active',x===button));
   if(page==='root') {
     $('#featurePanel').classList.remove('feature-locked'); renderSpiritRootPanel('root');
@@ -1430,6 +1452,7 @@ function toggleFeature(button) {
   }
   $('#featurePanel').classList.remove('hidden');
   $('#gameScreen').classList.add('feature-open');
+  resetFeatureContentLayer();
   playEntrance($('#featurePanel'));
 }
 
@@ -1437,7 +1460,7 @@ function toggleMainlinePage(){
   const button=$('#mainlineButton');
   if(!state.cultivationAwakened)return toast('完成新手教程、踏入聽息一層後開啟九鎖封天');
   if(currentFeature==='mainline'){currentFeature=null;setFeaturePanelStandalone(false);button.classList.remove('active');$('#featurePanel').classList.add('hidden');$('#gameScreen').classList.remove('feature-open');startPathBgm();return}
-  currentFeature='mainline';setFeaturePanelStandalone(true);$$('.feature-tab').forEach(x=>x.classList.remove('active'));button.classList.add('active');$('#featurePanel').classList.remove('feature-locked','hidden');renderMainlinePage();$('#gameScreen').classList.add('feature-open');playEntrance($('#featurePanel'));
+  currentFeature='mainline';setFeaturePanelStandalone(true);resetFeatureContentLayer();recoverFeaturePanel('mainline');$$('.feature-tab').forEach(x=>x.classList.remove('active'));button.classList.add('active');$('#featurePanel').classList.remove('feature-locked','hidden');renderMainlinePage();$('#gameScreen').classList.add('feature-open');resetFeatureContentLayer();playEntrance($('#featurePanel'));
 }
 
 function textSeed(text){return [...text].reduce((sum,char,index)=>sum+char.charCodeAt(0)*(index+3),0)}
