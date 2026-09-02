@@ -1205,6 +1205,8 @@ function updateCreator() {
   const names=createGender==='男'?['青雲袍','玄劍袍','山嶽袍']:['雲水袍','月華袍','丹霞袍'];
   $$('.outfit-choice').forEach((b,i)=>b.querySelector('small').textContent=names[i]);
 }
+function setCreatorTab(tab){$$('[data-creator-tab]').forEach(button=>button.classList.toggle('active',button.dataset.creatorTab===tab));$$('[data-creator-panel]').forEach(panel=>panel.classList.toggle('active',panel.dataset.creatorPanel===tab))}
+function randomCreatorName(){const female=['雲知月','沈清荷','白若蘭','顧靈微','蘇晚照','葉寒煙','柳含章','寧疏影'],male=['沈長風','顧玄川','白雲歸','陸清衡','江問舟','謝懷真','楚星河','葉無塵'],pool=createGender==='女'?female:male;$('#nameInput').value=pool[Math.floor(Math.random()*pool.length)];$('#nameError').textContent=''}
 
 function swordNurtureCost(){const level=Math.max(0,state.swordNurtureLevel||0);return {iron:Math.ceil(8*Math.pow(level+1,1.35)),stone:Math.ceil(150*Math.pow(level+1,1.42)),insight:2+Math.floor(level/5)}}
 function swordNurtureMax(){return Math.floor((mortalSwordMaxLevel+1)/10)}
@@ -2404,10 +2406,12 @@ $('#prologueScreen').onclick=finishCreationPrologue;
 $('#prologueScreen').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();finishCreationPrologue()}};
 $('#backTitleBtn').onclick=()=>{startBgm('title');show('#titleScreen')};
 $$('.gender').forEach(b=>b.onclick=()=>{$$('.gender').forEach(x=>x.classList.remove('active'));b.classList.add('active');createGender=b.dataset.gender;updateCreator()});
+$$('[data-creator-tab]').forEach(button=>button.onclick=()=>setCreatorTab(button.dataset.creatorTab));
 $$('.appearance-choice').forEach(b=>b.onclick=()=>{$$('.appearance-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createAppearance=+b.dataset.appearance;updateCreator()});
 $$('.outfit-choice').forEach(b=>b.onclick=()=>{$$('.outfit-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOutfit=+b.dataset.style;updateCreator()});
 function updateOriginPreview(){$('#originStats').textContent=originDescriptions[createOrigin]}
 $$('.origin-choice').forEach(b=>b.onclick=()=>{$$('.origin-choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');createOrigin=b.dataset.origin;updateOriginPreview()});
+$('#randomNameBtn').onclick=randomCreatorName;
 $('#createBtn').onclick=()=>{const n=$('#nameInput').value.trim();if(!n){$('#nameError').textContent='請輸入暱稱';return}const now=gameNow();state={...defaults,...originProfiles[createOrigin],name:n,gender:createGender,appearance:createAppearance,hair:1,outfit:createOutfit,origin:createOrigin,bornAt:now,lastSave:now,sectTechniqueMailVersion:2,firstPath:'',activePath:'',spiritPathOpened:false,tutorialCompleted:false,swordPathOpened:false,bodyPathOpened:false};state.mailbox=[createWelcomeMail(now)];startGame();save()};
 $('#spiritUp').onclick=()=>primaryPathAction();$('#spiritCycleUp').onclick=()=>openPrimarySpiritView('cycle');$('#spiritInsightUp').onclick=()=>openPrimarySpiritView('insight'); $('#swordUp').onclick=()=>upgrade('sword'); $('#bodyUp').onclick=()=>openPrimaryBodyView('training');
 $('#swordLifeUp').onclick=()=>openPrimarySwordView('sword');$('#swordTrialUp').onclick=()=>openPrimarySwordView('trial');

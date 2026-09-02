@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>問道長生・試玩版</title>
-  <link rel="stylesheet" href="styles.css?v=20260902-44">
+  <link rel="stylesheet" href="styles.css?v=20260903-45">
   <link rel="stylesheet" href="q-style.css?v=20260901-18">
   <script>document.documentElement.classList.add('q-style');</script>
 </head>
@@ -33,37 +33,24 @@
     </section>
 
     <section id="createScreen" class="screen create-screen">
-      <div class="paper-panel create-card">
-        <p class="eyebrow">命格初定</p><h2>創建角色</h2>
-        <div class="creator-avatar">
-          <img id="createCharacter" src="assets/qstyle-v2/female-outfit-1.png" alt="完整人物">
+      <div class="create-card creator-sanctum">
+        <header class="creator-heading"><small>凡身初塑</small><h2>入世照影</h2><p>一念入塵世・自此問長生</p></header>
+        <div class="creator-stage" aria-label="角色即時預覽">
+          <i class="creator-halo"></i><i class="creator-cloud cloud-left"></i><i class="creator-cloud cloud-right"></i>
+          <div class="creator-avatar"><img id="createCharacter" src="assets/qstyle-v2/female-outfit-1.png" alt="完整人物"></div>
+          <span class="creator-stage-caption">照見此身・落筆成命</span>
         </div>
-        <div class="gender-pick">
-          <button class="gender active" data-gender="女"><span>女</span><small>柔中藏鋒</small></button>
-          <button class="gender" data-gender="男"><span>男</span><small>氣御乾坤</small></button>
-        </div>
-        <label for="nameInput">道號</label>
-        <input id="nameInput" maxlength="8" placeholder="可取名（1至8個字）" value="">
-        <div class="custom-group"><label>人物形象</label><div id="appearanceChoices" class="choice-row">
-          <button class="style-choice appearance-choice active" data-appearance="1"><img alt="形象一"><small>清正</small></button>
-          <button class="style-choice appearance-choice" data-appearance="2"><img alt="形象二"><small>霜華</small></button>
-          <button class="style-choice appearance-choice" data-appearance="3"><img alt="形象三"><small>幽冥</small></button>
-        </div></div>
-        <div class="custom-group"><label>起始服裝</label><div id="outfitChoices" class="choice-row">
-          <button class="style-choice outfit-choice active" data-style="1"><img alt="服裝一"><small>雲水袍</small></button>
-          <button class="style-choice outfit-choice" data-style="2"><img alt="服裝二"><small>月華袍</small></button>
-          <button class="style-choice outfit-choice" data-style="3"><img alt="服裝三"><small>丹霞袍</small></button>
-        </div></div>
-        <div class="custom-group origin-group"><label>選擇出生</label><div id="originChoices" class="origin-choices">
-          <button class="origin-choice active" data-origin="家族子弟">家族子弟</button>
-          <button class="origin-choice" data-origin="流浪孤兒">流浪孤兒</button>
-          <button class="origin-choice" data-origin="亡命草寇">亡命草寇</button>
-          <button class="origin-choice" data-origin="深山獵戶">深山獵戶</button>
-          <button class="origin-choice" data-origin="寒窗學子">寒窗學子</button>
-        </div><small id="originStats" class="origin-stats"></small></div>
-        <p id="nameError" class="error"></p>
-        <button id="createBtn" class="jade-button">結契入世</button>
-        <button id="backTitleBtn" class="text-button">返回</button>
+        <section class="creator-controls paper-panel">
+          <nav class="creator-tabs" aria-label="創角選項"><button class="active" data-creator-tab="gender">性別</button><button data-creator-tab="hair">髮型</button><button data-creator-tab="outfit">服裝</button><button data-creator-tab="origin">出生</button></nav>
+          <div class="creator-panel active" data-creator-panel="gender"><div class="gender-pick"><button class="gender active" data-gender="女"><span>女</span><small>柔中藏鋒</small></button><button class="gender" data-gender="男"><span>男</span><small>氣御乾坤</small></button></div></div>
+          <div class="creator-panel" data-creator-panel="hair"><div id="appearanceChoices" class="choice-row"><button class="style-choice appearance-choice active" data-appearance="1"><img alt="髮型一"><small>清婉</small></button><button class="style-choice appearance-choice" data-appearance="2"><img alt="髮型二"><small>霜華</small></button><button class="style-choice appearance-choice" data-appearance="3"><img alt="髮型三"><small>幽姬</small></button></div></div>
+          <div class="creator-panel" data-creator-panel="outfit"><div id="outfitChoices" class="choice-row"><button class="style-choice outfit-choice active" data-style="1"><img alt="服裝一"><small>雲水袍</small></button><button class="style-choice outfit-choice" data-style="2"><img alt="服裝二"><small>月華袍</small></button><button class="style-choice outfit-choice" data-style="3"><img alt="服裝三"><small>丹霞袍</small></button></div></div>
+          <div class="creator-panel origin-group" data-creator-panel="origin"><div id="originChoices" class="origin-choices"><button class="origin-choice active" data-origin="家族子弟">家族子弟</button><button class="origin-choice" data-origin="流浪孤兒">流浪孤兒</button><button class="origin-choice" data-origin="亡命草寇">亡命草寇</button><button class="origin-choice" data-origin="深山獵戶">深山獵戶</button><button class="origin-choice" data-origin="寒窗學子">寒窗學子</button></div><small id="originStats" class="origin-stats"></small></div>
+        </section>
+        <footer class="creator-footer paper-panel">
+          <label for="nameInput">道號</label><div class="creator-name-row"><input id="nameInput" maxlength="8" placeholder="請留下你的名字" value=""><button id="randomNameBtn" type="button">隨機取名</button></div>
+          <p id="nameError" class="error"></p><div class="creator-final-actions"><button id="backTitleBtn" class="text-button">返回</button><button id="createBtn" class="jade-button">踏入凡塵</button></div>
+        </footer>
       </div>
     </section>
 
@@ -520,6 +507,6 @@
   <audio id="tribulationSuccessBgm" src="assets/bgm-tribulation-success-v1.wav" preload="auto"></audio>
   <audio id="tribulationFailureBgm" src="assets/bgm-tribulation-failure-v1.wav" preload="auto"></audio>
   <audio id="swordBreakthroughBgm" src="assets/bgm-sword-breakthrough-user-v1.wav" preload="auto"></audio>
-  <script src="game.js?v=20260903-54"></script>
+  <script src="game.js?v=20260903-55"></script>
 </body>
 </html>
