@@ -1172,7 +1172,12 @@ function swordNurtureCost(){const level=Math.max(0,state.swordNurtureLevel||0);r
 function swordNurtureMax(){return Math.floor((mortalSwordMaxLevel+1)/10)}
 function swordNurtureLimit(){return Math.min(swordNurtureMax(),1+Math.floor((state.swordTrialWins||0)/10))}
 function swordTrialReferencePower(stage){const core={rootBone:5,trueQi:5,physique:5,agility:5,spiritualPower:5},level=Math.max(0,Math.min(maxSwordLevel,stage-1));for(let current=1;current<=level;current++)sumGrowth(core,swordAttributeGain(current));return Object.entries(combatPowerWeights).reduce((sum,[key,weight])=>sum+core[key]*weight,0)}
-function swordTrialPower(stage){const milestone=stage%10===0,progress=Math.max(0,Math.min(mortalSwordMaxLevel,stage-1))/mortalSwordMaxLevel,factor=milestone?1.15+progress*.1:.78+progress*.12;return Math.ceil((swordTrialReferencePower(stage)*factor)/5)*5}
+function swordTrialPower(stage){
+  const level=Math.max(0,Math.min(mortalSwordMaxLevel,stage-1)),progress=level/mortalSwordMaxLevel;
+  // 試劍境前期沿用淬劍成長作為基準；越往後，幻影會逐關累積實戰壓力，避免高關仍停在線性白值。
+  const stagePressure=Math.pow(1.03,level),baseFactor=.8+progress*.15,milestoneFactor=stage%10===0?1.1:1;
+  return Math.ceil((swordTrialReferencePower(stage)*baseFactor*stagePressure*milestoneFactor)/5)*5;
+}
 function swordTrialIntentReward(stage){return stage%10===0?3:0}
 function swordTechniquesForEmbryo(embryo=state.swordEmbryo){return swordTechniqueCatalog.filter(move=>move.embryo===embryo).sort((a,b)=>a.order-b.order)}
 function swordTechniqueUnlockStage(id){return swordTechniqueCatalog.find(move=>move.id===id)?.order===2?20:0}
