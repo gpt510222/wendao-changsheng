@@ -717,7 +717,11 @@ function swordRealmProfile(level=state.swordLevel||0){
 function swordNurtureTechniqueBonus(technique){return technique?.embryo?Math.max(0,state.swordNurtureLevel||0)*(technique.order===2?.015:.01):0}
 function swordRealmEffectText(level=state.swordLevel||0){const profile=swordRealmProfile(level);return `劍勢 ${profile.level} 重・劍招傷害 +${Math.round((profile.damage+profile.techniqueDamage)*100)}%・破防 +${Math.round(profile.armorPierce*100)}%・命中 +${Math.round(profile.accuracy*100)}%`}
 function artBaseEffect(art){return Math.round(artTierMax[art.tier-1]*(art.level/10))}
-function artRootEffect(art){return Math.round(artBaseEffect(art)*spiritRootBonus(state[`${art.element}Root`]||0)/100)}
+function legacyArtRootEffect(art){return Math.round(Math.max(0,Number(state[`${art.element}Art`])||0)*art.tier*art.level)}
+function artRootEffect(art){
+  const curveEffect=Math.round(artBaseEffect(art)*spiritRootBonus(state[`${art.element}Root`]||0)/100);
+  return Math.max(curveEffect,legacyArtRootEffect(art));
+}
 function artDirectEffect(art){return artBaseEffect(art)+artRootEffect(art)}
 function equippedElementBonus(element){
   const label={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'}[element]||element;
