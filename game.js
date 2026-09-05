@@ -62,6 +62,7 @@ const itemCatalog = {
   righteousQiPill:{name:'正氣丹',image:'assets/qstyle-v2/righteous-qi-pill-v1.png',description:'以清正道韻凝炼的測試丹藥。每顆使用後增加 1 點正氣。',count:'righteousQiPillCount',usable:true,giftable:false,sellPrice:1,moralGain:{key:'righteousness',label:'正氣',amount:1}},
   evilQiPill:{name:'邪氣丹',image:'assets/qstyle-v2/evil-qi-pill-v1.png',description:'以陰煞氣機凝炼的測試丹藥。每顆使用後增加 1 點邪氣。',count:'evilQiPillCount',usable:true,giftable:false,sellPrice:1,moralGain:{key:'evilQi',label:'邪氣',amount:1}}
 };
+itemCatalog.xisuiFamaoPill={name:'洗髓伐毛丹',image:'assets/qstyle-v2/production/pills/xisui-famao-v1.png',description:'極罕見的洗髓靈丹，可重塑經脈、拓展藥性承受極限。每服用一顆，所有丹藥與靈釀的個別服用上限永久＋1。',count:'xisuiFamaoPillCount',usable:true,giftable:false,sellPrice:1,dosageLimitGain:1};
 itemCatalog.divineRoamingManual={name:'神念遠遊訣',image:'assets/qstyle-v2/mainline/item-divine-roaming-manual.png',description:'記載分化神念、遠遊諸境之法的特殊秘訣。購得時即開通神念遠遊；此物是開通憑證，不屬於功法且不可使用。',count:'divineRoamingManualCount',usable:false,giftable:false,sellPrice:1};
 itemCatalog.mindEmbodimentManual={name:'意念入體訣',image:'assets/qstyle-v2/mainline/item-mind-embodiment-manual.png',description:'記載凝聚意念、內觀己身之法的特殊秘訣。使用後可提前習得「意念入體」，開啟人物詳細屬性；若已於化念一層自動習得，本書便會失效。',count:'mindEmbodimentManualCount',usable:true,giftable:false,sellPrice:1};
 const sectInvitationItems=[];
@@ -224,12 +225,12 @@ const craftingMaterialItems=[
 const craftingMaterialCountByName=Object.fromEntries(craftingMaterialItems.map(([name,count])=>[name,count]));
 craftingMaterialItems.forEach(([name,count,image,description])=>itemCatalog[`craft-material-${count}`]={name,image:`assets/qstyle-v2/production/materials/${image}`,description,count,usable:false,giftable:false,sellPrice:1});
 const pillTypes=[['yuanxi','元息丹','trueQi','元息','赤元草'],['minggu','命骨丹','rootBone','命骨','血玉參'],['xuanqu','玄軀丹','physique','玄軀','金甲芝'],['youying','游影丹','agility','游影','輕靈葉']],pillNeeds=[[2,1],[3,2],[4,3],[6,4],[8,5],[10,7],[13,9],[16,12],[20,15]];
-pillTypes.forEach(([key,name,attribute,label])=>{for(let tier=1;tier<=9;tier++){const id=`pill-${key}-t${tier}`;itemCatalog[id]={name:`${['一','二','三','四','五','六','七','八','九'][tier-1]}階${name}`,image:`assets/qstyle-v2/production/pills/${key}-t${tier}.png`,description:`以專屬主藥與丹砂煉成的永久${label}屬性丹。每一階此類丹藥最多服用 50 顆。`,count:`pillCount_${key}_${tier}`,usable:true,giftable:false,sellPrice:1,pillData:{key,tier,attribute,label}}}});
+pillTypes.forEach(([key,name,attribute,label])=>{for(let tier=1;tier<=9;tier++){const id=`pill-${key}-t${tier}`;itemCatalog[id]={name:`${['一','二','三','四','五','六','七','八','九'][tier-1]}階${name}`,image:`assets/qstyle-v2/production/pills/${key}-t${tier}.png`,description:`以專屬主藥與丹砂煉成的永久${label}屬性丹。每一階此類丹藥基礎最多服用 50 顆，可藉洗髓伐毛丹提高上限。`,count:`pillCount_${key}_${tier}`,usable:true,giftable:false,sellPrice:1,pillData:{key,tier,attribute,label}}}});
 const brewTypes=[['yuanxi','歸元清釀','trueQi','元息','赤元草'],['minggu','玉骨醇醪','rootBone','命骨','血玉參'],['xuanqu','玄身烈酎','physique','玄軀','金甲芝'],['youying','流影霞酌','agility','游影','輕靈葉']],brewQualities={normal:{name:'凡品',gain:50,herb:24},rare:{name:'極品',gain:100,herb:36}};
 ['normal','rare'].forEach(quality=>{
   const meta=brewQualities[quality],baseId=`brew-base-${quality}`;
   itemCatalog[baseId]={name:`${meta.name}原釀`,image:`assets/qstyle-v2/production/brews/base-${quality}.webp`,description:`釀製${meta.name}靈釀的樸素酒基。只能在釀坊作為主材使用。`,count:`brewBase_${quality}`,usable:false,giftable:false,sellPrice:1,brewBase:true};
-  brewTypes.forEach(([key,name,attribute,label,herb])=>{const id=`brew-${key}-${quality}`;itemCatalog[id]={name:`${meta.name}・${name}`,image:`assets/qstyle-v2/production/brews/${key}-${quality}.webp`,description:`以${meta.name}原釀與${herb}釀成。品飲後永久增加 ${meta.gain} 點${label}；此品質此類最多品飲 50 瓶。`,count:`brewCount_${key}_${quality}`,usable:true,giftable:false,sellPrice:1,brewData:{key,quality,attribute,label,gain:meta.gain}};});
+  brewTypes.forEach(([key,name,attribute,label,herb])=>{const id=`brew-${key}-${quality}`;itemCatalog[id]={name:`${meta.name}・${name}`,image:`assets/qstyle-v2/production/brews/${key}-${quality}.webp`,description:`以${meta.name}原釀與${herb}釀成。品飲後永久增加 ${meta.gain} 點${label}；此品質此類基礎最多品飲 50 瓶，可藉洗髓伐毛丹提高上限。`,count:`brewCount_${key}_${quality}`,usable:true,giftable:false,sellPrice:1,brewData:{key,quality,attribute,label,gain:meta.gain}};});
 });
 const mainlineBias=[['元息','紫陽參','赤元草'],['命骨','龍血芝','血玉參'],['玄軀','玄甲藤','金甲芝'],['游影','風靈草','輕靈葉']];
 const mainlineMechanics=['地脈震波：每三回合敵方攻勢增強','枯脈禁制：敵方防禦較高','赤霞灼流：敵方攻擊較高','殘觀符陣：敵方閃避較高','星屑割裂：敵方暴擊提高','九曜輪轉：敵方命中提高','妖胎狂化：氣血低於一半時攻勢提高','地脈護甲：敵方氣血與防禦提高','共夢迷障：敵方閃避與暴擊提高','劫憶重現：敵方攻防均衡提升','百川回流：敵方氣血提高','總樞鎮壓：敵方防禦提高','界隙亂流：敵方命中與閃避提高','觀天殘陣：敵方防禦與暴擊提高','踏雲追擊：敵方攻擊與命中提高','守界合陣：敵方氣血與防禦提高','九鎖共鳴：敵方全屬性提高','封天決意：守界司之主全力以赴'];
@@ -370,6 +371,7 @@ defaults.divineRoamingUnlocked=false;defaults.divineRoamingManualCount=0;default
 defaults.encounterVersion=1;defaults.encounterQueue=[];defaults.encounterHistory=[];defaults.encounterMilestones={};defaults.encounterActiveMs=0;defaults.encounterNextMs=2700000;defaults.encounterSerial=0;
 defaults.partnerStory=null;defaults.partnerSystem=null;
 defaults.weavingJob=null;
+defaults.xisuiFamaoPillCount=0;defaults.dosageLimitBonus=0;defaults.marketWeeklyPurchases={week:'',counts:{}};
 defaults.mindEmbodimentUnlocked=false;defaults.mindEmbodimentManualCount=0;
 mainlineMaterials.forEach(([,key])=>defaults[`mainlineMaterial_${key}`]=0);defaults.mainlineMaterialMigration=0;
 craftingMaterialItems.forEach(([,count])=>defaults[count]=0);
@@ -1677,8 +1679,10 @@ function openEquippedItemModal(id){
   const equipment=(state.equipmentInventory||[]).find(e=>e.id===id),item=itemCatalog[`equipment-${id}`];if(!equipment||!item)return;
   itemModalKey=`equipment-${id}`;itemModalQuantity=1;$('#itemModalImage').src=item.image;$('#itemModalImage').alt=item.name;$('#itemModalName').textContent=item.name;$('#itemModalDescription').textContent='';const stats=equipmentComparisonStats(equipment),rows=Object.entries(stats).map(([label,stat])=>`<span><em>${label}</em><strong>${stat.percent?`+${stat.value.toFixed(1)}%`:`+${formatLargeNumber(stat.value)}`}</strong></span>`).join('');$('#itemModalEquipmentCompare').innerHTML=`<b>詳細屬性</b>${rows}`;$('#itemModalEquipmentCompare').classList.remove('hidden');$('#itemModalCount').textContent='';const modal=$('#itemModal');modal.classList.add('equipped-detail');const use=$('#itemModalUse');use.textContent='卸下';use.classList.remove('hidden');use.disabled=false;use.onclick=()=>unequipInventoryItem(equipment);$('#itemModalSell').disabled=true;$('#itemModalActions').classList.remove('no-use');modal.classList.remove('hidden');
 }
-function useAttributePill(item,quantity){const p=item?.pillData;if(!p)return false;const usageKey=`${p.key}_${p.tier}`,used=state.pillUsage?.[usageKey]||0,owned=state[item.count]||0,amount=Math.max(0,Math.min(50-used,owned,Math.floor(quantity)));if(amount<1){toast('此階此類丹藥已達服用上限 50 顆');return false}state.pillUsage=state.pillUsage||{};state.pillUsage[usageKey]=used+amount;state[item.count]-=amount;state[p.attribute]=(state[p.attribute]||0)+amount;toast(`服用${item.name} ×${amount}・${p.label}+${amount}（${used+amount}/50）`);render();save();return true}
-function useSpiritBrew(item,quantity){const b=item?.brewData;if(!b)return false;const usageKey=`${b.key}_${b.quality}`,used=state.brewUsage?.[usageKey]||0,owned=state[item.count]||0,amount=Math.max(0,Math.min(50-used,owned,Math.floor(quantity)));if(amount<1){toast('此品質此類靈釀已達品飲上限 50 瓶');return false}state.brewUsage=state.brewUsage||{};state.brewUsage[usageKey]=used+amount;state[item.count]-=amount;state[b.attribute]=(state[b.attribute]||0)+b.gain*amount;toast(`品飲${item.name} ×${amount}・${b.label}+${formatLargeNumber(b.gain*amount)}（${used+amount}/50）`);render();save();return true}
+function dosageLimit(){return 50+Math.max(0,Math.floor(state.dosageLimitBonus||0))}
+function useAttributePill(item,quantity){const p=item?.pillData;if(!p)return false;const limit=dosageLimit(),usageKey=`${p.key}_${p.tier}`,used=state.pillUsage?.[usageKey]||0,owned=state[item.count]||0,amount=Math.max(0,Math.min(limit-used,owned,Math.floor(quantity)));if(amount<1){toast(`此階此類丹藥已達服用上限 ${limit} 顆`);return false}state.pillUsage=state.pillUsage||{};state.pillUsage[usageKey]=used+amount;state[item.count]-=amount;state[p.attribute]=(state[p.attribute]||0)+amount;toast(`服用${item.name} ×${amount}・${p.label}+${amount}（${used+amount}/${limit}）`);render();save();return true}
+function useSpiritBrew(item,quantity){const b=item?.brewData;if(!b)return false;const limit=dosageLimit(),usageKey=`${b.key}_${b.quality}`,used=state.brewUsage?.[usageKey]||0,owned=state[item.count]||0,amount=Math.max(0,Math.min(limit-used,owned,Math.floor(quantity)));if(amount<1){toast(`此品質此類靈釀已達品飲上限 ${limit} 瓶`);return false}state.brewUsage=state.brewUsage||{};state.brewUsage[usageKey]=used+amount;state[item.count]-=amount;state[b.attribute]=(state[b.attribute]||0)+b.gain*amount;toast(`品飲${item.name} ×${amount}・${b.label}+${formatLargeNumber(b.gain*amount)}（${used+amount}/${limit}）`);render();save();return true}
+function useDosageLimitPill(key,quantity=1){const item=itemCatalog[key],gain=Math.max(0,Math.floor(item?.dosageLimitGain||0));if(!gain||(state[item.count]||0)<1)return false;quantity=Math.max(1,Math.min(state[item.count],Math.floor(quantity)));state[item.count]-=quantity;state.dosageLimitBonus=(state.dosageLimitBonus||0)+gain*quantity;toast(`服用${item.name} ×${quantity}・丹藥與靈釀上限提升至 ${dosageLimit()}`);render();save();return true}
 function openItemModal(key){
   const item=itemCatalog[key];if(!item)return;const count=state[item.count]||0;
   const learned=!!item.techniqueBook&&(state.learnedBookIds||[]).includes(item.techniqueBook.id);
@@ -1713,7 +1717,7 @@ function useCultivationBundle(key,quantity=1){const item=itemCatalog[key],amount
 function useStaminaMedicine(key,quantity=1){const item=itemCatalog[key],amount=Number(item?.staminaRestore)||0;refreshBodyState();if(amount<=0||(state[item.count]||0)<1)return false;quantity=Math.max(1,Math.min(state[item.count],Math.floor(quantity)));state[item.count]-=quantity;state.bodyStamina+=amount*quantity;state.bodyStaminaUpdatedAt=gameNow();toast(`使用${item.name} ${formatLargeNumber(quantity)}個・體力+${formatLargeNumber(amount*quantity)}${state.bodyStamina>100?'（已溢出保留）':''}`);render();save();return true}
 function useMoralPill(key,quantity=1){const item=itemCatalog[key],gain=item?.moralGain;if(!gain||(state[item.count]||0)<1||!Object.prototype.hasOwnProperty.call(state,gain.key))return false;quantity=Math.max(1,Math.min(state[item.count],Math.floor(quantity)));const amount=gain.amount*quantity;state[item.count]-=quantity;state[gain.key]+=amount;toast(`使用${item.name} ${formatLargeNumber(quantity)}個・${gain.label}+${formatLargeNumber(amount)}`);render();save();return true}
 function useMindEmbodimentManual(){const item=itemCatalog.mindEmbodimentManual;if(hasMindEmbodiment())return toast('你已習得意念入體，本書已失效');if((state[item.count]||0)<1)return false;state[item.count]--;state.mindEmbodimentUnlocked=true;toast('已習得「意念入體」・人物詳細屬性已開啟');render();save();return true}
-function useItem(key,quantity=1){let used=false;const item=itemCatalog[key];if(item?.equipmentData)used=equipInventoryItem(item);else if(item?.pillData)used=useAttributePill(item,quantity);else if(item?.brewData)used=useSpiritBrew(item,quantity);else if(key==='mindEmbodimentManual')used=useMindEmbodimentManual();else if(item?.techniqueBook)used=useTechniqueBook(key);else if(item?.sectInvitation)used=useSectInvitation(key);else if(item?.cultivationBundle)used=useCultivationBundle(key,quantity);else if(item?.resourceBundle)used=useResourceBundle(key,quantity);else if(item?.staminaRestore)used=useStaminaMedicine(key,quantity);else if(item?.moralGain)used=useMoralPill(key,quantity);if(used){closeItemModal();if(currentFeature==='bag')renderBagView('bag')}}
+function useItem(key,quantity=1){let used=false;const item=itemCatalog[key];if(item?.equipmentData)used=equipInventoryItem(item);else if(item?.dosageLimitGain)used=useDosageLimitPill(key,quantity);else if(item?.pillData)used=useAttributePill(item,quantity);else if(item?.brewData)used=useSpiritBrew(item,quantity);else if(key==='mindEmbodimentManual')used=useMindEmbodimentManual();else if(item?.techniqueBook)used=useTechniqueBook(key);else if(item?.sectInvitation)used=useSectInvitation(key);else if(item?.cultivationBundle)used=useCultivationBundle(key,quantity);else if(item?.resourceBundle)used=useResourceBundle(key,quantity);else if(item?.staminaRestore)used=useStaminaMedicine(key,quantity);else if(item?.moralGain)used=useMoralPill(key,quantity);if(used){closeItemModal();if(currentFeature==='bag')renderBagView('bag')}}
 function itemSellPrice(item){return Math.max(1,Math.floor(Number(item.sellPrice)||1))}
 function updateSellModal(){
   const item=itemCatalog[sellItemKey];if(!item)return;
@@ -2120,7 +2124,7 @@ function bagItemSortProfile(key,item){
   if(item.resourceBundle||item.cultivationBundle){category=0;tier=Number(item.resourceBundle?.amount||item.cultivationBundle||0)}
   else if(item.equipmentData){category=1;tier=item.equipmentData.tier||0;quality=item.equipmentData.quality==='rare'?1:0;slot=Math.max(0,equipmentSlots.findIndex(entry=>entry[0]===item.equipmentData.slot))}
   else if(item.techniqueBook||/Manual$/.test(key)){category=2;tier=item.techniqueBook?.tier||0}
-  else if(item.pillData||item.brewData||item.staminaRestore||item.moralGain||/^tribPill/.test(key)){category=3;tier=item.pillData?.tier||Number(key.match(/^tribPill(\d+)/)?.[1]||0);quality=item.brewData?.quality==='rare'?1:0}
+  else if(item.pillData||item.brewData||item.dosageLimitGain||item.staminaRestore||item.moralGain||/^tribPill/.test(key)){category=3;tier=item.pillData?.tier||Number(key.match(/^tribPill(\d+)/)?.[1]||0);quality=item.dosageLimitGain?2:item.brewData?.quality==='rare'?1:0}
   else if(key.startsWith('main-material-')||key.startsWith('craft-material-')||item.brewBase||key==='mendingSilk'){category=4}
   else if(item.sectInvitation){category=5;tier=item.sectInvitation.star||0}
   return {category,tier,quality,slot};
@@ -2163,10 +2167,10 @@ function renderCharacterView(view='equipment'){
   $$('[data-equipped-item]').forEach(button=>button.onclick=()=>openEquippedItemModal(button.dataset.equippedItem));
 }
 function renderDosageLedger(inner){
-  const numerals=['一','二','三','四','五','六','七','八','九'];
-  const tiers=Array.from({length:9},(_,index)=>{const tier=index+1,rows=pillTypes.map(([key,name,,label])=>{const used=Math.max(0,state.pillUsage?.[`${key}_${tier}`]||0),owned=Math.max(0,state[`pillCount_${key}_${tier}`]||0),percent=Math.min(100,used/50*100);return `<article><img src="assets/qstyle-v2/production/pills/${key}-t${tier}.png" alt="${numerals[index]}階${name}"><span><b>${name}</b><small>${label}永久白值＋${used}</small><i><em style="width:${percent}%"></em></i></span><strong>${used}／50<small>持有 ${formatLargeNumber(owned)}</small></strong></article>`}).join('');return `<details class="dosage-tier" ${tier===worldProgressTier()?'open':''}><summary><b>${numerals[index]}階丹藥</b><span>本階各類皆可服用 50 顆</span></summary><div>${rows}</div></details>`}).join('');
-  const brews=['normal','rare'].map(quality=>{const meta=brewQualities[quality],rows=brewTypes.map(([key,name,,label])=>{const used=Math.max(0,state.brewUsage?.[`${key}_${quality}`]||0),owned=Math.max(0,state[`brewCount_${key}_${quality}`]||0),percent=Math.min(100,used/50*100);return `<article><img src="assets/qstyle-v2/production/brews/${key}-${quality}.webp" alt="${meta.name}${name}"><span><b>${name}</b><small>${label}永久白值＋${formatLargeNumber(used*meta.gain)}</small><i><em style="width:${percent}%"></em></i></span><strong>${used}／50<small>持有 ${formatLargeNumber(owned)}</small></strong></article>`}).join('');return `<details class="dosage-tier spirit-brew-ledger"><summary><b>${meta.name}靈釀</b><span>各類皆可品飲 50 瓶</span></summary><div>${rows}</div></details>`}).join('');
-  inner.innerHTML=`<section class="dosage-ledger"><header><small>永久服用紀錄</small><h2>丹藥與靈釀</h2><p>各階、品質與種類的上限分開計算；所得直接計入人物基礎白值。</p></header>${tiers}${brews}</section>`;
+  const numerals=['一','二','三','四','五','六','七','八','九'],limit=dosageLimit();
+  const tiers=Array.from({length:9},(_,index)=>{const tier=index+1,rows=pillTypes.map(([key,name,,label])=>{const used=Math.max(0,state.pillUsage?.[`${key}_${tier}`]||0),owned=Math.max(0,state[`pillCount_${key}_${tier}`]||0),percent=Math.min(100,used/limit*100);return `<article><img src="assets/qstyle-v2/production/pills/${key}-t${tier}.png" alt="${numerals[index]}階${name}"><span><b>${name}</b><small>${label}永久白值＋${used}</small><i><em style="width:${percent}%"></em></i></span><strong>${used}／${limit}<small>持有 ${formatLargeNumber(owned)}</small></strong></article>`}).join('');return `<details class="dosage-tier" ${tier===worldProgressTier()?'open':''}><summary><b>${numerals[index]}階丹藥</b><span>本階各類皆可服用 ${limit} 顆</span></summary><div>${rows}</div></details>`}).join('');
+  const brews=['normal','rare'].map(quality=>{const meta=brewQualities[quality],rows=brewTypes.map(([key,name,,label])=>{const used=Math.max(0,state.brewUsage?.[`${key}_${quality}`]||0),owned=Math.max(0,state[`brewCount_${key}_${quality}`]||0),percent=Math.min(100,used/limit*100);return `<article><img src="assets/qstyle-v2/production/brews/${key}-${quality}.webp" alt="${meta.name}${name}"><span><b>${name}</b><small>${label}永久白值＋${formatLargeNumber(used*meta.gain)}</small><i><em style="width:${percent}%"></em></i></span><strong>${used}／${limit}<small>持有 ${formatLargeNumber(owned)}</small></strong></article>`}).join('');return `<details class="dosage-tier spirit-brew-ledger"><summary><b>${meta.name}靈釀</b><span>各類皆可品飲 ${limit} 瓶</span></summary><div>${rows}</div></details>`}).join('');
+  inner.innerHTML=`<section class="dosage-ledger"><header><small>永久服用紀錄</small><h2>丹藥與靈釀</h2><p>目前個別服用上限 ${limit}（基礎50＋洗髓伐毛丹 ${Math.max(0,state.dosageLimitBonus||0)}）；各階、品質與種類分開計算。</p></header>${tiers}${brews}</section>`;
 }
 function renderWardrobeView(section='outfits'){
   const inner=$('#bagInner');if(!inner)return;
@@ -2294,6 +2298,8 @@ function marketDailyState(){
   if(state.marketDailyPurchases.date!==today)state.marketDailyPurchases={date:today,counts:{}};
   state.marketDailyPurchases.counts||={};return state.marketDailyPurchases;
 }
+function marketWeekKey(now=gameNow()){const date=new Date(now),offset=(date.getDay()+6)%7;date.setHours(0,0,0,0);date.setDate(date.getDate()-offset);return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`}
+function marketWeeklyState(){const week=marketWeekKey();if(state.marketWeeklyPurchases?.week!==week)state.marketWeeklyPurchases={week,counts:{}};state.marketWeeklyPurchases.counts||={};return state.marketWeeklyPurchases}
 function marketOfferForBook(id){
   const book=techniqueBooks.find(entry=>entry.id===id),item=itemCatalog[id];if(!book||!item)return null;
   const tier=['一','二','三','四','五','六','七','八','九'][book.tier-1];
@@ -2305,6 +2311,7 @@ function marketOfferForItem(id){
   const item=itemCatalog[id];if(!item)return null;
   if(id==='divineRoamingManual')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:divineRoamingJadeCost,dailyLimit:null,permanentLimit:1,quantityEnabled:false};
   if(id==='mindEmbodimentManual')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:mindEmbodimentJadeCost,dailyLimit:null,permanentLimit:1,quantityEnabled:false};
+  if(id==='xisuiFamaoPill')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:50,dailyLimit:null,weeklyLimit:1,permanentLimit:null,quantityEnabled:false};
   if(id==='brew-base-normal')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritStone',currencyName:'靈石',currencyImage:'assets/qstyle-v2/spirit-stone.png',price:2500,dailyLimit:3,permanentLimit:null,quantityEnabled:true};
   if(id==='brew-base-rare')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritStone',currencyName:'靈石',currencyImage:'assets/qstyle-v2/spirit-stone.png',price:9000,dailyLimit:3,permanentLimit:null,quantityEnabled:true};
   if(item.sectInvitation){const star=item.sectInvitation.star;return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'prestige',currencyName:'聲望',currencyImage:'assets/qstyle-v2/reputation.png',price:sectInvitationPrices[star-1],dailyLimit:1,permanentLimit:null,quantityEnabled:false}}
@@ -2321,13 +2328,15 @@ function marketPermanentBought(offer){
   return count;
 }
 function marketDailyBought(offer){return Number(marketDailyState().counts[offer.id]||0)}
+function marketWeeklyBought(offer){return Number(marketWeeklyState().counts[offer.id]||0)}
 function marketPurchaseCapacity(offer){
   if(!offer)return 0;
   const affordable=Math.floor((state[offer.currencyKey]||0)/offer.price);
   const dailyRemaining=offer.dailyLimit==null?Infinity:Math.max(0,offer.dailyLimit-marketDailyBought(offer));
+  const weeklyRemaining=offer.weeklyLimit==null?Infinity:Math.max(0,offer.weeklyLimit-marketWeeklyBought(offer));
   const permanentRemaining=offer.permanentLimit==null?Infinity:Math.max(0,offer.permanentLimit-marketPermanentBought(offer));
   const storageRemaining=bagStorableAmount(offer.storageId||offer.id);
-  return Math.max(0,Math.min(affordable,dailyRemaining,permanentRemaining,storageRemaining,999));
+  return Math.max(0,Math.min(affordable,dailyRemaining,weeklyRemaining,permanentRemaining,storageRemaining,999));
 }
 function marketPurchaseBlockReason(offer){
   if(!offer)return '商品資料不存在';
@@ -2335,6 +2344,7 @@ function marketPurchaseBlockReason(offer){
   if(offer.item?.techniqueBook&&(state.learnedBookIds||[]).includes(offer.id))return '此功法已習得，無法再次購買';
   if(offer.permanentLimit!=null&&marketPermanentBought(offer)>=offer.permanentLimit)return '此商品已達永久限購上限';
   if(offer.dailyLimit!=null&&marketDailyBought(offer)>=offer.dailyLimit)return '此商品今日購買次數已達上限';
+  if(offer.weeklyLimit!=null&&marketWeeklyBought(offer)>=offer.weeklyLimit)return '此商品本週購買次數已達上限・每週一 00:00 刷新';
   if((state[offer.currencyKey]||0)<offer.price)return `${offer.currencyName}不足`;
   if(!canStoreItem(offer.storageId||offer.id))return '儲物袋已滿';
   return '';
@@ -2349,6 +2359,7 @@ function updateMarketPurchaseModal(){
   $('#marketPurchaseBalance').innerHTML=`當前持有：<img src="${offer.currencyImage}" alt="${offer.currencyName}"> <b>${formatLargeNumber(state[offer.currencyKey]||0)}</b> ${offer.currencyName}`;
   const limits=[];
   if(offer.dailyLimit!=null)limits.push(`每日限購：${marketDailyBought(offer).toLocaleString()} / ${offer.dailyLimit.toLocaleString()}`);
+  if(offer.weeklyLimit!=null)limits.push(`每週限購：${marketWeeklyBought(offer).toLocaleString()} / ${offer.weeklyLimit.toLocaleString()}（週一00:00刷新）`);
   if(offer.permanentLimit!=null)limits.push(`永久限購：${marketPermanentBought(offer).toLocaleString()} / ${offer.permanentLimit.toLocaleString()}`);
   $('#marketPurchaseLimits').textContent=limits.join('　')||'不限購';
   $('#marketPurchaseTotal').innerHTML=`合計：<img src="${offer.currencyImage}" alt="${offer.currencyName}"> ${formatLargeNumber(offer.price*marketPurchaseQuantity)} ${offer.currencyName}`;
@@ -2369,19 +2380,20 @@ function confirmMarketPurchase(){
   const quantity=offer.quantityEnabled?Math.min(marketPurchaseQuantity,maximum):1;if(quantity<1)return;
   state[offer.currencyKey]-=offer.price*quantity;state[offer.item.count]=(state[offer.item.count]||0)+quantity;
   if(offer.dailyLimit!=null){const daily=marketDailyState();daily.counts[offer.id]=(daily.counts[offer.id]||0)+quantity}
+  if(offer.weeklyLimit!=null){const weekly=marketWeeklyState();weekly.counts[offer.id]=(weekly.counts[offer.id]||0)+quantity}
   if(offer.permanentLimit!=null)state.marketPermanentPurchases[offer.id]=(state.marketPermanentPurchases[offer.id]||0)+quantity;
   if(offer.item.techniqueBook){const legacy=scriptureDailyState();if(!legacy.ids.includes(offer.id))legacy.ids.push(offer.id)}
   if(offer.id==='divineRoamingManual')state.divineRoamingUnlocked=true;
   toast(`購得「${offer.name}」${quantity>1?` × ${quantity}`:''}`);closeMarketPurchase();renderMarket(currentMarketTab);save();
 }
-function treasureOfferDetail(id){if(id==='divineRoamingManual')return state.spiritLevel>=40?'購得即開通神念遠遊':'需達化念境一層後購買';return hasMindEmbodiment()?'已習得・購買後僅可收藏或售出':'使用後提前習得意念入體'}
+function treasureOfferDetail(id){if(id==='divineRoamingManual')return state.spiritLevel>=40?'購得即開通神念遠遊':'需達化念境一層後購買';if(id==='xisuiFamaoPill')return `本週 ${marketWeeklyBought(marketOfferForItem(id))}／1・週一00:00刷新`;return hasMindEmbodiment()?'已習得・購買後僅可收藏或售出':'使用後提前習得意念入體'}
 function renderMarket(tab=currentMarketTab){
   currentMarketTab=tab;
   const data={
     market:{title:'坊市',subtitle:'雲市百貨',currency:'stone',floors:[['brew-base-normal','brew-base-rare'],[],[],[],[]]},
     scripture:{title:'藏經閣',subtitle:'古卷玉簡',currency:'stone',floors:[[],[],[],[],[]]},
     reputation:{title:'聲望堂',subtitle:'名望珍藏',currency:'reputation',floors:[[],[],[],[],[]]},
-    treasure:{title:'百寶樓',subtitle:'仙珍奇物',currency:'jade',products:['divineRoamingManual','mindEmbodimentManual','treasure-brew-base-rare']}
+    treasure:{title:'百寶樓',subtitle:'仙珍奇物',currency:'jade',products:['xisuiFamaoPill','divineRoamingManual','mindEmbodimentManual','treasure-brew-base-rare']}
   }[tab];
   const hasFloors=tab!=='treasure';
   const floor=hasFloors?(marketFloors[tab]||1):1;
@@ -2393,8 +2405,8 @@ function renderMarket(tab=currentMarketTab){
   </div>`:'';
   $$('.market-tabs button').forEach(button=>button.classList.toggle('active',button.dataset.marketTab===tab));
   const currency={stone:['assets/qstyle-v2/spirit-stone.png','靈石'],jade:['assets/qstyle-v2/spirit-jade.png','靈玉'],reputation:['assets/qstyle-v2/reputation.png','聲望']}[data.currency];
-  const productHtml=tab==='scripture'?products.map(book=>{const item=itemCatalog[book.id],price=scriptureTierPrices[book.tier-1],offer=marketOfferForBook(book.id),learned=(state.learnedBookIds||[]).includes(book.id),limited=marketPermanentBought(offer)>=1,tier=['一','二','三','四','五','六','七','八','九'][book.tier-1],interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${book.id}"`;return `<button class="market-product${limited?' sold-out':''}" type="button"${interaction}><span class="market-product-image"><img src="${item.image}" alt="${book.name}"></span><b>${book.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${formatLargeNumber(price)}</em><small>${limited?'已購買':learned?'已習得':`${book.elementName}行・${tier}階・${artKinds[book.kind].label}+${artBaseEffect(book)}`}</small></button>`}).join(''):tab==='reputation'?products.map(id=>{const item=itemCatalog[id],offer=marketOfferForItem(id),bought=marketDailyBought(offer),limited=bought>=offer.dailyLimit,interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${id}"`,detail=item.sectInvitation?`${['一','二','三','四','五','六','七','八','九'][item.sectInvitation.star-1]}星門派`:`今日 ${bought} / ${offer.dailyLimit}`;return `<button class="market-product${limited?' sold-out daily-limit':''}" type="button"${interaction}><span class="market-product-image"><img src="${item.image}" alt="${item.name}"></span><b>${item.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${formatLargeNumber(offer.price)}</em><small>${limited?'今日已購足':detail}</small></button>`}).join(''):products.map(id=>{const offer=marketOfferForItem(id),daily=offer.dailyLimit!=null&&marketDailyBought(offer)>=offer.dailyLimit,permanent=offer.permanentLimit!=null&&marketPermanentBought(offer)>=offer.permanentLimit,limited=daily||permanent,interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${id}"`;return `<button class="market-product${limited?' sold-out':''}${daily?' daily-limit':''}" type="button"${interaction}><span class="market-product-image"><img src="${offer.image}" alt="${offer.name}"></span><b>${offer.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${formatLargeNumber(offer.price)}</em><small>${daily?'今日已購足':permanent?'已購買・永久限購':offer.dailyLimit!=null?`今日 ${marketDailyBought(offer)}／${offer.dailyLimit}`:treasureOfferDetail(id)}</small></button>`}).join('');
-  $('#marketContent').innerHTML=`<div class="market-shop-banner"><small>${data.subtitle}</small><b>${floorTitle}</b></div>${floorControls}<div id="marketFloorNotice" class="market-floor-notice" role="status"></div><div class="market-product-grid">${productHtml}</div><p class="market-restock">${tab==='scripture'||tab==='reputation'?'每日 00:00 自動刷新':tab==='treasure'?'限購商品每日 00:00 重置':'坊市商品每日 00:00 重置'}</p>`;
+  const productHtml=tab==='scripture'?products.map(book=>{const item=itemCatalog[book.id],price=scriptureTierPrices[book.tier-1],offer=marketOfferForBook(book.id),learned=(state.learnedBookIds||[]).includes(book.id),limited=marketPermanentBought(offer)>=1,tier=['一','二','三','四','五','六','七','八','九'][book.tier-1],interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${book.id}"`;return `<button class="market-product${limited?' sold-out':''}" type="button"${interaction}><span class="market-product-image"><img src="${item.image}" alt="${book.name}"></span><b>${book.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${formatLargeNumber(price)}</em><small>${limited?'已購買':learned?'已習得':`${book.elementName}行・${tier}階・${artKinds[book.kind].label}+${artBaseEffect(book)}`}</small></button>`}).join(''):tab==='reputation'?products.map(id=>{const item=itemCatalog[id],offer=marketOfferForItem(id),bought=marketDailyBought(offer),limited=bought>=offer.dailyLimit,interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${id}"`,detail=item.sectInvitation?`${['一','二','三','四','五','六','七','八','九'][item.sectInvitation.star-1]}星門派`:`今日 ${bought} / ${offer.dailyLimit}`;return `<button class="market-product${limited?' sold-out daily-limit':''}" type="button"${interaction}><span class="market-product-image"><img src="${item.image}" alt="${item.name}"></span><b>${item.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${formatLargeNumber(offer.price)}</em><small>${limited?'今日已購足':detail}</small></button>`}).join(''):products.map(id=>{const offer=marketOfferForItem(id),daily=offer.dailyLimit!=null&&marketDailyBought(offer)>=offer.dailyLimit,weekly=offer.weeklyLimit!=null&&marketWeeklyBought(offer)>=offer.weeklyLimit,permanent=offer.permanentLimit!=null&&marketPermanentBought(offer)>=offer.permanentLimit,limited=daily||weekly||permanent,interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${id}"`;return `<button class="market-product${limited?' sold-out':''}${daily||weekly?' daily-limit':''}" type="button"${interaction}><span class="market-product-image"><img src="${offer.image}" alt="${offer.name}"></span><b>${offer.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${formatLargeNumber(offer.price)}</em><small>${daily?'今日已購足':weekly?'本週已購足・週一刷新':permanent?'已購買・永久限購':offer.dailyLimit!=null?`今日 ${marketDailyBought(offer)}／${offer.dailyLimit}`:treasureOfferDetail(id)}</small></button>`}).join('');
+  $('#marketContent').innerHTML=`<div class="market-shop-banner"><small>${data.subtitle}</small><b>${floorTitle}</b></div>${floorControls}<div id="marketFloorNotice" class="market-floor-notice" role="status"></div><div class="market-product-grid">${productHtml}</div><p class="market-restock">${tab==='scripture'||tab==='reputation'?'每日 00:00 自動刷新':tab==='treasure'?'洗髓伐毛丹每週一 00:00 刷新；其餘商品依各自限購規則':'坊市商品每日 00:00 重置'}</p>`;
   $$('[data-market-floor]').forEach(button=>button.onclick=()=>changeMarketFloor(button.dataset.marketFloor==='up'?1:-1));
   $$('[data-market-purchase]').forEach(button=>button.onclick=()=>openMarketPurchase(button.dataset.marketPurchase));
   render();
