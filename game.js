@@ -2390,7 +2390,7 @@ const scriptureFloorTiers=[[1,2],[3,4],[5,6],[7,8],[9]];
 const scriptureTierPrices=[100,350,1200,5400,16000,48000,145000,435000,1300000];
 const reputationFloorStars=[[1,2],[3,4],[5,6],[7,8],[9]];
 const sectInvitationPrices=[150,250,450,700,1000,1400,1900,2500,3300];
-const reputationResourcePrices={100:{spiritStone:25,wood:10,meteorIron:18},1000:{spiritStone:180,wood:80,meteorIron:130},10000:{spiritStone:1200,wood:600,meteorIron:900}};
+const reputationResourcePrices={100:{spiritStone:10,wood:18,meteorIron:26},1000:{spiritStone:100,wood:150,meteorIron:220},10000:{spiritStone:1000,wood:1200,meteorIron:1800}};
 function seededRandom(seedText){let seed=[...seedText].reduce((value,char)=>(value*31+char.charCodeAt(0))>>>0,2166136261);return()=>{seed+=0x6D2B79F5;let value=seed;value=Math.imul(value^value>>>15,value|1);value^=value+Math.imul(value^value>>>7,value|61);return((value^value>>>14)>>>0)/4294967296}}
 function scriptureDailyState(){const today=dateKey()||'local';if(state.scripturePurchases.date!==today){state.scripturePurchases={date:today,ids:[]};save()}return state.scripturePurchases}
 function scriptureStock(floor){
