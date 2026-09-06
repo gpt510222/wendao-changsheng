@@ -2432,6 +2432,7 @@ function marketOfferForItem(id){
   if(resourceOffer){const item=itemCatalog[resourceOffer.itemId];return {id,item,storageId:resourceOffer.itemId,name:item.name,image:item.image,description:item.description,currencyKey:'spiritStone',currencyName:'靈石',currencyImage:'assets/qstyle-v2/spirit-stone.png',price:resourceOffer.price,dailyLimit:5,permanentLimit:null,quantityEnabled:true}}
   if(id==='treasure-brew-base-rare'){const item=itemCatalog['brew-base-rare'];return {id,item,storageId:'brew-base-rare',name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:18,dailyLimit:5,permanentLimit:null,quantityEnabled:true}}
   if(id==='market-sword-embryo-reversion'||id==='treasure-sword-embryo-reversion'){const item=itemCatalog.swordEmbryoReversionElixir,jade=id.startsWith('treasure-');return {id,item,storageId:'swordEmbryoReversionElixir',weeklyKey:'swordEmbryoReversionElixir',name:item.name,image:item.image,description:item.description,currencyKey:jade?'spiritJade':'spiritStone',currencyName:jade?'靈玉':'靈石',currencyImage:`assets/qstyle-v2/${jade?'spirit-jade':'spirit-stone'}.png`,price:jade?50:30000,dailyLimit:null,weeklyLimit:1,permanentLimit:null,quantityEnabled:false}}
+  if(id==='market-xisui-famao-pill'){const item=itemCatalog.xisuiFamaoPill;return {id,item,storageId:'xisuiFamaoPill',weeklyKey:'market-xisui-famao-pill',name:item.name,image:item.image,description:item.description,currencyKey:'spiritStone',currencyName:'靈石',currencyImage:'assets/qstyle-v2/spirit-stone.png',price:30000,dailyLimit:null,weeklyLimit:1,permanentLimit:null,quantityEnabled:false}}
   const item=itemCatalog[id];if(!item)return null;
   if(id==='divineRoamingManual')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:divineRoamingJadeCost,dailyLimit:null,permanentLimit:1,quantityEnabled:false};
   if(id==='mindEmbodimentManual')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:mindEmbodimentJadeCost,dailyLimit:null,permanentLimit:1,quantityEnabled:false};
@@ -2517,7 +2518,7 @@ function treasureOfferDetail(id){if(id==='divineRoamingManual')return state.spir
 function renderMarket(tab=currentMarketTab){
   currentMarketTab=tab;
   const data={
-    market:{title:'坊市',subtitle:'雲市百貨',currency:'stone',floors:[['brew-base-normal','brew-base-rare','market-sword-embryo-reversion'],[],[],[],[]]},
+    market:{title:'坊市',subtitle:'雲市百貨',currency:'stone',floors:[['market-sword-embryo-reversion'],['brew-base-normal'],[],['brew-base-rare'],['market-xisui-famao-pill']]},
     scripture:{title:'藏經閣',subtitle:'古卷玉簡',currency:'stone',floors:[[],[],[],[],[]]},
     reputation:{title:'聲望堂',subtitle:'名望珍藏',currency:'reputation',floors:[[],[],[],[],[]]},
     treasure:{title:'百寶樓',subtitle:'仙珍奇物',currency:'jade',products:['xisuiFamaoPill','treasure-sword-embryo-reversion','renameProtagonistJade','genderRebirthMirror','renamePartnerCovenant','divineRoamingManual','mindEmbodimentManual','treasure-brew-base-rare']}
