@@ -14,7 +14,7 @@ const realmEfficiencyMultipliers=(()=>{const values=[3,4.5,6.9,10.5,15.6,22.5,33
 const spiritRootRanks = ['廢品','凡品','下品','中品','良品','超品','上品','極品','完美','先天','凡仙','仙品','歸元','天心','三清','六禦','玄門','全真','淨明','天道'];
 const sectRanks = ['外門弟子','內門弟子','親傳弟子','供奉','護法'];
 const sectPromotionCosts = [300,900,2000,4500];
-const sectSalary = [200,500,1000,1800,3000];
+const sectSalary = [300,750,1500,2700,4500];
 const pathOpeningCosts={sword:{key:'meteorIron',amount:30,label:'隕鐵'},body:{key:'food',amount:120,label:'食物'}};
 const sectCatalog = [
   {star:1,need:0,realm:'聽息',good:['青竹門','清溪派','松風堂','白石觀'],evil:['黑風寨','赤蛇幫','斷刃堂']},
@@ -28,17 +28,17 @@ const sectCatalog = [
   {star:9,need:80,realm:'遊穹',good:['太上白玉京','諸天星羅神宗','九霄凌天仙宮'],evil:['永劫輪迴殿','無極天魔聖宗','太古神夢天宮']}
 ];
 const sectTasks = [
-  {id:'sweep',name:'灑掃庭院',need:0,gain:5,stone:20,prestige:1,desc:'每日灑掃殿前石階，維持門庭清淨。'},
-  {id:'cook',name:'膳房幫廚',need:10,gain:6,stone:30,prestige:1,desc:'協助膳房備膳，照料同門起居。'},
-  {id:'herb',name:'採藥巡山',need:20,gain:8,stone:50,prestige:2,desc:'巡查外山並採集門中所需靈藥。'},
-  {id:'escort',name:'護送門人',need:30,gain:10,stone:75,prestige:3,desc:'護送低階弟子往返坊市，保全物資。'},
-  {id:'gate',name:'鎮守山門',need:40,gain:12,stone:110,prestige:4,desc:'駐守護山大陣，盤查來往修士。'},
-  {id:'vein',name:'調和地脈',need:50,gain:15,stone:160,prestige:5,desc:'梳理山中靈脈，穩固宗門根基。'},
-  {id:'demon',name:'清剿妖患',need:60,gain:18,stone:230,prestige:7,desc:'率隊清除宗門疆域內的妖邪禍患。'},
-  {id:'array',name:'維護大陣',need:70,gain:21,stone:320,prestige:9,desc:'巡視護宗陣眼，補全破損禁制。'},
-  {id:'realm',name:'駐守秘境',need:80,gain:24,stone:450,prestige:12,desc:'長期鎮守宗門秘境與珍稀資源。'},
-  {id:'diplomacy',name:'出使仙盟',need:90,gain:27,stone:620,prestige:16,desc:'代表門派拜訪各方勢力，維繫盟約。'},
-  {id:'rift',name:'鎮壓虛空裂隙',need:100,gain:30,stone:850,prestige:20,desc:'以玄闕之力封鎮裂隙，護佑門中萬年基業。'}
+  {id:'sweep',name:'灑掃庭院',need:0,gain:5,stone:40,prestige:1,desc:'每日灑掃殿前石階，維持門庭清淨。'},
+  {id:'cook',name:'膳房幫廚',need:10,gain:6,stone:60,prestige:1,desc:'協助膳房備膳，照料同門起居。'},
+  {id:'herb',name:'採藥巡山',need:20,gain:8,stone:100,prestige:2,desc:'巡查外山並採集門中所需靈藥。'},
+  {id:'escort',name:'護送門人',need:30,gain:10,stone:150,prestige:3,desc:'護送低階弟子往返坊市，保全物資。'},
+  {id:'gate',name:'鎮守山門',need:40,gain:12,stone:220,prestige:4,desc:'駐守護山大陣，盤查來往修士。'},
+  {id:'vein',name:'調和地脈',need:50,gain:15,stone:320,prestige:5,desc:'梳理山中靈脈，穩固宗門根基。'},
+  {id:'demon',name:'清剿妖患',need:60,gain:18,stone:460,prestige:7,desc:'率隊清除宗門疆域內的妖邪禍患。'},
+  {id:'array',name:'維護大陣',need:70,gain:21,stone:640,prestige:9,desc:'巡視護宗陣眼，補全破損禁制。'},
+  {id:'realm',name:'駐守秘境',need:80,gain:24,stone:900,prestige:12,desc:'長期鎮守宗門秘境與珍稀資源。'},
+  {id:'diplomacy',name:'出使仙盟',need:90,gain:27,stone:1240,prestige:16,desc:'代表門派拜訪各方勢力，維繫盟約。'},
+  {id:'rift',name:'鎮壓虛空裂隙',need:100,gain:30,stone:1700,prestige:20,desc:'以玄闕之力封鎮裂隙，護佑門中萬年基業。'}
 ];
 const originProfiles = {
   '家族子弟':{trueQi:5,rootBone:5,physique:5,agility:5,spiritualPower:5,comprehension:5,fortune:5},
@@ -313,7 +313,7 @@ const mainlineFirstClearRewards=mortalMainline.map(stage=>{
     {type:'state',key:craftingMaterialCountByName[bias[2]],name:bias[2],amount:boss?2:1},
     {type:'state',key:craftingMaterialCountByName['丹砂'],name:'丹砂',amount:boss?2:1},
     {type:'state',key:`tribPill${stage.realm}`,name:`${spiritRealms[stage.realm-1]}丹`,amount:boss?2:1},
-    {type:'state',key:'mainlineSpiritStoneBag',name:'靈石袋',amount:pick(bag[0],bag[1])},
+    {type:'state',key:'mainlineSpiritStoneBag',name:'靈石袋',amount:pick(bag[0],bag[1])*3},
     {type:'state',key:'mainlineWoodBag',name:'木材袋',amount:pick(bag[2],bag[3])},
     {type:'state',key:'mainlineIronBag',name:'隕鐵袋',amount:pick(bag[4],bag[5])},
     {type:'state',key:'mainlineFoodBag',name:'食物袋',amount:pick(bag[6],bag[7])}
@@ -1409,11 +1409,11 @@ function startBodyTrial(){
   battle={active:true,resolved:false,mode:'bodyTrial',round:1,completedRounds:0,targetRounds,bodyTrialLevel:nextLevel,bodyRequirement:requirement,guaranteedBodyTrial:guaranteed,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp,name:'煉體試煉化身',npc:{id:`body-trial-${state.bodyLevel}`},race:'human'},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');setBattleBackground('bodyTrial');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className='battle-silhouette silhouette-human';$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent='煉體試煉化身';$('#battleLog').innerHTML=`<p><b>${state.name}</b>踏入試煉，必須以肉身撐過 ${targetRounds} 回合。${autoEquipped?`未裝配肉身招式，已自動將「${autoEquipped.name}」設為第一式。`:''}${guaranteed?'前兩次失敗已使肉身適應此境威壓，本次必能守住最後一息。':''}</p>`;syncBattleWeapon();updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700);
 }
 
-const divineRoamingStoneCost=50000,divineRoamingJadeCost=300,mindEmbodimentJadeCost=15,divineRoamingAttemptMs=900000;
+const divineRoamingStoneCost=20000,divineRoamingJadeCost=35,mindEmbodimentJadeCost=15,divineRoamingAttemptMs=900000;
 function divineRoamingDaily(){const today=dateKey()||new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei'}).format(new Date());if(state.divineRoamingDay!==today){state.divineRoamingDay=today;state.divineRoamingUsed=0}return {used:Math.max(0,state.divineRoamingUsed||0),remaining:Math.max(0,100-(state.divineRoamingUsed||0))}}
 function divineRoamingRate(attempt){return attempt<=50?1:attempt<=75?.5:.1}
 function addDivineHarvest(key,name,amount,type='state'){if(!amount)return;const harvest=state.divineRoamingHarvest||(state.divineRoamingHarvest={}),id=`${type}:${key}`;harvest[id]=harvest[id]||{key,name,type,amount:0};harvest[id].amount+=amount}
-function rollDivineRoamingDrop(stage,rate){const roll=(chance,fn)=>Math.random()<chance*rate&&fn(),range=(min,max)=>min+Math.floor(Math.random()*(max-min+1)),giveMain=()=>{const picked=mainlineMaterials[Math.floor(Math.random()*mainlineMaterials.length)];addDivineHarvest(`mainlineMaterial_${picked[1]}`,picked[0],1)};roll(1,giveMain);if(stage.id%2)roll(.35,giveMain);const tierName=tierMaterials[stage.realm-1];roll(stage.id%2?.3:.75,()=>addDivineHarvest(tierName,tierName,1,'loot'));if(stage.id%2===0)roll(.15,()=>addDivineHarvest(tierName,tierName,1,'loot'));const bias=stage.id>=17?Math.floor(Math.random()*4):(stage.id-1)%4,pickBias=()=>Math.random()<.4?bias:[0,1,2,3].filter(x=>x!==bias)[Math.floor(Math.random()*3)],herb=mainlineBias[pickBias()];roll(stage.id%2?.55:.4,()=>addDivineHarvest(herb[1],herb[1],1,'loot'));roll(stage.id%2?.55:.4,()=>{const name=mainlineBias[pickBias()][2];addDivineHarvest(craftingMaterialCountByName[name],name,1)});roll(stage.id===17?.45:stage.id===18?.7:stage.id%2?.3:.6,()=>addDivineHarvest(craftingMaterialCountByName['丹砂'],'丹砂',1));roll(1,()=>addDivineHarvest(`tribPill${stage.realm}`,`${spiritRealms[stage.realm-1]}丹`,range(1,2)));const bag=mainlineBagRanges[stage.id-1];[['mainlineSpiritStoneBag','靈石袋',1,bag[0],bag[1]],['mainlineWoodBag','木材袋',.75,bag[2],bag[3]],['mainlineIronBag','隕鐵袋',.6,bag[4],bag[5]],['mainlineFoodBag','食物袋',.75,bag[6],bag[7]]].forEach(([key,name,chance,min,max])=>roll(chance,()=>addDivineHarvest(key,name,range(min,max))));roll(stage.id===18?.02:stage.id%2?.008:.015,()=>addDivineHarvest(`${stage.realm}階凡品裝備`,`${stage.realm}階凡品裝備`,1,'loot'));roll(stage.id===18?.0015:stage.id%2?.0005:.001,()=>addDivineHarvest(`${stage.realm}階極品裝備`,`${stage.realm}階極品裝備`,1,'loot'))}
+function rollDivineRoamingDrop(stage,rate){const roll=(chance,fn)=>Math.random()<chance*rate&&fn(),range=(min,max)=>min+Math.floor(Math.random()*(max-min+1)),giveMain=()=>{const picked=mainlineMaterials[Math.floor(Math.random()*mainlineMaterials.length)];addDivineHarvest(`mainlineMaterial_${picked[1]}`,picked[0],1)};roll(1,giveMain);if(stage.id%2)roll(.35,giveMain);const tierName=tierMaterials[stage.realm-1];roll(stage.id%2?.3:.75,()=>addDivineHarvest(tierName,tierName,1,'loot'));if(stage.id%2===0)roll(.15,()=>addDivineHarvest(tierName,tierName,1,'loot'));const bias=stage.id>=17?Math.floor(Math.random()*4):(stage.id-1)%4,pickBias=()=>Math.random()<.4?bias:[0,1,2,3].filter(x=>x!==bias)[Math.floor(Math.random()*3)],herb=mainlineBias[pickBias()];roll(stage.id%2?.55:.4,()=>addDivineHarvest(herb[1],herb[1],1,'loot'));roll(stage.id%2?.55:.4,()=>{const name=mainlineBias[pickBias()][2];addDivineHarvest(craftingMaterialCountByName[name],name,1)});roll(stage.id===17?.45:stage.id===18?.7:stage.id%2?.3:.6,()=>addDivineHarvest(craftingMaterialCountByName['丹砂'],'丹砂',1));roll(1,()=>addDivineHarvest(`tribPill${stage.realm}`,`${spiritRealms[stage.realm-1]}丹`,range(1,2)));const bag=mainlineBagRanges[stage.id-1];[['mainlineSpiritStoneBag','靈石袋',1,bag[0]*3,bag[1]*3],['mainlineWoodBag','木材袋',.75,bag[2],bag[3]],['mainlineIronBag','隕鐵袋',.6,bag[4],bag[5]],['mainlineFoodBag','食物袋',.75,bag[6],bag[7]]].forEach(([key,name,chance,min,max])=>roll(chance,()=>addDivineHarvest(key,name,range(min,max))));roll(stage.id===18?.02:stage.id%2?.008:.015,()=>addDivineHarvest(`${stage.realm}階凡品裝備`,`${stage.realm}階凡品裝備`,1,'loot'));roll(stage.id===18?.0015:stage.id%2?.0005:.001,()=>addDivineHarvest(`${stage.realm}階極品裝備`,`${stage.realm}階極品裝備`,1,'loot'))}
 function normalizeDivineRoamingTiming(){if((state.divineRoamingTimingVersion||0)>=2)return;const job=state.divineRoamingJob;if(job&&job.completed<job.total){const now=gameNow();job.startedAt=now;job.nextAt=now+divineRoamingAttemptMs;delete job.pendingStageId;delete job.pendingTotal}state.divineRoamingTimingVersion=2}
 function processDivineRoaming(){divineRoamingDaily();let job=state.divineRoamingJob,changed=false,guard=0;const now=gameNow();while(job&&job.completed<job.total&&now>=job.nextAt&&guard++<100){const boundary=job.nextAt,stage=mortalMainline[job.stageId-1],attempt=(state.divineRoamingUsed||0)+1;rollDivineRoamingDrop(stage,divineRoamingRate(attempt));state.divineRoamingUsed=attempt;job.completed++;changed=true;if(job.returnRequested){job.total=job.completed;job.finishedAt=boundary;delete job.returnRequested;delete job.pendingStageId;delete job.pendingTotal}else if(job.pendingStageId){const target=job.pendingStageId,available=Math.max(0,100-state.divineRoamingUsed),total=Math.min(Math.max(0,Math.floor(job.pendingTotal||0)),available);if(total>0)state.divineRoamingJob={stageId:target,total,completed:0,startedAt:boundary,nextAt:boundary+divineRoamingAttemptMs};else{job.completed=job.total;job.finishedAt=boundary;delete job.pendingStageId;delete job.pendingTotal}}else if(job.completed>=job.total)job.finishedAt=boundary;else job.nextAt=boundary+divineRoamingAttemptMs;job=state.divineRoamingJob}if(changed)save();return changed}
 function divineRoamingStatus(){processDivineRoaming();const job=state.divineRoamingJob;if(!job)return '神念歸體・目前閒置';const stage=mortalMainline[job.stageId-1];if(job.completed>=job.total)return `${stage.name}遠遊完成・${job.completed}/${job.total}`;const pending=job.returnRequested?'・本次結束後神念回歸':job.pendingStageId?`・本次結束後轉往${mortalMainline[job.pendingStageId-1].name}`:'';return `正遠遊${stage.name}・${job.completed}/${job.total}${pending}`}
@@ -1674,8 +1674,8 @@ function renderSectView(view){
   if(view==='tasks'){const progress=worldProgressLevel(),bonus=Math.round(sectExperienceBonus()*100);inner.innerHTML=`<header class="sect-facility-heading"><small>門派設施・任務承接</small><h2>執事堂</h2></header><div class="task-list">${sectTasks.map(t=>`<button data-task="${t.id}" class="task-card ${state.sectTask===t.id?'active':''}" ${progress<t.need?'disabled':''}><b>${t.name}</b><span>每年：功勳與貢獻各+${t.gain}・靈石+${t.stone}・聲望+${t.prestige}</span><small>${t.desc}</small><em>${state.sectTask===t.id?'已接取':progress>=t.need?'可接取':`需${worldProgressGateText(t.need)}`}</em></button>`).join('')}</div><p class="sect-note">任務會持續執行；門派閱歷使功勳與貢獻獲取 +${bonus}%。脫離後任務停止，本門進度保留。</p>`;$$('.task-card:not(:disabled)').forEach(b=>b.onclick=()=>{state.sectTask=b.dataset.task;toast(`開始持續任務：${selectedSectTask().name}`);renderSectView('tasks');save()});return}
   if(view==='practice'){
     const can=state.sectRank>=1,done=state.lastPracticeDay===dateKey(),practiceOn=buffActive('practiceBuff'),transmissionOn=buffActive('transmissionBuff');
-    const practiceReason=!can?'需晉升內門弟子':done?'今日已完成':state.spiritStone<1000?`尚缺 ${Math.ceil(1000-state.spiritStone)} 靈石`:'開始練功';
-    inner.innerHTML=`<div class="practice-grid"><article class="buff-card ${practiceOn?'running':''}"><b>練功</b><p>消耗1000靈石，獲得5倍修為修練${state.actingLeader?20:10}年。每日一次，開啟後持續至時間結束。</p><div class="buff-timer ${practiceOn?'active':''}"><i id="practiceTimerBar" style="width:${buffPercent('practiceBuff')}%"></i><span id="practiceTimerText">${practiceOn?buffClock('practiceBuff'):'未開啟'}</span></div><button id="dailyPractice" ${can&&!done&&state.spiritStone>=1000?'':'disabled'}>${practiceReason}</button></article><article class="buff-card ${transmissionOn?'running':''}"><b>掌門傳功</b><p>每次獲得8倍修為修練10年，可與練功同時進行，開啟後無法暫停。</p><div class="buff-timer ${transmissionOn?'active':''}"><i id="transmissionTimerBar" style="width:${buffPercent('transmissionBuff')}%"></i><span id="transmissionTimerText">${transmissionOn?buffClock('transmissionBuff'):'未開啟'}</span></div><div class="transmit-buttons"><button data-transmit="1" data-cost="5">1次・5靈玉</button><button data-transmit="30" data-cost="120">30次・120靈玉</button><button data-transmit="100" data-cost="300">100次・300靈玉</button></div></article></div>${can?'':'<p class="sect-note">練功房需達內門弟子以上；目前靈石足夠，但職位尚未符合。</p>'}<p class="sect-note">目前總修練倍率：${cultivationMultiplier()}倍・主介面修練效率 ${rate().toLocaleString()} / 5秒</p>`;
+    const practiceReason=!can?'需晉升內門弟子':done?'今日已完成':state.spiritStone<300?`尚缺 ${Math.ceil(300-state.spiritStone)} 靈石`:'開始練功';
+    inner.innerHTML=`<div class="practice-grid"><article class="buff-card ${practiceOn?'running':''}"><b>練功</b><p>消耗300靈石，獲得5倍修為修練${state.actingLeader?20:10}年。每日一次，開啟後持續至時間結束。</p><div class="buff-timer ${practiceOn?'active':''}"><i id="practiceTimerBar" style="width:${buffPercent('practiceBuff')}%"></i><span id="practiceTimerText">${practiceOn?buffClock('practiceBuff'):'未開啟'}</span></div><button id="dailyPractice" ${can&&!done&&state.spiritStone>=300?'':'disabled'}>${practiceReason}</button></article><article class="buff-card ${transmissionOn?'running':''}"><b>掌門傳功</b><p>每次獲得8倍修為修練10年，可與練功同時進行，開啟後無法暫停。</p><div class="buff-timer ${transmissionOn?'active':''}"><i id="transmissionTimerBar" style="width:${buffPercent('transmissionBuff')}%"></i><span id="transmissionTimerText">${transmissionOn?buffClock('transmissionBuff'):'未開啟'}</span></div><div class="transmit-buttons"><button data-transmit="1" data-cost="5">1次・5靈玉</button><button data-transmit="30" data-cost="120">30次・120靈玉</button><button data-transmit="100" data-cost="300">100次・300靈玉</button></div></article></div>${can?'':'<p class="sect-note">練功房需達內門弟子以上；目前靈石足夠，但職位尚未符合。</p>'}<p class="sect-note">目前總修練倍率：${cultivationMultiplier()}倍・主介面修練效率 ${rate().toLocaleString()} / 5秒</p>`;
     $('#dailyPractice').onclick=dailyPractice;$$('[data-transmit]').forEach(b=>{b.disabled=transmissionOn||!can||state.spiritJade<+b.dataset.cost;b.onclick=()=>masterTransmission(+b.dataset.transmit,+b.dataset.cost)});return
   }
 }
@@ -2002,7 +2002,7 @@ function updatePracticeTimers(){
   if(currentFeature!=='sect'||currentSectView!=='practice')return;
   for(const [key,prefix] of [['practiceBuff','practice'],['transmissionBuff','transmission']]){const bar=$(`#${prefix}TimerBar`),text=$(`#${prefix}TimerText`);if(!bar||!text)continue;const active=buffActive(key);bar.style.width=`${buffPercent(key)}%`;text.textContent=active?buffClock(key):'未開啟';if(!active&&text.closest('.buff-timer')?.classList.contains('active')){renderSectView('practice');render();break}}
 }
-function dailyPractice(){if(!requireTrustedTime())return;if(state.sectRank<1)return toast('需晉升內門弟子才能使用練功房');if(state.lastPracticeDay===dateKey())return toast('今日已完成練功');if(state.spiritStone<1000)return toast(`尚缺 ${Math.ceil(1000-state.spiritStone)} 靈石`);state.spiritStone-=1000;state.lastPracticeDay=dateKey();const years=state.actingLeader?20:10;addCultivationBuff('practiceBuff',years);toast(`練功已開啟・5倍修為持續${years}年`);renderSectView('practice');render();save()}
+function dailyPractice(){if(!requireTrustedTime())return;if(state.sectRank<1)return toast('需晉升內門弟子才能使用練功房');if(state.lastPracticeDay===dateKey())return toast('今日已完成練功');if(state.spiritStone<300)return toast(`尚缺 ${Math.ceil(300-state.spiritStone)} 靈石`);state.spiritStone-=300;state.lastPracticeDay=dateKey();const years=state.actingLeader?20:10;addCultivationBuff('practiceBuff',years);toast(`練功已開啟・5倍修為持續${years}年`);renderSectView('practice');render();save()}
 function masterTransmission(times,cost){if(state.sectRank<1)return toast('需晉升內門弟子才能接受掌門傳功');if(buffActive('transmissionBuff'))return toast('掌門傳功進行中，需等待本次傳功結束');if(state.spiritJade<cost)return toast('靈玉不足');state.spiritJade-=cost;addCultivationBuff('transmissionBuff',10*times);toast(`掌門傳功已開啟・8倍修為增加 ${10*times} 年`);renderSectView('practice');render();save()}
 function claimSalary(){if(!requireTrustedTime())return;if(state.lastSalaryDay===dateKey())return;const amount=sectSalary[state.sectRank];state.spiritStone+=amount;state.lastSalaryDay=dateKey();toast(`俸祿・靈石+${formatLargeNumber(amount)}`);renderSectView('home');render();save()}
 async function challengeMaster(){
@@ -2049,8 +2049,8 @@ function caveFacilityEffect(key){
   if(key==='sword')return `劍元效率 +${Math.round((.08+level*.02)*100)}%`;
   return `鍛體材料 -${Math.min(25,level*3)}%・受傷率 -${level*2}%`;
 }
-function caveCoreUpgradeCost(){const level=state.caveCoreLevel;return {stone:Math.floor(1200*Math.pow(level,1.7)),wood:Math.floor(420*Math.pow(level,1.5)),iron:Math.floor(180*Math.pow(level,1.45))}}
-function caveFacilityUpgradeCost(key){const level=state[caveFacilities[key].level],weight={cultivation:1,sword:1.15,body:1.1}[key];return {stone:Math.floor(800*weight*Math.pow(level,1.65)),wood:Math.floor(240*weight*Math.pow(level,1.5)),iron:Math.floor(100*weight*Math.pow(level,1.45))}}
+function caveCoreUpgradeCost(){const level=state.caveCoreLevel;return {stone:Math.floor(780*Math.pow(level,1.7)),wood:Math.floor(420*Math.pow(level,1.5)),iron:Math.floor(180*Math.pow(level,1.45))}}
+function caveFacilityUpgradeCost(key){const level=state[caveFacilities[key].level],weight={cultivation:1,sword:1.15,body:1.1}[key];return {stone:Math.floor(520*weight*Math.pow(level,1.65)),wood:Math.floor(240*weight*Math.pow(level,1.5)),iron:Math.floor(100*weight*Math.pow(level,1.45))}}
 function assignedChildren(){return Object.values(caveAreas).reduce((sum,a)=>sum+state[a.worker],0)}
 function availableChildren(){return Math.max(0,state.daoChildTotal-assignedChildren())}
 const daoChildMax=caveAreaMaxLevel*Object.keys(caveAreas).length;
@@ -2378,7 +2378,7 @@ function renderHelp(tab='cultivation'){
   };const encounterHelp=helpCard('因緣與歲月',['修練達10、30、50、100、300、500與1000年時，會留下固定歲月事件。','正常在線遊玩約每30至60分鐘可能遇見一樁隨機奇遇；離線、戰鬥與突破演出期間不會累積隨機奇遇計時。','奇遇可暫時收起，待處理事件會保留在右側「因緣」入口。'])+helpCard('抉擇與道心',['每樁奇遇均可守正、逐利或守衡，分別累積正氣、邪氣或兩者閱歷。','獎勵只使用正式既有物品，包括物資袋、凡間素材與渡劫丹；測試道具不會出現。','守正提高氣血、防禦與減傷；逐煞提高三路攻擊但略增承傷；守衡提高命中、閃避與第二招式。']);$('#helpContent').innerHTML=(tab==='encounter'?encounterHelp:pages[tab])||pages.cultivation;
 }
 const scriptureFloorTiers=[[1,2],[3,4],[5,6],[7,8],[9]];
-const scriptureTierPrices=[200,600,1800,5400,16000,48000,145000,435000,1300000];
+const scriptureTierPrices=[100,350,1200,5400,16000,48000,145000,435000,1300000];
 const reputationFloorStars=[[1,2],[3,4],[5,6],[7,8],[9]];
 const sectInvitationPrices=[150,250,450,700,1000,1400,1900,2500,3300];
 const reputationResourcePrices={100:{spiritStone:25,wood:10,meteorIron:18},1000:{spiritStone:180,wood:80,meteorIron:130},10000:{spiritStone:1200,wood:600,meteorIron:900}};
