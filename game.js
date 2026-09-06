@@ -371,7 +371,7 @@ defaults.sectTechniqueMailVersion=0;
 defaults.sectRecords={};
 defaults.sectMerit=0;
 defaults.sectSearchAvailableAt=0;
-defaults.mainlineCleared=0;defaults.mainlineStories={};defaults.mainlineMaterials={};defaults.mainlineLoot={};defaults.mainlineHarvest=[];defaults.mainlineSpiritStoneBag=0;defaults.mainlineWoodBag=0;defaults.mainlineIronBag=0;defaults.mainlineFoodBag=0;defaults.craftingMaterialMigration=0;
+defaults.mainlineCleared=0;defaults.mainlineStories={};defaults.mainlineMaterials={};defaults.mainlineLoot={};defaults.mainlineHarvest=[];defaults.mainlineSpiritStoneBag=0;defaults.mainlineWoodBag=0;defaults.mainlineIronBag=0;defaults.mainlineFoodBag=0;defaults.craftingMaterialMigration=0;defaults.ownedArtifacts=[];defaults.equippedArtifact='';
 defaults.divineRoamingUnlocked=false;defaults.divineRoamingManualCount=0;defaults.divineRoamingDay='';defaults.divineRoamingUsed=0;defaults.divineRoamingJob=null;defaults.divineRoamingHarvest={};defaults.divineRoamingTimingVersion=0;
 defaults.encounterVersion=1;defaults.encounterQueue=[];defaults.encounterHistory=[];defaults.encounterMilestones={};defaults.encounterActiveMs=0;defaults.encounterNextMs=2700000;defaults.encounterSerial=0;
 defaults.partnerStory=null;defaults.partnerSystem=null;
@@ -704,8 +704,22 @@ function processEncounterTriggers(activeMs=0){
   for(const year of encounterYearMilestones){if(years<year||state.encounterMilestones[year])continue;if(queueEncounter(makeEncounter('year',year)))state.encounterMilestones[year]=true;else break}
   if(activeMs>0&&!document.hidden&&!battle&&!tribulationLocked){state.encounterActiveMs+=activeMs;if(state.encounterActiveMs>=state.encounterNextMs&&state.encounterQueue.length<3){state.encounterActiveMs=0;state.encounterNextMs=1800000+Math.floor(Math.random()*1800001);queueEncounter(makeEncounter())}}
   updateEncounterButton();
+  updateArtifactTombButton();
 }
 function encounterRewardText(choice){return choice.rewards.map(reward=>`${itemCatalog[reward.item]?.name||reward.item} ×${reward.amount}`).join('、')}
+const artifactCatalog=[
+  {id:'mountain-river-seal',name:'山河定界印',image:'assets/qstyle-v2/artifacts/mountain-river-seal.png',rule:'攻擊推動共享界勢；抵達任一端時，對手下一次行動改為破界。練氣推動10、淬劍15（落空反震4）、煉體8並削弱敵方下次推動4。'},
+  {id:'sun-moon-wheel',name:'日月交蝕輪',image:'assets/qstyle-v2/artifacts/sun-moon-wheel.png',rule:'每個完整回合輪替日相與月相；日相雙方最終傷害125%，月相雙方75%。固定第一式逢日、第二式逢月。'},
+  {id:'four-poles-stele',name:'四極鎮命碑',image:'assets/qstyle-v2/artifacts/four-poles-stele.png',rule:'雙方氣血首次跌破70%與30%時，該擊只降至界線，溢出傷害消失；每擊至多破除一道命界。煉體試煉不生效。'}
+];
+function normalizeArtifacts(){state.ownedArtifacts=Array.isArray(state.ownedArtifacts)?state.ownedArtifacts.filter(id=>artifactCatalog.some(a=>a.id===id)):[];if(!state.ownedArtifacts.includes(state.equippedArtifact))state.equippedArtifact=''}
+function availableArtifactClaimCount(){return [6,12,18].filter(mark=>(state.mainlineCleared||0)>=mark).length}
+function artifactClaimPending(){return Math.max(0,availableArtifactClaimCount()-(state.ownedArtifacts?.length||0))}
+function updateArtifactTombButton(){const button=$('#artifactTombButton');if(!button)return;button.classList.toggle('hidden',!state.cultivationAwakened||artifactClaimPending()<1)}
+function ensureArtifactModal(){let modal=$('#artifactModal');if(modal)return modal;modal=document.createElement('div');modal.id='artifactModal';modal.className='artifact-modal';modal.innerHTML='<section class="artifact-window"><button class="artifact-close" aria-label="關閉">×</button><header><small>九鎖遺府</small><h2>鎮界器塚</h2><p id="artifactModalIntro"></p></header><div id="artifactChoices" class="artifact-choices"></div></section>';document.body.append(modal);modal.querySelector('.artifact-close').onclick=()=>modal.classList.remove('show');return modal}
+function openArtifactTomb(mode='claim'){normalizeArtifacts();const modal=ensureArtifactModal(),owned=new Set(state.ownedArtifacts),claim=mode==='claim'&&artifactClaimPending()>0;$('#artifactModalIntro').textContent=claim?`第 ${state.ownedArtifacts.length+1} 座器臺已解封。選定後立即認主，仍可於法寶欄更換已持有法寶。`:'法寶不佔用儲物袋；只能在戰鬥外更換，同時僅能裝備一件。';$('#artifactChoices').innerHTML=artifactCatalog.map(a=>{const has=owned.has(a.id),equipped=state.equippedArtifact===a.id,selectable=claim?!has:has;return `<article class="artifact-card ${equipped?'equipped':''} ${selectable?'':'locked'}"><img src="${a.image}" alt="${a.name}"><div><small>${equipped?'目前裝備':has?'已認主':'尚未取得'}</small><h3>${a.name}</h3><p>${a.rule}</p></div><button data-artifact="${a.id}" ${selectable?'':'disabled'}>${claim?'選此法寶':equipped?'卸下':'裝備'}</button></article>`}).join('');$$('[data-artifact]').forEach(button=>button.onclick=()=>claim?claimArtifact(button.dataset.artifact):toggleArtifact(button.dataset.artifact));modal.classList.add('show')}
+async function claimArtifact(id){const artifact=artifactCatalog.find(a=>a.id===id);if(!artifact||artifactClaimPending()<1||state.ownedArtifacts.includes(id))return;if(!await gameConfirm(`確定讓「${artifact.name}」認主？\n取得後鎮界器塚入口會暫時隱去，直至下一道封印於第 12／18 關解開。`,{title:'古器認主',confirmText:'確認認主'}))return;state.ownedArtifacts.push(id);state.equippedArtifact=id;save();render();$('#artifactModal')?.classList.remove('show');toast(`取得並裝備・${artifact.name}`)}
+function toggleArtifact(id){if(battle?.active)return toast('戰鬥中無法更換法寶');if(!state.ownedArtifacts.includes(id))return;state.equippedArtifact=state.equippedArtifact===id?'':id;save();render();openArtifactTomb('equip');toast(state.equippedArtifact===id?`已裝備${artifactCatalog.find(a=>a.id===id).name}`:'已卸下法寶')}
 function updateEncounterButton(){const button=$('#encounterButton'),badge=$('#encounterBadge'),count=state.encounterQueue?.length||0;if(!button)return;button.classList.toggle('hidden',!state.cultivationAwakened);badge.textContent=count;badge.classList.toggle('hidden',!count);button.classList.toggle('pending',count>0)}
 function renderEncounterModal(){const event=state.encounterQueue[0],content=$('#encounterContent');if(!content)return;if(event?.kind==='partner')return partnerRenderEncounter(event,content);if(event){content.innerHTML=`<p class="eyebrow">${event.kind==='year'?`修練歲月・${event.year}年`:'行路有緣'}</p><h2>${event.title}</h2><p class="encounter-story">${event.text}</p><div class="encounter-choices">${event.choices.map((choice,index)=>`<button data-encounter-choice="${index}" class="path-${choice.path}"><b>${choice.label}</b><small>${choice.path==='righteous'?'正氣':choice.path==='evil'?'邪氣':'正邪各'}有所增長・${encounterRewardText(choice)}</small></button>`).join('')}</div>`;$$('[data-encounter-choice]').forEach(button=>button.onclick=()=>resolveEncounter(+button.dataset.encounterChoice))}else partnerRenderHistory(content)}
 function openEncounterModal(){renderEncounterModal();$('#encounterModal').classList.remove('hidden')}
@@ -1062,6 +1076,7 @@ function render() {
   $('#spiritJadeAmount').textContent=formatLargeNumber(state.spiritJade);
   $('#reputationAmount').textContent=formatLargeNumber(state.prestige);
   updateEncounterButton();
+  updateArtifactTombButton();
   if($('#marketSpiritStone'))$('#marketSpiritStone').textContent=formatLargeNumber(state.spiritStone);
   if($('#marketSpiritJade'))$('#marketSpiritJade').textContent=formatLargeNumber(state.spiritJade);
   if($('#marketReputation'))$('#marketReputation').textContent=formatLargeNumber(state.prestige);
@@ -1891,17 +1906,40 @@ function appendBattleLog(text,side='player'){
   battle.logs.push(text);if(battle.logs.length>6)battle.logs.shift();
   $('#battleLog').innerHTML=battle.logs.map((x,i)=>`<p class="${i===battle.logs.length-1?side:''}">${x}</p>`).join('');$('#battleLog').scrollTop=$('#battleLog').scrollHeight;
 }
+function activeBattleArtifact(){const id=state.equippedArtifact;return id==='four-poles-stele'&&battle?.mode==='bodyTrial'?'':id}
+function artifactDamageMultiplier(){return activeBattleArtifact()==='sun-moon-wheel'?(battle.round%2?1.25:.75):1}
+function applyArtifactDamage(target,raw,side){
+  let damage=Math.max(0,Math.round(raw*artifactDamageMultiplier()));
+  if(activeBattleArtifact()!=='four-poles-stele'||damage<=0)return damage;
+  battle.artifactBarriers=battle.artifactBarriers||{player:[],enemy:[]};const broken=battle.artifactBarriers[side],before=target.hp,targetMax=target.maxHp;
+  for(const threshold of [.7,.3]){const line=Math.ceil(targetMax*threshold);if(!broken.includes(threshold)&&before>line&&before-damage<=line){broken.push(threshold);appendBattleLog(`四極鎮命碑顯化，將氣血鎮於 ${Math.round(threshold*100)}% 命界，溢出傷害消散。`,side==='player'?'enemy':'player');return before-line}}
+  return damage;
+}
+function artifactPush(side,technique,hit){
+  if(activeBattleArtifact()!=='mountain-river-seal')return;
+  battle.boundaryMomentum=Number(battle.boundaryMomentum)||0;
+  if(side==='player'){
+    if(hit.dodged){if(technique.embryo)battle.boundaryMomentum=Math.max(-100,battle.boundaryMomentum-4)}
+    else{let push=technique.kind==='body'?8:technique.embryo?15:10;battle.boundaryMomentum=Math.min(100,battle.boundaryMomentum+push);if(technique.kind==='body')battle.enemyPushWeakened=true}
+    if(battle.boundaryMomentum>=100)battle.enemyMustBreak=true;
+  }else if(!hit.dodged){
+    const push=Math.max(0,10-(battle.enemyPushWeakened?4:0));battle.enemyPushWeakened=false;battle.boundaryMomentum=Math.max(-100,battle.boundaryMomentum-push);if(battle.boundaryMomentum<=-100)battle.playerMustBreak=true;
+  }
+}
+function performBoundaryBreak(side){
+  appendBattleLog(`${side==='player'?state.name:battle.enemy.name}受界勢壓制，只得停手破界。`,side);battle.boundaryMomentum=0;if(side==='player')battle.playerMustBreak=false;else battle.enemyMustBreak=false;updateBattleUi();
+}
 function playerBattleTurn(){
-  if(!battle?.active)return;const equipped=equippedCombatTechniques(),moves=battle.mode==='bodyTrial'?equipped.filter(move=>move.kind==='body'):equipped,slot=battle.playerMoveIndex%moves.length,technique=moves[slot]||highestBodyTechnique()||startingTechniques.find(move=>combatTechniqueAvailable(move))||startingTechniques[0];battle.playerMoveIndex++;const balanceBonus=battle.mode!=='bodyTrial'&&slot===1?1+(technique.embryo?Math.min(.5,swordPathMarkCounts().balance*.05):0)+(battle.player.alignmentSecondMove||0):1,mult=technique.kind==='sectSkill'?balanceBonus:(technique.min+Math.random()*(technique.max-technique.min))*balanceBonus,hit=technique.kind==='sectSkill'?sectSkillRoll(battle.player,battle.enemy,technique,balanceBonus):technique.embryo?swordTechniqueRoll(battle.player,battle.enemy,technique,mult):technique.kind==='body'?bodyTechniqueRoll(battle.player,battle.enemy,technique,mult):damageRoll({...battle.player,attack:battle.player.qiAttack||battle.player.attack},battle.enemy,mult);
-  battle.enemy.hp=Math.max(battle.mode==='bodyTrial'?1:0,battle.enemy.hp-hit.damage);animateBattleStrike('#playerSilhouette','#enemySilhouette',hit,technique);
+  if(!battle?.active)return;if(battle.playerMustBreak){performBoundaryBreak('player');return battleTimer=setTimeout(enemyBattleTurn,950)}const equipped=equippedCombatTechniques(),moves=battle.mode==='bodyTrial'?equipped.filter(move=>move.kind==='body'):equipped,slot=battle.playerMoveIndex%moves.length,technique=moves[slot]||highestBodyTechnique()||startingTechniques.find(move=>combatTechniqueAvailable(move))||startingTechniques[0];battle.playerMoveIndex++;const balanceBonus=battle.mode!=='bodyTrial'&&slot===1?1+(technique.embryo?Math.min(.5,swordPathMarkCounts().balance*.05):0)+(battle.player.alignmentSecondMove||0):1,mult=technique.kind==='sectSkill'?balanceBonus:(technique.min+Math.random()*(technique.max-technique.min))*balanceBonus,hit=technique.kind==='sectSkill'?sectSkillRoll(battle.player,battle.enemy,technique,balanceBonus):technique.embryo?swordTechniqueRoll(battle.player,battle.enemy,technique,mult):technique.kind==='body'?bodyTechniqueRoll(battle.player,battle.enemy,technique,mult):damageRoll({...battle.player,attack:battle.player.qiAttack||battle.player.attack},battle.enemy,mult);
+  hit.damage=applyArtifactDamage(battle.enemy,hit.damage,'enemy');battle.enemy.hp=Math.max(battle.mode==='bodyTrial'?1:0,battle.enemy.hp-hit.damage);artifactPush('player',technique,hit);animateBattleStrike('#playerSilhouette','#enemySilhouette',hit,technique);
   const healed=hit.dodged?0:Math.min(battle.player.maxHp-battle.player.hp,Math.max(0,Math.round(hit.damage*(technique.lifeSteal||0))));if(healed>0)battle.player.hp+=healed;const repeatText=hit.repeated?'，殘影返斬觸發':'';const healText=healed?`，本命回流恢復 ${formatBattleNumber(healed)} 氣血`:'';
   appendBattleLog(hit.dodged?`${battle.enemy.name}看破招式來勢，避開了${state.name}的${technique.name}。`:`${state.name}${technique.kind==='sectSkill'?'運轉門派真傳':technique.embryo?'催動本命劍':'凝神馭元'}，使出${technique.name}，對${battle.enemy.name}造成了${formatBattleNumber(hit.damage)}傷害${repeatText}${healText}。`,'player');updateBattleUi();
   if(battle.enemy.hp<=0){if(battle.mode==='mainline'&&battle.waveIndex<2)return setTimeout(advanceMainlineWave,650);return setTimeout(()=>finishBattle(true,'對手氣息已散，無力再戰。'),650)}
   battleTimer=setTimeout(enemyBattleTurn,950);
 }
 function enemyBattleTurn(){
-  if(!battle?.active)return;if(battle.mode==='mainline'){const stage=battle.mainlineStage;if(battle.completedRounds>0&&battle.completedRounds%3===0){battle.enemy.attack=Math.round(battle.enemy.attack*1.06);appendBattleLog(`${stage.boss}引動「${mainlineMechanics[stage.id-1].split('：')[0]}」，攻勢再度提升。`,'enemy')}if(!battle.mechanicTriggered&&[7,17,18].includes(stage.id)&&battle.enemy.hp<=battle.enemy.maxHp*.5){battle.mechanicTriggered=true;battle.enemy.attack=Math.round(battle.enemy.attack*1.15);battle.enemy.defense=Math.round(battle.enemy.defense*1.1);appendBattleLog(`${stage.boss}氣息驟變，關卡核心機制進入第二階段。`,'enemy')}}const technique=startingTechniques[0],mult=technique.min+Math.random()*(technique.max-technique.min),hit=damageRoll(battle.enemy,battle.player,mult);
-  const damage=Math.max(hit.dodged?0:1,Math.round(hit.damage*(1-(battle.player.damageReduction||0)))),minimumHp=battle.mode==='bodyTrial'&&battle.guaranteedBodyTrial?1:0;battle.player.hp=Math.max(minimumHp,battle.player.hp-damage);animateBattleStrike('#enemySilhouette','#playerSilhouette',{...hit,damage},technique);
+  if(!battle?.active)return;if(battle.enemyMustBreak){performBoundaryBreak('enemy');battle.completedRounds++;battle.round++;return battleTimer=setTimeout(playerBattleTurn,900)}if(battle.mode==='mainline'){const stage=battle.mainlineStage;if(battle.completedRounds>0&&battle.completedRounds%3===0){battle.enemy.attack=Math.round(battle.enemy.attack*1.06);appendBattleLog(`${stage.boss}引動「${mainlineMechanics[stage.id-1].split('：')[0]}」，攻勢再度提升。`,'enemy')}if(!battle.mechanicTriggered&&[7,17,18].includes(stage.id)&&battle.enemy.hp<=battle.enemy.maxHp*.5){battle.mechanicTriggered=true;battle.enemy.attack=Math.round(battle.enemy.attack*1.15);battle.enemy.defense=Math.round(battle.enemy.defense*1.1);appendBattleLog(`${stage.boss}氣息驟變，關卡核心機制進入第二階段。`,'enemy')}}const technique=startingTechniques[0],mult=technique.min+Math.random()*(technique.max-technique.min),hit=damageRoll(battle.enemy,battle.player,mult);
+  const damage=applyArtifactDamage(battle.player,Math.max(hit.dodged?0:1,Math.round(hit.damage*(1-(battle.player.damageReduction||0)))),'player'),minimumHp=battle.mode==='bodyTrial'&&battle.guaranteedBodyTrial?1:0;battle.player.hp=Math.max(minimumHp,battle.player.hp-damage);artifactPush('enemy',technique,{...hit,damage});animateBattleStrike('#enemySilhouette','#playerSilhouette',{...hit,damage},technique);
   appendBattleLog(hit.dodged?`${state.name}踏影側身，避開了${battle.enemy.name}的${technique.name}。`:`${battle.enemy.name}${technique.kind==='sword'?'引氣淬鋒':'凝神引元'}，使出${technique.name}，對${state.name}造成了${formatBattleNumber(damage)}傷害。`,'enemy');
   battle.completedRounds++;updateBattleUi();
   if(battle.player.hp<=0)return setTimeout(()=>finishBattle(false,battle.mode==='master'?'你氣力不支，本次掌門挑戰落敗。':battle.mode==='swordTrial'?'劍道幻影破去招式，本次試劍落敗。':battle.mode==='bodyTrial'?'肉身未能撐住試煉化身的攻勢。':'你氣力不支，本次切磋落敗。'),650);
@@ -1910,6 +1948,7 @@ function enemyBattleTurn(){
 }
 function updateBattleUi(){
   if(!battle)return;$('#battleTurn').textContent=battle.mode==='bodyTrial'?`第 ${Math.min(battle.round,battle.targetRounds)} / ${battle.targetRounds} 回合`:`第${['一','二','三','四','五','六','七','八','九','十'][Math.min(9,battle.round-1)]||battle.round}回合`;
+  const artifactId=activeBattleArtifact();if(artifactId==='sun-moon-wheel')$('#battleTurn').textContent+=(battle.round%2?'・日相 125%':'・月相 75%');else if(artifactId==='mountain-river-seal')$('#battleTurn').textContent+='・界勢 '+(battle.boundaryMomentum||0);else if(artifactId==='four-poles-stele')$('#battleTurn').textContent+='・鎮命界';
   $('#playerHealthBar').style.width=`${Math.max(0,battle.player.hp/battle.player.maxHp*100)}%`;$('#enemyHealthBar').style.width=`${Math.max(0,battle.enemy.hp/battle.enemy.maxHp*100)}%`;
   $('#playerHealthText').textContent=`${Math.ceil(battle.player.hp).toLocaleString()} / ${battle.player.maxHp.toLocaleString()}`;$('#enemyHealthText').textContent=`${Math.ceil(battle.enemy.hp).toLocaleString()} / ${battle.enemy.maxHp.toLocaleString()}`;
   const exit=$('#battleExitBtn'),ready=battle.completedRounds>=3;exit.disabled=!ready;exit.textContent=battle.mode==='spar'?'退出':'認輸';
@@ -2211,9 +2250,10 @@ function renderCharacterView(view='equipment'){
     showCharacterAttributes();return;
   }
   if(view==='dosage'){renderDosageLedger(content);return}
-  const src=characterAsset(),slotKeys=[...equipmentSlots.map(x=>x[0]),'treasure'],slotHtml=key=>{const id=state.equippedItems?.[key],e=(state.equipmentInventory||[]).find(x=>x.id===id),meta=equipmentSlots.find(x=>x[0]===key),name=meta?.[1]||'法寶';return `<button type="button" class="equip-slot ${e?'filled':''}" ${e?`data-equipped-item="${e.id}"`:'disabled'}>${e?`<img src="assets/qstyle-v2/production/equipment/${e.slot}-t${e.tier}.png" alt="${name}">${e.quality==='rare'?'<i>「極」</i>':''}<small>${equipmentSets[e.tier-1]}${name}</small>`:`<b>${name}</b>`}</button>`},left=slotKeys.slice(0,4).map(slotHtml).join(''),right=slotKeys.slice(4).map(slotHtml).join('');
+  const src=characterAsset(),slotKeys=[...equipmentSlots.map(x=>x[0]),'treasure'],slotHtml=key=>{if(key==='treasure'){const artifact=artifactCatalog.find(a=>a.id===state.equippedArtifact),owned=state.ownedArtifacts?.length||0;return `<button type="button" class="equip-slot treasure-slot ${artifact?'filled':''}" data-artifact-slot ${owned?'':'disabled'}>${artifact?`<img src="${artifact.image}" alt="${artifact.name}"><small>${artifact.name}</small>`:`<b>法寶</b><small>${owned?'點擊裝備':'尚未取得'}</small>`}</button>`}const id=state.equippedItems?.[key],e=(state.equipmentInventory||[]).find(x=>x.id===id),meta=equipmentSlots.find(x=>x[0]===key),name=meta?.[1]||'法寶';return `<button type="button" class="equip-slot ${e?'filled':''}" ${e?`data-equipped-item="${e.id}"`:'disabled'}>${e?`<img src="assets/qstyle-v2/production/equipment/${e.slot}-t${e.tier}.png" alt="${name}">${e.quality==='rare'?'<i>「極」</i>':''}<small>${equipmentSets[e.tier-1]}${name}</small>`:`<b>${name}</b>`}</button>`},left=slotKeys.slice(0,4).map(slotHtml).join(''),right=slotKeys.slice(4).map(slotHtml).join('');
   content.innerHTML=`<div class="equipment-layout"><div class="equipment-side">${left}</div><div class="equipment-character"><img src="${src}" alt="人物"></div><div class="equipment-side">${right}</div></div>`;
   $$('[data-equipped-item]').forEach(button=>button.onclick=()=>openEquippedItemModal(button.dataset.equippedItem));
+  if($('#characterInner [data-artifact-slot]'))$('#characterInner [data-artifact-slot]').onclick=()=>openArtifactTomb('equip');
 }
 function renderDosageLedger(inner){
   const numerals=['一','二','三','四','五','六','七','八','九'],limit=dosageLimit();
@@ -2593,6 +2633,7 @@ $('#battleExitBtn').onclick=forceEndBattle;
 $('#battleResultNext').onclick=advanceSwordTrial;
 $('#battleResultClose').onclick=closeBattle;
 $('#encounterButton').onclick=openEncounterModal;
+$('#artifactTombButton').onclick=()=>openArtifactTomb('claim');
 $('#encounterCloseBtn').onclick=closeEncounterModal;
 $$('[data-sword-trial-path]').forEach(button=>button.onclick=()=>chooseSwordTrialPath(button.dataset.swordTrialPath));
 document.addEventListener('click',event=>{if(event.target.closest?.('[data-experience-view],[data-road]'))queueMicrotask(renderSwordPathSummary)});
