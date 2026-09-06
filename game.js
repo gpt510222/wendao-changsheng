@@ -82,6 +82,15 @@ const reputationResourceItems=[];
   const amountName={100:'一百',1000:'一千',10000:'一萬'}[amount],id=`reputation${resource}${amount}`,count=`${id}Count`,item={name:`${amountName}${label}`,image,description:`凝練封存的${label}物資。使用後立即獲得 ${formatLargeNumber(amount)} ${label}。`,count,usable:true,giftable:false,sellPrice:1,resourceBundle:{resource,label,amount}};
   itemCatalog[id]=item;reputationResourceItems.push({id,item,minFloor,maxFloor});
 }));
+const marketResourceItems=[];
+const marketResourcePrices={100:{wood:180,food:120,meteorIron:260},1000:{wood:1500,food:1000,meteorIron:2200},10000:{wood:12000,food:8000,meteorIron:18000}};
+[[1,100],[2,100],[3,1000],[4,1000],[5,10000]].forEach(([floor,amount])=>[
+  ['wood','木材','assets/qstyle-v2/wood-cutout.png'],['food','食物','assets/qstyle-v2/food-cutout.png'],['meteorIron','隕鐵','assets/qstyle-v2/meteor-iron-cutout.png']
+].forEach(([resource,label,image])=>{
+  const amountName={100:'一百',1000:'一千',10000:'一萬'}[amount],itemId=`market${resource}${amount}`,offerId=`${itemId}Floor${floor}`;
+  if(!itemCatalog[itemId])itemCatalog[itemId]={name:`${amountName}${label}`,image,description:`坊市封裝的${label}物資。使用後立即獲得 ${formatLargeNumber(amount)} ${label}。`,count:`${itemId}Count`,usable:true,giftable:false,sellPrice:1,resourceBundle:{resource,label,amount}};
+  marketResourceItems.push({id:offerId,itemId,floor,price:marketResourcePrices[amount][resource]});
+}));
 const tribulationPillDefaults={};
 spiritRealms.slice(1).forEach((realm,index)=>{
   const realmIndex=index+1,key=`tribPill${realmIndex}`;
@@ -2409,6 +2418,8 @@ function marketOfferForBook(id){
 }
 function marketOfferForItem(id){
   const bookOffer=marketOfferForBook(id);if(bookOffer)return bookOffer;
+  const resourceOffer=marketResourceItems.find(entry=>entry.id===id);
+  if(resourceOffer){const item=itemCatalog[resourceOffer.itemId];return {id,item,storageId:resourceOffer.itemId,name:item.name,image:item.image,description:item.description,currencyKey:'spiritStone',currencyName:'靈石',currencyImage:'assets/qstyle-v2/spirit-stone.png',price:resourceOffer.price,dailyLimit:5,permanentLimit:null,quantityEnabled:true}}
   if(id==='treasure-brew-base-rare'){const item=itemCatalog['brew-base-rare'];return {id,item,storageId:'brew-base-rare',name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:18,dailyLimit:5,permanentLimit:null,quantityEnabled:true}}
   if(id==='market-sword-embryo-reversion'||id==='treasure-sword-embryo-reversion'){const item=itemCatalog.swordEmbryoReversionElixir,jade=id.startsWith('treasure-');return {id,item,storageId:'swordEmbryoReversionElixir',weeklyKey:'swordEmbryoReversionElixir',name:item.name,image:item.image,description:item.description,currencyKey:jade?'spiritJade':'spiritStone',currencyName:jade?'靈玉':'靈石',currencyImage:`assets/qstyle-v2/${jade?'spirit-jade':'spirit-stone'}.png`,price:jade?50:30000,dailyLimit:null,weeklyLimit:1,permanentLimit:null,quantityEnabled:false}}
   const item=itemCatalog[id];if(!item)return null;
@@ -2503,7 +2514,7 @@ function renderMarket(tab=currentMarketTab){
   }[tab];
   const hasFloors=tab!=='treasure';
   const floor=hasFloors?(marketFloors[tab]||1):1;
-  let products=tab==='scripture'?scriptureStock(floor):tab==='reputation'?reputationStock(floor):(hasFloors?data.floors[floor-1]:data.products);if(tab==='treasure')products=products.filter(id=>id==='divineRoamingManual'?!(state.divineRoamingUnlocked&&!(state.divineRoamingManualCount||state.marketPermanentPurchases?.[id])):id==='mindEmbodimentManual'?!(hasMindEmbodiment()&&!(state.mindEmbodimentManualCount||state.marketPermanentPurchases?.[id])):true);
+  let products=tab==='scripture'?scriptureStock(floor):tab==='reputation'?reputationStock(floor):(hasFloors?data.floors[floor-1]:data.products);if(tab==='market')products=[...marketResourceItems.filter(entry=>entry.floor===floor).map(entry=>entry.id),...products];if(tab==='treasure')products=products.filter(id=>id==='divineRoamingManual'?!(state.divineRoamingUnlocked&&!(state.divineRoamingManualCount||state.marketPermanentPurchases?.[id])):id==='mindEmbodimentManual'?!(hasMindEmbodiment()&&!(state.mindEmbodimentManualCount||state.marketPermanentPurchases?.[id])):true);
   const floorTitle=hasFloors?`${data.title}‧${chineseFloorNames[floor-1]}樓`:data.title;
   const floorControls=hasFloors?`<div class="market-floor-controls">
     ${floor>1?`<button class="market-floor-button market-floor-down" type="button" data-market-floor="down" aria-label="下樓"><img src="assets/qstyle-v2/market-floor-up.png" alt=""><span>下樓</span></button>`:''}
