@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>問道長生・試玩版</title>
-  <link rel="stylesheet" href="styles.css?v=20260906-47">
+  <link rel="stylesheet" href="styles.css?v=20260906-48">
   <link rel="stylesheet" href="q-style.css?v=20260903-19">
   <script>document.documentElement.classList.add('q-style');</script>
 </head>
@@ -363,6 +363,21 @@
         </div>
       </div>
 
+      <div id="identityChangeModal" class="modal hidden">
+        <div class="paper-panel modal-card identity-change-card">
+          <p class="eyebrow">命契重書</p>
+          <h2 id="identityChangeTitle">重書名諱</h2>
+          <p id="identityChangeMessage" class="identity-change-message"></p>
+          <input id="identityChangeInput" class="identity-change-input" maxlength="8" autocomplete="off" spellcheck="false" aria-label="新姓名">
+          <small>限 1～8 個文字；確認成功後才會消耗道具。</small>
+          <p id="identityChangeError" class="error" role="alert"></p>
+          <div class="confirm-modal-actions">
+            <button id="identityChangeCancel" class="text-button">取消</button>
+            <button id="identityChangeConfirm" class="jade-button">確認更名</button>
+          </div>
+        </div>
+      </div>
+
       <div id="marketModal" class="modal market-modal hidden">
         <div class="paper-panel modal-card market-card">
           <div class="market-heading">
@@ -508,6 +523,6 @@
   <audio id="tribulationFailureBgm" src="assets/bgm-tribulation-failure-v1.wav" preload="auto"></audio>
   <audio id="swordBreakthroughBgm" src="assets/bgm-sword-breakthrough-user-v1.wav" preload="auto"></audio>
   <script src="partner-system.js?v=20260906-1"></script>
-  <script src="game.js?v=20260906-68"></script>
+  <script src="game.js?v=20260906-69"></script>
 </body>
 </html>

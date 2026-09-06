@@ -63,6 +63,9 @@ const itemCatalog = {
   evilQiPill:{name:'邪氣丹',image:'assets/qstyle-v2/evil-qi-pill-v1.png',description:'以陰煞氣機凝炼的測試丹藥。每顆使用後增加 1 點邪氣。',count:'evilQiPillCount',usable:true,giftable:false,sellPrice:1,moralGain:{key:'evilQi',label:'邪氣',amount:1}}
 };
 itemCatalog.xisuiFamaoPill={name:'洗髓伐毛丹',image:'assets/qstyle-v2/production/pills/xisui-famao-v1.png',description:'極罕見的洗髓靈丹，可重塑經脈、拓展藥性承受極限。每服用一顆，所有丹藥與靈釀的個別服用上限永久＋1。',count:'xisuiFamaoPillCount',usable:true,giftable:false,sellPrice:1,dosageLimitGain:1};
+itemCatalog.renameProtagonistJade={name:'易名玉牒',image:'assets/qstyle-v2/production/identity/rename-protagonist-jade-v1.png',description:'以本命精血重書名諱的玉牒。使用後可修改主角姓名；確認新姓名後才會消耗。',count:'renameProtagonistJadeCount',usable:true,giftable:false,sellPrice:1,identityAction:'protagonistName'};
+itemCatalog.genderRebirthMirror={name:'陰陽轉生鏡',image:'assets/qstyle-v2/production/identity/gender-rebirth-mirror-v1.png',description:'倒轉陰陽、重塑此身的玄妙寶鏡。使用後轉換主角性別；已有道侶或進行中的命定因緣也會同步轉換，以維持原有緣分。',count:'genderRebirthMirrorCount',usable:true,giftable:false,sellPrice:1,identityAction:'gender'};
+itemCatalog.renamePartnerCovenant={name:'同心更名契',image:'assets/qstyle-v2/production/identity/rename-partner-covenant-v1.png',description:'由兩心因緣共證的新名契書。結為道侶後使用，可修改道侶姓名；確認新姓名後才會消耗。',count:'renamePartnerCovenantCount',usable:true,giftable:false,sellPrice:1,identityAction:'partnerName'};
 itemCatalog.divineRoamingManual={name:'神念遠遊訣',image:'assets/qstyle-v2/mainline/item-divine-roaming-manual.png',description:'記載分化神念、遠遊諸境之法的特殊秘訣。購得時即開通神念遠遊；此物是開通憑證，不屬於功法且不可使用。',count:'divineRoamingManualCount',usable:false,giftable:false,sellPrice:1};
 itemCatalog.mindEmbodimentManual={name:'意念入體訣',image:'assets/qstyle-v2/mainline/item-mind-embodiment-manual.png',description:'記載凝聚意念、內觀己身之法的特殊秘訣。使用後可提前習得「意念入體」，開啟人物詳細屬性；若已於化念一層自動習得，本書便會失效。',count:'mindEmbodimentManualCount',usable:true,giftable:false,sellPrice:1};
 const sectInvitationItems=[];
@@ -373,6 +376,7 @@ defaults.encounterVersion=1;defaults.encounterQueue=[];defaults.encounterHistory
 defaults.partnerStory=null;defaults.partnerSystem=null;
 defaults.weavingJob=null;
 defaults.xisuiFamaoPillCount=0;defaults.dosageLimitBonus=0;defaults.marketWeeklyPurchases={week:'',counts:{}};
+defaults.renameProtagonistJadeCount=0;defaults.genderRebirthMirrorCount=0;defaults.renamePartnerCovenantCount=0;
 defaults.mindEmbodimentUnlocked=false;defaults.mindEmbodimentManualCount=0;
 mainlineMaterials.forEach(([,key])=>defaults[`mainlineMaterial_${key}`]=0);defaults.mainlineMaterialMigration=0;
 craftingMaterialItems.forEach(([,count])=>defaults[count]=0);
@@ -390,6 +394,7 @@ const chineseFloorNames=['一','二','三','四','五'];
 let marketFloorNoticeTimer=null,lastScriptureDayKey='',marketPurchaseOffer=null,marketPurchaseQuantity=1,currentMailId=null;
 let bgmTheme=null,battle=null,battleTimer=null,swordTrialAdvanceTimer=null,swordTrialCountdownTimer=null,pauseStartedAt=null,sessionOnline=false,confirmResolver=null,prologueTimer=null,tribulationPillUseCount=0,tribulationLocked=false,tribulationTimers=[];
 let itemModalKey=null,itemModalQuantity=1,sellItemKey=null,sellItemQuantity=1;
+let identityChangeItemKey=null;
 let swordPathChoiceConfirming=false;
 let clockEpoch=Date.now(),clockPerf=performance.now(),trustedClockReady=location.protocol==='file:',clockSyncPromise=null;
 
@@ -783,7 +788,7 @@ async function ensureLeaderboardSession(){
 async function loadOwnLeaderboardRecord(session){const query=`user_id=eq.${encodeURIComponent(session.user.id)}&select=combat_power,player_name&limit=1`;const response=await fetch(`${leaderboardConfig.url}/rest/v1/player_rankings?${query}`,{headers:leaderboardHeaders(session.access_token)});if(!response.ok)throw new Error('ranking lookup failed');const [record]=await response.json();leaderboardKnownPower=record?Number(record.combat_power):0;leaderboardKnownName=record?.player_name||''}
 async function syncLeaderboard(){
   if(leaderboardSyncInFlight||!state.name||!state.cultivationAwakened)return;leaderboardSyncInFlight=true;
-  try{const session=await ensureLeaderboardSession();if(leaderboardKnownPower===null)await loadOwnLeaderboardRecord(session);const power=Math.max(0,Math.round(combatPower())),playerName=state.name.trim().slice(0,20)||'無名修士';if(power<leaderboardKnownPower||(power===leaderboardKnownPower&&playerName===leaderboardKnownName))return;const payload={user_id:session.user.id,player_name:playerName,combat_power:power,spirit_level:state.spiritLevel||0,sword_level:state.swordLevel||0,body_level:state.bodyLevel||0,game_version:leaderboardConfig.gameVersion,updated_at:new Date().toISOString()};const response=await fetch(`${leaderboardConfig.url}/rest/v1/player_rankings?on_conflict=user_id`,{method:'POST',headers:{...leaderboardHeaders(session.access_token),Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(payload)});if(!response.ok)throw new Error('ranking upload failed');leaderboardKnownPower=power;leaderboardKnownName=playerName}catch{}finally{leaderboardSyncInFlight=false}
+  try{const session=await ensureLeaderboardSession();if(leaderboardKnownPower===null)await loadOwnLeaderboardRecord(session);const currentPower=Math.max(0,Math.round(combatPower())),playerName=state.name.trim().slice(0,20)||'無名修士',nameChanged=playerName!==leaderboardKnownName;if(currentPower<leaderboardKnownPower&&!nameChanged||currentPower===leaderboardKnownPower&&!nameChanged)return;const rankedPower=Math.max(currentPower,leaderboardKnownPower||0),payload={user_id:session.user.id,player_name:playerName,combat_power:rankedPower,spirit_level:state.spiritLevel||0,sword_level:state.swordLevel||0,body_level:state.bodyLevel||0,game_version:leaderboardConfig.gameVersion,updated_at:new Date().toISOString()};const response=await fetch(`${leaderboardConfig.url}/rest/v1/player_rankings?on_conflict=user_id`,{method:'POST',headers:{...leaderboardHeaders(session.access_token),Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(payload)});if(!response.ok)throw new Error('ranking upload failed');leaderboardKnownPower=rankedPower;leaderboardKnownName=playerName}catch{}finally{leaderboardSyncInFlight=false}
 }
 function queueLeaderboardSync(){if(!state.name||!state.cultivationAwakened||leaderboardSyncTimer)return;leaderboardSyncTimer=setTimeout(()=>{leaderboardSyncTimer=0;syncLeaderboard()},2500)}
 function escapeLeaderboardText(value){const node=document.createElement('span');node.textContent=String(value??'');return node.innerHTML}
@@ -1725,7 +1730,32 @@ function useCultivationBundle(key,quantity=1){const item=itemCatalog[key],amount
 function useStaminaMedicine(key,quantity=1){const item=itemCatalog[key],amount=Number(item?.staminaRestore)||0;refreshBodyState();if(amount<=0||(state[item.count]||0)<1)return false;quantity=Math.max(1,Math.min(state[item.count],Math.floor(quantity)));state[item.count]-=quantity;state.bodyStamina+=amount*quantity;state.bodyStaminaUpdatedAt=gameNow();toast(`使用${item.name} ${formatLargeNumber(quantity)}個・體力+${formatLargeNumber(amount*quantity)}${state.bodyStamina>100?'（已溢出保留）':''}`);render();save();return true}
 function useMoralPill(key,quantity=1){const item=itemCatalog[key],gain=item?.moralGain;if(!gain||(state[item.count]||0)<1||!Object.prototype.hasOwnProperty.call(state,gain.key))return false;quantity=Math.max(1,Math.min(state[item.count],Math.floor(quantity)));const amount=gain.amount*quantity;state[item.count]-=quantity;state[gain.key]+=amount;toast(`使用${item.name} ${formatLargeNumber(quantity)}個・${gain.label}+${formatLargeNumber(amount)}`);render();save();return true}
 function useMindEmbodimentManual(){const item=itemCatalog.mindEmbodimentManual;if(hasMindEmbodiment())return toast('你已習得意念入體，本書已失效');if((state[item.count]||0)<1)return false;state[item.count]--;state.mindEmbodimentUnlocked=true;toast('已習得「意念入體」・人物詳細屬性已開啟');render();save();return true}
-function useItem(key,quantity=1){let used=false;const item=itemCatalog[key];if(item?.equipmentData)used=equipInventoryItem(item);else if(item?.dosageLimitGain)used=useDosageLimitPill(key,quantity);else if(item?.pillData)used=useAttributePill(item,quantity);else if(item?.brewData)used=useSpiritBrew(item,quantity);else if(key==='mindEmbodimentManual')used=useMindEmbodimentManual();else if(item?.techniqueBook)used=useTechniqueBook(key);else if(item?.sectInvitation)used=useSectInvitation(key);else if(item?.cultivationBundle)used=useCultivationBundle(key,quantity);else if(item?.resourceBundle)used=useResourceBundle(key,quantity);else if(item?.staminaRestore)used=useStaminaMedicine(key,quantity);else if(item?.moralGain)used=useMoralPill(key,quantity);if(used){closeItemModal();if(currentFeature==='bag')renderBagView('bag')}}
+function validIdentityName(value){return /^[\p{L}\p{N}·・]{1,8}$/u.test(value)}
+function openIdentityChangeModal(key){
+  const item=itemCatalog[key],action=item?.identityAction;if(!action)return false;
+  if(action==='partnerName'&&!state.partnerSystem?.established){toast('尚未結為道侶，無法使用同心更名契');return false}
+  identityChangeItemKey=key;closeItemModal();const partner=state.partnerSystem?.partner;
+  $('#identityChangeTitle').textContent=action==='protagonistName'?'重書本命名諱':'重訂同心之名';
+  $('#identityChangeMessage').textContent=action==='protagonistName'?`目前姓名：${state.name}`:`目前道侶姓名：${partner.name}`;
+  $('#identityChangeInput').value=action==='protagonistName'?state.name:partner.name;$('#identityChangeError').textContent='';
+  $('#identityChangeModal').classList.remove('hidden');requestAnimationFrame(()=>$('#identityChangeInput').focus());return false;
+}
+function closeIdentityChangeModal(){identityChangeItemKey=null;$('#identityChangeModal').classList.add('hidden');$('#identityChangeError').textContent=''}
+function confirmIdentityNameChange(){
+  const item=itemCatalog[identityChangeItemKey],action=item?.identityAction,name=$('#identityChangeInput').value.trim();if(!item||!['protagonistName','partnerName'].includes(action))return closeIdentityChangeModal();
+  if(!validIdentityName(name)){$('#identityChangeError').textContent='姓名限 1～8 個文字，可使用中文、字母、數字與間隔點。';return}
+  const current=action==='protagonistName'?state.name:state.partnerSystem?.partner?.name;if(name===current){$('#identityChangeError').textContent='新姓名不可與目前姓名相同。';return}
+  if((state[item.count]||0)<1){$('#identityChangeError').textContent='道具數量不足。';return}
+  state[item.count]--;if(action==='protagonistName'){state.name=name;queueLeaderboardSync()}else{state.partnerSystem.partner.name=name;if(state.partnerStory)state.partnerStory.name=name}
+  closeIdentityChangeModal();toast(action==='protagonistName'?`本命名諱已改為「${name}」`:`道侶自此以「${name}」之名同行`);render();if(currentFeature==='bag')renderBagView('bag');save();
+}
+async function useGenderRebirthMirror(key){
+  const item=itemCatalog[key];if((state[item.count]||0)<1)return false;const next=state.gender==='男'?'女':'男',established=!!state.partnerSystem?.established,encountered=!!state.partnerStory&&!established;
+  const detail=established?'你的道侶也會同步轉換性別。':encountered?'命定因緣中的同行者也會同步轉換性別，以維持原有緣分。':'未有命定因緣時，日後出現的有緣人會依轉換後的主角性別生成。';
+  if(!await gameConfirm(`將主角性別由「${state.gender}」轉換為「${next}」。\n\n${detail}\n\n姓名、髮型、服裝編號、境界與所有養成數值皆會保留。`,{title:'陰陽轉生',confirmText:'照見新身'}))return false;
+  state[item.count]--;state.gender=next;if(state.partnerStory)state.partnerStory.gender=state.partnerStory.gender==='男'?'女':'男';if(established)state.partnerSystem.partner.gender=state.partnerSystem.partner.gender==='男'?'女':'男';applyCharacterVisual();toast(established?'陰陽同轉・你與道侶皆已重塑此身':'陰陽輪轉・此身已重新顯化');render();save();return true;
+}
+async function useItem(key,quantity=1){let used=false;const item=itemCatalog[key];if(item?.equipmentData)used=equipInventoryItem(item);else if(item?.identityAction==='gender')used=await useGenderRebirthMirror(key);else if(item?.identityAction)used=openIdentityChangeModal(key);else if(item?.dosageLimitGain)used=useDosageLimitPill(key,quantity);else if(item?.pillData)used=useAttributePill(item,quantity);else if(item?.brewData)used=useSpiritBrew(item,quantity);else if(key==='mindEmbodimentManual')used=useMindEmbodimentManual();else if(item?.techniqueBook)used=useTechniqueBook(key);else if(item?.sectInvitation)used=useSectInvitation(key);else if(item?.cultivationBundle)used=useCultivationBundle(key,quantity);else if(item?.resourceBundle)used=useResourceBundle(key,quantity);else if(item?.staminaRestore)used=useStaminaMedicine(key,quantity);else if(item?.moralGain)used=useMoralPill(key,quantity);if(used){closeItemModal();if(currentFeature==='bag')renderBagView('bag')}}
 function itemSellPrice(item){return Math.max(1,Math.floor(Number(item.sellPrice)||1))}
 function updateSellModal(){
   const item=itemCatalog[sellItemKey];if(!item)return;
@@ -2134,7 +2164,7 @@ function bagItemSortProfile(key,item){
   else if(item.techniqueBook||/Manual$/.test(key)){category=2;tier=item.techniqueBook?.tier||0}
   else if(item.pillData||item.brewData||item.dosageLimitGain||item.staminaRestore||item.moralGain||/^tribPill/.test(key)){category=3;tier=item.pillData?.tier||Number(key.match(/^tribPill(\d+)/)?.[1]||0);quality=item.dosageLimitGain?2:item.brewData?.quality==='rare'?1:0}
   else if(key.startsWith('main-material-')||key.startsWith('craft-material-')||item.brewBase||key==='mendingSilk'){category=4}
-  else if(item.sectInvitation){category=5;tier=item.sectInvitation.star||0}
+  else if(item.sectInvitation||item.identityAction){category=5;tier=item.sectInvitation?.star||0;quality=item.identityAction?1:0}
   return {category,tier,quality,slot};
 }
 function compareBagItems([keyA,itemA],[keyB,itemB]){const a=bagItemSortProfile(keyA,itemA),b=bagItemSortProfile(keyB,itemB);return a.category-b.category||b.tier-a.tier||b.quality-a.quality||a.slot-b.slot||itemA.name.localeCompare(itemB.name,'zh-Hant')}
@@ -2320,6 +2350,9 @@ function marketOfferForItem(id){
   if(id==='divineRoamingManual')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:divineRoamingJadeCost,dailyLimit:null,permanentLimit:1,quantityEnabled:false};
   if(id==='mindEmbodimentManual')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:mindEmbodimentJadeCost,dailyLimit:null,permanentLimit:1,quantityEnabled:false};
   if(id==='xisuiFamaoPill')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:50,dailyLimit:null,weeklyLimit:1,permanentLimit:null,quantityEnabled:false};
+  if(id==='renameProtagonistJade')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:50,dailyLimit:null,permanentLimit:null,quantityEnabled:false};
+  if(id==='genderRebirthMirror')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:150,dailyLimit:null,permanentLimit:null,quantityEnabled:false};
+  if(id==='renamePartnerCovenant')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:50,dailyLimit:null,permanentLimit:null,quantityEnabled:false};
   if(id==='brew-base-normal')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritStone',currencyName:'靈石',currencyImage:'assets/qstyle-v2/spirit-stone.png',price:2500,dailyLimit:3,permanentLimit:null,quantityEnabled:true};
   if(id==='brew-base-rare')return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritStone',currencyName:'靈石',currencyImage:'assets/qstyle-v2/spirit-stone.png',price:9000,dailyLimit:3,permanentLimit:null,quantityEnabled:true};
   if(item.sectInvitation){const star=item.sectInvitation.star;return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'prestige',currencyName:'聲望',currencyImage:'assets/qstyle-v2/reputation.png',price:sectInvitationPrices[star-1],dailyLimit:1,permanentLimit:null,quantityEnabled:false}}
@@ -2394,14 +2427,14 @@ function confirmMarketPurchase(){
   if(offer.id==='divineRoamingManual')state.divineRoamingUnlocked=true;
   toast(`購得「${offer.name}」${quantity>1?` × ${quantity}`:''}`);closeMarketPurchase();renderMarket(currentMarketTab);save();
 }
-function treasureOfferDetail(id){if(id==='divineRoamingManual')return state.spiritLevel>=40?'購得即開通神念遠遊':'需達化念境一層後購買';if(id==='xisuiFamaoPill')return `本週 ${marketWeeklyBought(marketOfferForItem(id))}／1・週一00:00刷新`;return hasMindEmbodiment()?'已習得・購買後僅可收藏或售出':'使用後提前習得意念入體'}
+function treasureOfferDetail(id){if(id==='divineRoamingManual')return state.spiritLevel>=40?'購得即開通神念遠遊':'需達化念境一層後購買';if(id==='xisuiFamaoPill')return `本週 ${marketWeeklyBought(marketOfferForItem(id))}／1・週一00:00刷新`;if(id==='renameProtagonistJade')return '不限購・重書主角姓名';if(id==='genderRebirthMirror')return '不限購・轉換主角與命定因緣性別';if(id==='renamePartnerCovenant')return state.partnerSystem?.established?'不限購・重訂道侶姓名':'不限購・結緣後方可使用';if(id==='mindEmbodimentManual')return hasMindEmbodiment()?'已習得・購買後僅可收藏或售出':'使用後提前習得意念入體';return '百寶樓珍藏'}
 function renderMarket(tab=currentMarketTab){
   currentMarketTab=tab;
   const data={
     market:{title:'坊市',subtitle:'雲市百貨',currency:'stone',floors:[['brew-base-normal','brew-base-rare'],[],[],[],[]]},
     scripture:{title:'藏經閣',subtitle:'古卷玉簡',currency:'stone',floors:[[],[],[],[],[]]},
     reputation:{title:'聲望堂',subtitle:'名望珍藏',currency:'reputation',floors:[[],[],[],[],[]]},
-    treasure:{title:'百寶樓',subtitle:'仙珍奇物',currency:'jade',products:['xisuiFamaoPill','divineRoamingManual','mindEmbodimentManual','treasure-brew-base-rare']}
+    treasure:{title:'百寶樓',subtitle:'仙珍奇物',currency:'jade',products:['xisuiFamaoPill','renameProtagonistJade','genderRebirthMirror','renamePartnerCovenant','divineRoamingManual','mindEmbodimentManual','treasure-brew-base-rare']}
   }[tab];
   const hasFloors=tab!=='treasure';
   const floor=hasFloors?(marketFloors[tab]||1):1;
@@ -2530,6 +2563,9 @@ $('#sellConfirmBtn').onclick=confirmSellItem;
 $('#offlineModalClose').onclick=()=>$('#offlineModal').classList.add('hidden');
 $('#confirmModalCancel').onclick=()=>closeGameConfirm(false);
 $('#confirmModalAccept').onclick=()=>closeGameConfirm(true);
+$('#identityChangeCancel').onclick=closeIdentityChangeModal;
+$('#identityChangeConfirm').onclick=confirmIdentityNameChange;
+$('#identityChangeInput').onkeydown=event=>{if(event.key==='Enter')confirmIdentityNameChange();else if(event.key==='Escape')closeIdentityChangeModal()};
 $('#deleteStartBtn').onclick=()=>showSettingsSection('#deleteStepOne');
 $('#deleteCancelBtn').onclick=()=>showSettingsSection('#settingsMain');
 $('#deleteVerifyBtn').onclick=()=>{
