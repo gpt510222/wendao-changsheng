@@ -91,6 +91,14 @@ const marketResourcePrices={100:{wood:180,food:120,meteorIron:260},1000:{wood:15
   if(!itemCatalog[itemId])itemCatalog[itemId]={name:`${amountName}${label}`,image,description:`坊市封裝的${label}物資。使用後立即獲得 ${formatLargeNumber(amount)} ${label}。`,count:`${itemId}Count`,usable:true,giftable:false,sellPrice:1,resourceBundle:{resource,label,amount}};
   marketResourceItems.push({id:offerId,itemId,floor,price:marketResourcePrices[amount][resource]});
 }));
+const marketCultivationCaskets=[
+  {id:'marketCultivationCasket1',floor:1,tier:'一',gain:106200,price:300},
+  {id:'marketCultivationCasket2',floor:2,tier:'二',gain:248400,price:900},
+  {id:'marketCultivationCasket3',floor:3,tier:'三',gain:531000,price:2500},
+  {id:'marketCultivationCasket4',floor:4,tier:'四',gain:1135800,price:6500},
+  {id:'marketCultivationCasket5',floor:5,tier:'五',gain:1632600,price:10000}
+];
+marketCultivationCaskets.forEach(entry=>itemCatalog[entry.id]={name:`${entry.tier}階聚靈丹匣`,image:'assets/qstyle-v2/production/spirit-gathering-casket-v1.png',description:`封存對應境界十層純白修煉效率十年份的靈氣。使用後固定獲得 ${formatLargeNumber(entry.gain)} 修為，不受任何修煉加成影響。`,count:`${entry.id}Count`,usable:true,giftable:false,sellPrice:1,cultivationBundle:entry.gain});
 const tribulationPillDefaults={};
 spiritRealms.slice(1).forEach((realm,index)=>{
   const realmIndex=index+1,key=`tribPill${realmIndex}`;
@@ -2418,6 +2426,8 @@ function marketOfferForBook(id){
 }
 function marketOfferForItem(id){
   const bookOffer=marketOfferForBook(id);if(bookOffer)return bookOffer;
+  const casketOffer=marketCultivationCaskets.find(entry=>entry.id===id);
+  if(casketOffer){const item=itemCatalog[id];return {id,item,name:item.name,image:item.image,description:item.description,currencyKey:'spiritStone',currencyName:'靈石',currencyImage:'assets/qstyle-v2/spirit-stone.png',price:casketOffer.price,dailyLimit:1,permanentLimit:null,quantityEnabled:false}}
   const resourceOffer=marketResourceItems.find(entry=>entry.id===id);
   if(resourceOffer){const item=itemCatalog[resourceOffer.itemId];return {id,item,storageId:resourceOffer.itemId,name:item.name,image:item.image,description:item.description,currencyKey:'spiritStone',currencyName:'靈石',currencyImage:'assets/qstyle-v2/spirit-stone.png',price:resourceOffer.price,dailyLimit:5,permanentLimit:null,quantityEnabled:true}}
   if(id==='treasure-brew-base-rare'){const item=itemCatalog['brew-base-rare'];return {id,item,storageId:'brew-base-rare',name:item.name,image:item.image,description:item.description,currencyKey:'spiritJade',currencyName:'靈玉',currencyImage:'assets/qstyle-v2/spirit-jade.png',price:18,dailyLimit:5,permanentLimit:null,quantityEnabled:true}}
@@ -2514,7 +2524,7 @@ function renderMarket(tab=currentMarketTab){
   }[tab];
   const hasFloors=tab!=='treasure';
   const floor=hasFloors?(marketFloors[tab]||1):1;
-  let products=tab==='scripture'?scriptureStock(floor):tab==='reputation'?reputationStock(floor):(hasFloors?data.floors[floor-1]:data.products);if(tab==='market')products=[...marketResourceItems.filter(entry=>entry.floor===floor).map(entry=>entry.id),...products];if(tab==='treasure')products=products.filter(id=>id==='divineRoamingManual'?!(state.divineRoamingUnlocked&&!(state.divineRoamingManualCount||state.marketPermanentPurchases?.[id])):id==='mindEmbodimentManual'?!(hasMindEmbodiment()&&!(state.mindEmbodimentManualCount||state.marketPermanentPurchases?.[id])):true);
+  let products=tab==='scripture'?scriptureStock(floor):tab==='reputation'?reputationStock(floor):(hasFloors?data.floors[floor-1]:data.products);if(tab==='market')products=[...marketResourceItems.filter(entry=>entry.floor===floor).map(entry=>entry.id),...marketCultivationCaskets.filter(entry=>entry.floor===floor).map(entry=>entry.id),...products];if(tab==='treasure')products=products.filter(id=>id==='divineRoamingManual'?!(state.divineRoamingUnlocked&&!(state.divineRoamingManualCount||state.marketPermanentPurchases?.[id])):id==='mindEmbodimentManual'?!(hasMindEmbodiment()&&!(state.mindEmbodimentManualCount||state.marketPermanentPurchases?.[id])):true);
   const floorTitle=hasFloors?`${data.title}‧${chineseFloorNames[floor-1]}樓`:data.title;
   const floorControls=hasFloors?`<div class="market-floor-controls">
     ${floor>1?`<button class="market-floor-button market-floor-down" type="button" data-market-floor="down" aria-label="下樓"><img src="assets/qstyle-v2/market-floor-up.png" alt=""><span>下樓</span></button>`:''}
