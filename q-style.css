@@ -225,8 +225,12 @@
 .q-style .mail-unread-badge{position:absolute;right:2px;top:1px;min-width:25px;height:25px;padding:0 6px;border:2px solid #fff9df;border-radius:99px;background:#c95748;color:white;font:900 13px/21px sans-serif;text-align:center;box-shadow:0 3px 7px #173d4766}
 .q-style .game-screen.feature-open .mail-button{display:none}
 
-.q-style .mailbox-modal,.q-style .mail-detail-modal{z-index:74;background:#153842b8;backdrop-filter:blur(5px)}
-.q-style #confirmModal{z-index:90}
+.q-style .mailbox-modal{z-index:74;background:#153842b8;backdrop-filter:blur(5px)}
+.q-style .mail-detail-modal{z-index:75;background:#153842b8;backdrop-filter:blur(5px)}
+/* Confirmation layers stay above every interactive window. Entry transitions and the orientation gate remain intentionally higher. */
+.q-style #tribulationModal{z-index:175}
+.q-style #sellModal,.q-style .market-purchase-modal{z-index:180}
+.q-style #confirmModal{z-index:2000}
 .q-style .mailbox-card{width:min(92vw,720px);max-height:min(88vh,850px);padding:20px;overflow:auto;border:3px solid #6aa8ad;border-radius:28px;background:linear-gradient(150deg,#fffaf0 0%,#edf8f4 100%);box-shadow:0 20px 60px #082a32a6,inset 0 0 0 3px #fff9dd}
 .q-style .mailbox-heading{position:relative;display:flex;justify-content:center;align-items:center;margin-bottom:14px;padding:10px 12px 17px;border-bottom:2px solid #c99a50;color:#205e63;text-align:center}
 .q-style .mailbox-heading small{color:#a1743d;letter-spacing:.22em}.q-style .mailbox-heading h2{margin:2px 0 0;font-size:30px}.q-style .mailbox-heading>span{padding:8px 12px;border-radius:99px;background:#d9efea;color:#356d70;font-weight:800}
@@ -418,7 +422,7 @@
 .q-style .market-product.sold-out.daily-limit::before{content:"今日已購"}
 
 /* Marketplace item details and purchase confirmation. */
-.q-style .market-purchase-modal{z-index:76;background:#123139bf;backdrop-filter:blur(5px)}
+.q-style .market-purchase-modal{background:#123139bf;backdrop-filter:blur(5px)}
 .q-style .market-purchase-card{width:min(88vw,430px);max-height:90vh;padding:22px 24px;overflow:auto;border:3px solid #bd914e;border-radius:24px;background:linear-gradient(180deg,#fffaf0,#e9f7f3);box-shadow:0 18px 50px #09272f99,inset 0 0 0 3px #fff8da;text-align:center}
 .q-style .market-purchase-card .eyebrow{margin:0;color:#8f7146;letter-spacing:.28em}
 .q-style .market-purchase-image{display:block;width:132px;height:132px;margin:8px auto 3px;object-fit:contain;filter:drop-shadow(0 7px 7px #24443f42)}
@@ -660,4 +664,4 @@
 @media(prefers-reduced-motion:reduce){.q-style .battle-arena.artifact-sun .celestial-orb,.q-style .battle-arena.artifact-moon .celestial-orb,.q-style .battle-arena.boundary-breaking,.q-style .battle-arena.boundary-breaking::after{animation:none!important}}
 
 /* 二次確認永遠覆蓋器塚與其他動態建立的選擇視窗。 */
-.q-style #confirmModal{z-index:240}
+.q-style #confirmModal{z-index:2000}
