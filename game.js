@@ -63,9 +63,9 @@ const itemCatalog = {
   evilQiPill:{name:'邪氣丹',image:'assets/qstyle-v2/evil-qi-pill-v1.png',description:'以陰煞氣機凝炼的測試丹藥。每顆使用後增加 1 點邪氣。',count:'evilQiPillCount',usable:true,giftable:false,sellPrice:1,moralGain:{key:'evilQi',label:'邪氣',amount:1}}
 };
 itemCatalog.xisuiFamaoPill={name:'洗髓伐毛丹',image:'assets/qstyle-v2/production/pills/xisui-famao-v1.png',description:'極罕見的洗髓靈丹，可重塑經脈、拓展藥性承受極限。每服用一顆，所有丹藥與靈釀的個別服用上限永久＋1。',count:'xisuiFamaoPillCount',usable:true,giftable:false,sellPrice:1,dosageLimitGain:1};
-itemCatalog.renameProtagonistJade={name:'易名玉牒',image:'assets/qstyle-v2/production/identity/rename-protagonist-jade-v1.png',description:'以本命精血重書名諱的玉牒。使用後可修改主角姓名；確認新姓名後才會消耗。',count:'renameProtagonistJadeCount',usable:true,giftable:false,sellPrice:1,identityAction:'protagonistName'};
-itemCatalog.genderRebirthMirror={name:'陰陽轉生鏡',image:'assets/qstyle-v2/production/identity/gender-rebirth-mirror-v1.png',description:'倒轉陰陽、重塑此身的玄妙寶鏡。使用後轉換主角性別；已有道侶或進行中的命定因緣也會同步轉換，以維持原有緣分。',count:'genderRebirthMirrorCount',usable:true,giftable:false,sellPrice:1,identityAction:'gender'};
-itemCatalog.renamePartnerCovenant={name:'同心更名契',image:'assets/qstyle-v2/production/identity/rename-partner-covenant-v1.png',description:'由兩心因緣共證的新名契書。結為道侶後使用，可修改道侶姓名；確認新姓名後才會消耗。',count:'renamePartnerCovenantCount',usable:true,giftable:false,sellPrice:1,identityAction:'partnerName'};
+itemCatalog.renameProtagonistJade={name:'易名玉牒',image:'assets/qstyle-v2/production/identity/rename-protagonist-jade-v1.png',description:'以本命精血重書名諱的玉牒。使用後可修改主角姓名；確認新姓名後才會消耗，每次只能使用一枚。',count:'renameProtagonistJadeCount',usable:true,giftable:false,sellPrice:1,identityAction:'protagonistName',singleUseOnly:true};
+itemCatalog.genderRebirthMirror={name:'陰陽轉生鏡',image:'assets/qstyle-v2/production/identity/gender-rebirth-mirror-v1.png',description:'倒轉陰陽、重塑此身的玄妙寶鏡。使用後轉換主角性別；已有道侶或進行中的命定因緣也會同步轉換。每次只能使用一面。',count:'genderRebirthMirrorCount',usable:true,giftable:false,sellPrice:1,identityAction:'gender',singleUseOnly:true};
+itemCatalog.renamePartnerCovenant={name:'同心更名契',image:'assets/qstyle-v2/production/identity/rename-partner-covenant-v1.png',description:'由兩心因緣共證的新名契書。結為道侶後使用，可修改道侶姓名；確認新姓名後才會消耗，每次只能使用一份。',count:'renamePartnerCovenantCount',usable:true,giftable:false,sellPrice:1,identityAction:'partnerName',singleUseOnly:true};
 itemCatalog.divineRoamingManual={name:'神念遠遊訣',image:'assets/qstyle-v2/mainline/item-divine-roaming-manual.png',description:'記載分化神念、遠遊諸境之法的特殊秘訣。購得時即開通神念遠遊；此物是開通憑證，不屬於功法且不可使用。',count:'divineRoamingManualCount',usable:false,giftable:false,sellPrice:1};
 itemCatalog.mindEmbodimentManual={name:'意念入體訣',image:'assets/qstyle-v2/mainline/item-mind-embodiment-manual.png',description:'記載凝聚意念、內觀己身之法的特殊秘訣。使用後可提前習得「意念入體」，開啟人物詳細屬性；若已於化念一層自動習得，本書便會失效。',count:'mindEmbodimentManualCount',usable:true,giftable:false,sellPrice:1};
 const sectInvitationItems=[];
@@ -1704,7 +1704,8 @@ function openItemModal(key){
   refreshBodyState();
   $('#itemModal').classList.remove('equipped-detail');itemModalKey=key;itemModalQuantity=1;$('#itemModalImage').src=item.image;$('#itemModalImage').alt=item.name;$('#itemModalName').textContent=item.name;$('#itemModalDescription').textContent=item.description+(learned?'\n\n此功法已習得，本書只能售出。':'')+(sectBlocked?'\n\n你目前已有門派，必須先脫離門派才能使用此信物。':'')+(mindManualInvalid?'\n\n你已習得意念入體，本書已失效，只能售出。':'');renderEquipmentComparison(item.equipmentData);$('#itemModalCount').textContent=`持有數量：${formatLargeNumber(count)}`;
   const sell=$('#itemModalSell');sell.disabled=count<1;sell.onclick=()=>openSellModal(key,itemModalQuantity);
-  const showUse=item.usable&&!learned,canUse=showUse&&!sectBlocked&&!mindManualInvalid;const use=$('#itemModalUse');use.textContent=mindManualInvalid?'已失效':item.equipmentData?'裝備':item.brewData?'品飲':'使用';use.classList.toggle('hidden',!showUse);use.disabled=!canUse||count<1;use.onclick=canUse?()=>useItem(key,itemModalQuantity):null;
+  const showUse=item.usable&&!learned,canUse=showUse&&!sectBlocked&&!mindManualInvalid;const use=$('#itemModalUse');use.textContent=mindManualInvalid?'已失效':item.equipmentData?'裝備':item.brewData?'品飲':item.singleUseOnly?'使用 1 個':'使用';use.classList.toggle('hidden',!showUse);use.disabled=!canUse||count<1;use.onclick=canUse?()=>useItem(key,item.singleUseOnly?1:itemModalQuantity):null;
+  $('.item-quantity-panel>span').textContent=item.singleUseOnly?'出售可選數量・使用固定消耗 1 個':'操作數量';
   updateItemQuantity();
   $('#itemModalActions').classList.toggle('no-use',!showUse);$('#itemModal').classList.remove('hidden');
 }
