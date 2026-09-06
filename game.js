@@ -984,12 +984,16 @@ function addCultivation(amount,silent=false) {
   if(!silent) { if(isPureCultivationView())toast(`修為+${formatLargeNumber(amount)}`,'cultivation'); playTone(); }
   render(); save();
 }
+function updateMainlineButton(){
+  const button=$('#mainlineButton');if(!button)return;const awakened=!!state.cultivationAwakened;
+  button.classList.toggle('hidden',!awakened);button.classList.toggle('active',awakened&&currentFeature==='mainline');button.disabled=!awakened;button.setAttribute('aria-hidden',String(!awakened));
+}
 function renderNoviceCultivation(){
   const awakened=!!state.cultivationAwakened,ready=!awakened&&state.free>=600n,progress=Math.min(100,Number(state.free)/6),novice=$('#noviceCultivation'),button=$('#manualCultivateBtn');
   novice.classList.toggle('hidden',awakened);novice.classList.toggle('breakthrough-ready',ready);
   $$('.path-actions').forEach(actions=>actions.classList.toggle('hidden',!awakened));
   $$('.feature-tab').forEach(tab=>{tab.classList.toggle('novice-locked',!awakened);tab.setAttribute('aria-disabled',String(!awakened))});
-  const mainlineButton=$('#mainlineButton');mainlineButton.classList.toggle('hidden',!awakened);mainlineButton.disabled=!awakened;mainlineButton.setAttribute('aria-hidden',String(!awakened));
+  updateMainlineButton();
   if(awakened)return;
   $('#noviceProgressText').textContent=ready?'修為已足，點擊突破踏入聽息一層':`入門進度 ${formatLargeNumber(state.free)} / 600`;
   $('#noviceProgressBar').style.width=`${progress}%`;
@@ -2328,7 +2332,7 @@ function showCharacterAttributes() {
 }
 
 function finishPause(){
-  pauseStartedAt=null;
+  pauseStartedAt=null;document.documentElement.classList.remove('entry-transition');$$('.entry-arriving').forEach(element=>element.classList.remove('entry-arriving'));updateMainlineButton();
 }
 function forceOffline(){
   if(suppressSave||!state.name||pauseStartedAt!==null)return;pauseStartedAt=gameNow();sessionOnline=false;clearTimeout(battleTimer);clearSwordTrialAdvance();battle=null;if(tribulationLocked)cleanupTribulationScene();
