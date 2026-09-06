@@ -708,7 +708,7 @@ function processEncounterTriggers(activeMs=0){
 }
 function encounterRewardText(choice){return choice.rewards.map(reward=>`${itemCatalog[reward.item]?.name||reward.item} ×${reward.amount}`).join('、')}
 const artifactCatalog=[
-  {id:'mountain-river-seal',name:'山河定界印',image:'assets/qstyle-v2/artifacts/mountain-river-seal.png',rule:'攻擊推動共享界勢；抵達任一端時，對手下一次行動改為破界。練氣推動10、淬劍15（落空反震4）、煉體8並削弱敵方下次推動4。'},
+  {id:'mountain-river-seal',name:'山河定界印',image:'assets/qstyle-v2/artifacts/mountain-river-seal.png',rule:'攻擊推動共享界勢；抵達任一端時，對手下一次行動改為破界。界勢上限調整為正負30；逆向抗衡現有界勢時效果減半。練氣推動10、淬劍15（落空反震8）、煉體8並削弱敵方下次推動4。'},
   {id:'sun-moon-wheel',name:'日月交蝕輪',image:'assets/qstyle-v2/artifacts/sun-moon-wheel.png',rule:'每個完整回合輪替日相與月相；日相雙方最終傷害125%，月相雙方75%。固定第一式逢日、第二式逢月。'},
   {id:'four-poles-stele',name:'四極鎮命碑',image:'assets/qstyle-v2/artifacts/four-poles-stele.png',rule:'雙方氣血首次跌破70%與30%時，該擊只降至界線，溢出傷害消失；每擊至多破除一道命界。煉體試煉不生效。'}
 ];
@@ -1915,18 +1915,25 @@ function applyArtifactDamage(target,raw,side){
   for(const threshold of [.7,.3]){const line=Math.ceil(targetMax*threshold);if(!broken.includes(threshold)&&before>line&&before-damage<=line){broken.push(threshold);appendBattleLog(`四極鎮命碑顯化，將氣血鎮於 ${Math.round(threshold*100)}% 命界，溢出傷害消散。`,side==='player'?'enemy':'player');return before-line}}
   return damage;
 }
+const boundaryLimit=30;
+function shiftBoundary(amount){
+  const current=Number(battle.boundaryMomentum)||0;
+  const opposed=current&&Math.sign(current)!==Math.sign(amount);
+  battle.boundaryMomentum=Math.max(-boundaryLimit,Math.min(boundaryLimit,current+(opposed?Math.sign(amount)*Math.ceil(Math.abs(amount)/2):amount)));
+}
 function artifactPush(side,technique,hit){
   if(activeBattleArtifact()!=='mountain-river-seal')return;
   battle.boundaryMomentum=Number(battle.boundaryMomentum)||0;
   if(side==='player'){
-    if(hit.dodged){if(technique.embryo)battle.boundaryMomentum=Math.max(-100,battle.boundaryMomentum-4)}
-    else{let push=technique.kind==='body'?8:technique.embryo?15:10;battle.boundaryMomentum=Math.min(100,battle.boundaryMomentum+push);if(technique.kind==='body')battle.enemyPushWeakened=true}
-    if(battle.boundaryMomentum>=100)battle.enemyMustBreak=true;
+    if(hit.dodged){if(technique.embryo)shiftBoundary(-8)}
+    else{shiftBoundary(technique.kind==='body'?8:technique.embryo?15:10);if(technique.kind==='body')battle.enemyPushWeakened=true}
+    if(battle.boundaryMomentum>=boundaryLimit)battle.enemyMustBreak=true;
   }else if(!hit.dodged){
-    const push=Math.max(0,10-(battle.enemyPushWeakened?4:0));battle.enemyPushWeakened=false;battle.boundaryMomentum=Math.max(-100,battle.boundaryMomentum-push);if(battle.boundaryMomentum<=-100)battle.playerMustBreak=true;
+    const push=Math.max(0,10-(battle.enemyPushWeakened?4:0));battle.enemyPushWeakened=false;shiftBoundary(-push);if(battle.boundaryMomentum<=-boundaryLimit)battle.playerMustBreak=true;
   }
 }
 function performBoundaryBreak(side){
+  const battleArena=$('.battle-arena');battleArena?.classList.add('boundary-breaking');setTimeout(()=>battleArena?.classList.remove('boundary-breaking'),760);
   appendBattleLog(`${side==='player'?state.name:battle.enemy.name}受界勢壓制，只得停手破界。`,side);battle.boundaryMomentum=0;if(side==='player')battle.playerMustBreak=false;else battle.enemyMustBreak=false;updateBattleUi();
 }
 function playerBattleTurn(){
@@ -1948,7 +1955,9 @@ function enemyBattleTurn(){
 }
 function updateBattleUi(){
   if(!battle)return;$('#battleTurn').textContent=battle.mode==='bodyTrial'?`第 ${Math.min(battle.round,battle.targetRounds)} / ${battle.targetRounds} 回合`:`第${['一','二','三','四','五','六','七','八','九','十'][Math.min(9,battle.round-1)]||battle.round}回合`;
-  const artifactId=activeBattleArtifact();if(artifactId==='sun-moon-wheel')$('#battleTurn').textContent+=(battle.round%2?'・日相 125%':'・月相 75%');else if(artifactId==='mountain-river-seal')$('#battleTurn').textContent+='・界勢 '+(battle.boundaryMomentum||0);else if(artifactId==='four-poles-stele')$('#battleTurn').textContent+='・鎮命界';
+  const artifactId=activeBattleArtifact(),arena=$('.battle-arena'),artifactFx=$('#artifactBattleFx');if(artifactId==='sun-moon-wheel')$('#battleTurn').textContent+=(battle.round%2?'・日相 125%':'・月相 75%');else if(artifactId==='mountain-river-seal')$('#battleTurn').textContent+=`・界勢 ${battle.boundaryMomentum||0} / ±${boundaryLimit}`;else if(artifactId==='four-poles-stele')$('#battleTurn').textContent+='・鎮命界';
+  arena?.classList.toggle('artifact-boundary',artifactId==='mountain-river-seal');arena?.style.setProperty('--boundary-strength',Math.abs(battle.boundaryMomentum||0)/boundaryLimit);arena?.classList.toggle('artifact-sun',artifactId==='sun-moon-wheel'&&battle.round%2===1);arena?.classList.toggle('artifact-moon',artifactId==='sun-moon-wheel'&&battle.round%2===0);artifactFx?.classList.toggle('active',artifactId==='mountain-river-seal'||artifactId==='sun-moon-wheel');
+  const marker=$('#boundaryGaugeMarker'),fill=$('#boundaryGaugeFill'),momentum=Math.max(-boundaryLimit,Math.min(boundaryLimit,battle.boundaryMomentum||0)),percent=(momentum+boundaryLimit)/(boundaryLimit*2)*100;if(marker)marker.style.left=`${percent}%`;if(fill){fill.style.left=`${Math.min(50,percent)}%`;fill.style.width=`${Math.abs(percent-50)}%`;fill.classList.toggle('enemy',momentum<0)}
   $('#playerHealthBar').style.width=`${Math.max(0,battle.player.hp/battle.player.maxHp*100)}%`;$('#enemyHealthBar').style.width=`${Math.max(0,battle.enemy.hp/battle.enemy.maxHp*100)}%`;
   $('#playerHealthText').textContent=`${Math.ceil(battle.player.hp).toLocaleString()} / ${battle.player.maxHp.toLocaleString()}`;$('#enemyHealthText').textContent=`${Math.ceil(battle.enemy.hp).toLocaleString()} / ${battle.enemy.maxHp.toLocaleString()}`;
   const exit=$('#battleExitBtn'),ready=battle.completedRounds>=3;exit.disabled=!ready;exit.textContent=battle.mode==='spar'?'退出':'認輸';

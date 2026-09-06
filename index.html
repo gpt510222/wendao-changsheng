@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>問道長生・試玩版</title>
-  <link rel="stylesheet" href="styles.css?v=20260907-2">
-  <link rel="stylesheet" href="q-style.css?v=20260907-1">
+  <link rel="stylesheet" href="styles.css?v=20260907-3">
+  <link rel="stylesheet" href="q-style.css?v=20260907-2">
   <script>document.documentElement.classList.add('q-style');</script>
 </head>
 <body>
@@ -466,6 +466,7 @@
           <section id="battleStage">
             <div class="battle-heading"><span>切磋</span><i class="battle-mark">戰</i><b id="battleTurn">第一回合</b></div>
             <div class="battle-arena">
+              <div id="artifactBattleFx" class="artifact-battle-fx" aria-hidden="true"><i class="celestial-orb"></i><div class="boundary-gauge"><b>敵界</b><span><em id="boundaryGaugeFill"></em><i id="boundaryGaugeMarker"></i></span><b>我界</b></div></div>
               <div class="combatant player-combatant">
                 <span id="playerDamage" class="damage-number"></span>
                 <div id="playerLifeSword" class="battle-life-sword" aria-label="懸浮的本命劍"><i></i></div>
@@ -526,6 +527,6 @@
   <audio id="tribulationFailureBgm" src="assets/bgm-tribulation-failure-v1.wav" preload="auto"></audio>
   <audio id="swordBreakthroughBgm" src="assets/bgm-sword-breakthrough-user-v1.wav" preload="auto"></audio>
   <script src="partner-system.js?v=20260906-1"></script>
-  <script src="game.js?v=20260907-1"></script>
+  <script src="game.js?v=20260907-2"></script>
 </body>
 </html>
