@@ -658,3 +658,6 @@
 @keyframes artifactSunPulse{50%{transform:translateX(-50%) scale(1.12);filter:brightness(1.18)}}@keyframes artifactMoonFloat{50%{transform:translate(-50%,5px) rotate(-6deg)}}@keyframes boundaryWorldBreak{20%,55%{transform:translateX(-5px)}35%,70%{transform:translateX(5px)}}@keyframes boundaryCrackFlash{0%,100%{opacity:.25}35%{opacity:1;background:repeating-conic-gradient(from 15deg at 50% 50%,transparent 0 16deg,#f9f0c8cc 17deg 18deg,transparent 19deg 36deg)}}
 @media(max-width:540px){.q-style .artifact-battle-fx .celestial-orb{width:54px;height:54px;top:6%}.q-style .boundary-gauge{top:4px;width:78%;grid-template-columns:auto minmax(100px,1fr) auto;font-size:8px}}
 @media(prefers-reduced-motion:reduce){.q-style .battle-arena.artifact-sun .celestial-orb,.q-style .battle-arena.artifact-moon .celestial-orb,.q-style .battle-arena.boundary-breaking,.q-style .battle-arena.boundary-breaking::after{animation:none!important}}
+
+/* 二次確認永遠覆蓋器塚與其他動態建立的選擇視窗。 */
+.q-style #confirmModal{z-index:240}
