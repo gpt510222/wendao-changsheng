@@ -692,6 +692,7 @@
 /* Ascension chapters use the same framed, immersive stage composition as Nine Locks. */
 .ascension-modal:has(.ascension-dialogue-stage){place-items:center;padding:0;background:#101b18dd;backdrop-filter:blur(4px)}
 .ascension-window:has(.ascension-dialogue-stage){width:min(94vw,760px);height:min(88vh,760px);max-height:none;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none}
+.ascension-window:has(.ascension-dialogue-stage) #ascensionContent{height:100%}
 .ascension-dialogue-stage{width:100%;height:100%;min-height:0;border:2px solid #a68b5f;box-shadow:0 22px 70px #000b}
 .ascension-window:has(.ascension-dialogue-stage) .ascension-close{right:10px;top:10px;border-color:#a68b5f}
 .ascension-chapter-card{left:16px;top:14px;min-width:0;padding:7px 12px;border-left-width:4px;box-shadow:none}
