@@ -2675,6 +2675,7 @@ const delusionRouteAttacks={
 function delusionQuestionAttack(route,questionIndex,answerIndex){const answer=heartQuestions[questionIndex]?.options[answerIndex]??'我沒有留下答案',answerAttack=delusionAttacks[questionIndex]?.[answerIndex]??'連自己的回答都記不清，還談什麼問心？',routeAttack=delusionRouteAttacks[route]?.[questionIndex]??'';return `你在問心陣親口回答：「${answer}」。${answerAttack}${routeAttack?` ${routeAttack}`:''}`}
 function renderAscensionEntrances(){const a=normalizeAscension(),eligible=ascensionEligible(),realmButton=$('#realmSwitchButton'),realmImage=realmButton?.querySelector('img');$('#ascensionButton').classList.toggle('hidden',!eligible);realmButton.classList.toggle('hidden',!a.ascended);const immortal=a.currentRealm==='immortal'&&a.ascended,$scene=$('.scene-bg');$('#gameScreen').classList.toggle('immortal-realm',immortal);$$('.path-action-group').forEach(group=>group.classList.toggle('realm-hidden',immortal));if(immortal){$scene.src='assets/qstyle-v2/ascension/immortal-realm-barren-v1.png';$scene.alt='靈氣枯竭的荒蕪仙界';realmImage.src='assets/qstyle-v2/ascension/entry-mortal-v1.png';realmImage.alt='凡間';realmButton.setAttribute('aria-label','返回凡間');$('#headerSpiritRealm').title='仙界沒有靈氣；凡間修練與產能照常運作'}else{const path=a.lastMortalTrainingGround||state.activePath||state.firstPath||'spirit';$scene.src=cultivationPathMeta[path]?.scene||cultivationPathMeta.spirit.scene;$scene.alt=`${cultivationPathMeta[path]?.name||'練氣'}修練道場`;realmImage.src='assets/qstyle-v2/ascension/entry-immortal-v1.png';realmImage.alt='仙界';realmButton.setAttribute('aria-label','前往仙界')}}
 let realmSwitching=false;
+let realmSwipeStart=null;
 function realmTransitionScene(path,label){return `<section class="realm-transition-scene" style="background-image:url('${path}')" aria-label="${label}"></section>`}
 function switchWorldRealm(){
   const a=normalizeAscension();if(!a.ascended||realmSwitching)return;
@@ -2682,6 +2683,16 @@ function switchWorldRealm(){
   realmSwitching=true;transition.className=`realm-transition realm-transition-${entering?'down':'up'}`;transition.innerHTML=realmTransitionScene(immortalScene,'仙界')+realmTransitionScene(mortalScene,'凡間');document.body.append(transition);
   window.setTimeout(()=>{a.currentRealm=entering?'immortal':'mortal';if(entering){a.lastMortalTrainingGround=state.activePath||state.firstPath||a.lastMortalTrainingGround||'spirit';currentFeature=null;$('#featurePanel').classList.add('hidden');$('#gameScreen').classList.remove('feature-open');$$('.feature-tab').forEach(tab=>tab.classList.remove('active'))}save();render();resumeWorldBgm()},500);
   window.setTimeout(()=>{transition.remove();realmSwitching=false;toast(entering?'你踏入仙界。四野死寂，此地沒有一絲靈氣。':'你自荒蕪仙界降回凡間；凡間一切產能照常運轉。')},1050);
+}
+function realmSwipeAllowed(target){
+  const a=normalizeAscension(),screen=$('#gameScreen');
+  return !!a.ascended&&!realmSwitching&&!screen.classList.contains('hidden')&&!screen.classList.contains('feature-open')&&!screen.classList.contains('tribulation-locked')&&!target.closest('.topbar,.efficiency,.path-actions,.bottom-nav,.realm-switch-button,.ascension-entry-button,.mainline-entry-button,.market-button,.mail-button,.encounter-button,.artifact-tomb-button,.modal,.ascension-modal,.leaderboard-modal,.game-menu');
+}
+function bindRealmSwipe(){
+  const screen=$('#gameScreen');if(!screen)return;
+  screen.addEventListener('touchstart',event=>{const touch=event.touches[0];realmSwipeStart=event.touches.length===1&&touch&&realmSwipeAllowed(event.target)?{x:touch.clientX,y:touch.clientY,time:performance.now()}:null},{passive:true});
+  screen.addEventListener('touchend',event=>{const start=realmSwipeStart,touch=event.changedTouches[0];realmSwipeStart=null;if(!start||!touch||!realmSwipeAllowed(event.target)||performance.now()-start.time>1000)return;const dx=touch.clientX-start.x,dy=touch.clientY-start.y;if(Math.abs(dy)<70||Math.abs(dy)<Math.abs(dx)*1.35)return;const immortal=normalizeAscension().currentRealm==='immortal';if(immortal&&dy>0||!immortal&&dy<0){event.preventDefault();switchWorldRealm()}},{passive:false});
+  screen.addEventListener('touchcancel',()=>{realmSwipeStart=null},{passive:true});
 }
 function openAscensionRoad(){if(!ascensionEligible())return toast('需通關九鎖封天第18關，並讓任一道路達到第九境一層');const modal=ensureAscensionModal();modal.classList.add('show');renderAscensionRoad()}
 function renderAscensionRoad(){const a=normalizeAscension(),content=$('#ascensionContent');if(a.pendingReward){renderAscensionAllocation(a.pendingReward);return}const stages=[['序章｜天路將起',a.prologueCompleted,()=>openAscensionPrologue()],['問心陣',a.heartTrialCompleted,()=>openHeartTrial()],['照妄陣',a.delusionTrialCompleted,()=>openDelusionTrial()],['天路盡頭',a.roadEndCompleted,()=>openRoadEnd()]],unlocked=[true,a.prologueCompleted,a.heartTrialCompleted&&a.heartRewardAllocated,a.delusionTrialCompleted&&a.delusionRewardAllocated];content.innerHTML=`<header class="ascension-heading"><small>飛升・闖天路${a.ascended?'・測試重溫':''}</small><h2>${a.route==='none'?'凡間的路，尚未走完':ascensionRouteMeta[a.route].name}</h2><p>${a.ascended?'已開放無限重複挑戰；重溫可測試完整流程，但不會重複取得屬性獎勵。':'九鎖已解，門仍未開。問心、照妄，而後以此身承擔自己的選擇。'}</p></header><div class="ascension-stage-grid">${stages.map((s,i)=>`<button data-asc-stage="${i}" ${!unlocked[i]||s[1]&&!a.ascended?'disabled':''}><i>${s[1]?'✓':i+1}</i><b>${s[0]}</b><small>${s[1]?(a.ascended?'已通關・可重複挑戰':'已通關・不可重入'):unlocked[i]?'可進入':'尚未解鎖'}</small></button>`).join('')}</div>`;content.querySelectorAll('[data-asc-stage]').forEach(button=>button.onclick=stages[+button.dataset.ascStage][2])}
@@ -2710,6 +2721,7 @@ $$('.feature-tab').forEach(b=>b.onclick=()=>toggleFeature(b));
 $('#mainlineButton').onclick=toggleMainlinePage;
 $('#ascensionButton').onclick=openAscensionRoad;
 $('#realmSwitchButton').onclick=switchWorldRealm;
+bindRealmSwipe();
 function closeGameMenu(){
   $('#gameMenu').classList.add('hidden');
   $('#menuBtn').setAttribute('aria-expanded','false');
