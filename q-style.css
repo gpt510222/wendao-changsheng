@@ -718,3 +718,35 @@
 
 /* 二次確認永遠覆蓋器塚與其他動態建立的選擇視窗。 */
 .q-style #confirmModal{z-index:2000}
+/* Immortal realm is intentionally empty: barren land and the return button only. */
+.q-style .game-screen.immortal-realm::after{display:none!important}
+.q-style .game-screen.immortal-realm .topbar,
+.q-style .game-screen.immortal-realm .efficiency,
+.q-style .game-screen.immortal-realm .hero-stack,
+.q-style .game-screen.immortal-realm .back-mist,
+.q-style .game-screen.immortal-realm>.mist,
+.q-style .game-screen.immortal-realm .lightning,
+.q-style .game-screen.immortal-realm .tribulation-scene,
+.q-style .game-screen.immortal-realm .novice-cultivation,
+.q-style .game-screen.immortal-realm .market-button,
+.q-style .game-screen.immortal-realm .mail-button,
+.q-style .game-screen.immortal-realm .mainline-entry-button,
+.q-style .game-screen.immortal-realm .encounter-button,
+.q-style .game-screen.immortal-realm .artifact-tomb-button,
+.q-style .game-screen.immortal-realm .ascension-entry-button,
+.q-style .game-screen.immortal-realm .path-actions,
+.q-style .game-screen.immortal-realm .bottom-nav,
+.q-style .game-screen.immortal-realm .feature-panel{display:none!important}
+.q-style .game-screen.immortal-realm .realm-switch-button{display:block;left:3.5%;right:auto;top:19%}
+
+/* Full-screen one-second realm travel: ascend into the next scene, descend back. */
+.realm-transition{position:fixed;z-index:1000;inset:0;height:200dvh;pointer-events:none;will-change:transform;background:#ddd1b6}
+.realm-transition-scene{height:100dvh;background-position:center;background-size:cover;background-repeat:no-repeat}
+.realm-transition-up{animation:realmTravelUp 1s cubic-bezier(.55,.05,.25,1) both}
+.realm-transition-down{transform:translateY(-100dvh);animation:realmTravelDown 1s cubic-bezier(.55,.05,.25,1) both}
+.realm-transition::after{content:"";position:fixed;z-index:2;inset:0;background:linear-gradient(180deg,transparent 16%,#f5e9c270 48%,transparent 84%);opacity:0;animation:realmTravelMist 1s ease-in-out both}
+@keyframes realmTravelUp{from{transform:translateY(0)}to{transform:translateY(-100dvh)}}
+@keyframes realmTravelDown{from{transform:translateY(-100dvh)}to{transform:translateY(0)}}
+@keyframes realmTravelMist{0%,100%{opacity:0}42%,58%{opacity:1}}
+@media(max-width:620px){.q-style .game-screen.immortal-realm .realm-switch-button{left:2%;right:auto;top:20%}}
+@media(prefers-reduced-motion:reduce){.realm-transition-up,.realm-transition-down{animation-duration:.01ms}.realm-transition::after{display:none}}
