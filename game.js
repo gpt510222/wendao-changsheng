@@ -417,6 +417,7 @@ const saveKey = 'wendao-idle-v2';
 let createGender='女', createAppearance=1, createOutfit=1, createOrigin='家族子弟', audioContext=null, currentFeature=null, currentRootView='root', currentCaveView='dwelling', currentSectView='home', currentArtsView='sect', currentExperienceView='sword', currentMarketTab='market', suppressSave=false,mainlineStoryStep=0,mainlineStoryStage=null;
 let currentSpiritView='realm',activeHeartTrial=null,currentWardrobeView='outfits',currentCharacterView='equipment',currentStudyView='codex';
 const marketFloors={market:1,scripture:1,reputation:1};
+let marketTreasurePage=1;
 const marketFloorLevels=[0,20,40,60,80];
 const chineseFloorNames=['一','二','三','四','五'];
 let marketFloorNoticeTimer=null,lastScriptureDayKey='',marketPurchaseOffer=null,marketPurchaseQuantity=1,currentMailId=null;
@@ -2536,16 +2537,22 @@ function renderMarket(tab=currentMarketTab){
   const hasFloors=tab!=='treasure';
   const floor=hasFloors?(marketFloors[tab]||1):1;
   let products=tab==='scripture'?scriptureStock(floor):tab==='reputation'?reputationStock(floor):(hasFloors?data.floors[floor-1]:data.products);if(tab==='market')products=[...marketResourceItems.filter(entry=>entry.floor===floor).map(entry=>entry.id),...marketCultivationCaskets.filter(entry=>entry.floor===floor).map(entry=>entry.id),...products];if(tab==='treasure')products=products.filter(id=>id==='divineRoamingManual'?!(state.divineRoamingUnlocked&&!(state.divineRoamingManualCount||state.marketPermanentPurchases?.[id])):id==='mindEmbodimentManual'?!(hasMindEmbodiment()&&!(state.mindEmbodimentManualCount||state.marketPermanentPurchases?.[id])):true);
-  const floorTitle=hasFloors?`${data.title}‧${chineseFloorNames[floor-1]}樓`:data.title;
+  const treasurePageCount=tab==='treasure'?Math.max(1,Math.ceil(products.length/9)):1;
+  if(tab==='treasure'){marketTreasurePage=Math.max(1,Math.min(treasurePageCount,marketTreasurePage));products=products.slice((marketTreasurePage-1)*9,marketTreasurePage*9)}
+  const floorTitle=hasFloors?`${data.title}‧${chineseFloorNames[floor-1]}樓`:treasurePageCount>1?`${data.title}‧珍藏 ${marketTreasurePage}/${treasurePageCount}`:data.title;
   const floorControls=hasFloors?`<div class="market-floor-controls">
     ${floor>1?`<button class="market-floor-button market-floor-down" type="button" data-market-floor="down" aria-label="下樓"><img src="assets/qstyle-v2/market-floor-up.png" alt=""><span>下樓</span></button>`:''}
     ${floor<5?`<button class="market-floor-button market-floor-up" type="button" data-market-floor="up" aria-label="上樓"><img src="assets/qstyle-v2/market-floor-up.png" alt=""><span>上樓</span></button>`:''}
+  </div>`:treasurePageCount>1?`<div class="market-floor-controls">
+    ${marketTreasurePage>1?`<button class="market-floor-button market-floor-down" type="button" data-market-treasure-page="prev" aria-label="上一頁"><img src="assets/qstyle-v2/market-floor-up.png" alt=""><span>上頁</span></button>`:''}
+    ${marketTreasurePage<treasurePageCount?`<button class="market-floor-button market-floor-up" type="button" data-market-treasure-page="next" aria-label="下一頁"><img src="assets/qstyle-v2/market-floor-up.png" alt=""><span>下頁</span></button>`:''}
   </div>`:'';
   $$('.market-tabs button').forEach(button=>button.classList.toggle('active',button.dataset.marketTab===tab));
   const currency={stone:['assets/qstyle-v2/spirit-stone.png','靈石'],jade:['assets/qstyle-v2/spirit-jade.png','靈玉'],reputation:['assets/qstyle-v2/reputation.png','聲望']}[data.currency];
   const productHtml=tab==='scripture'?products.map(book=>{const item=itemCatalog[book.id],price=scriptureTierPrices[book.tier-1],offer=marketOfferForBook(book.id),learned=(state.learnedBookIds||[]).includes(book.id),limited=marketPermanentBought(offer)>=1,tier=['一','二','三','四','五','六','七','八','九'][book.tier-1],interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${book.id}"`;return `<button class="market-product${limited?' sold-out':''}" type="button"${interaction}><span class="market-product-image"><img src="${item.image}" alt="${book.name}"></span><b>${book.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${formatLargeNumber(price)}</em><small>${limited?'已購買':learned?'已習得':`${book.elementName}行・${tier}階・${artKinds[book.kind].label}+${artBaseEffect(book)}`}</small></button>`}).join(''):tab==='reputation'?products.map(id=>{const item=itemCatalog[id],offer=marketOfferForItem(id),bought=marketDailyBought(offer),limited=bought>=offer.dailyLimit,interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${id}"`,detail=item.sectInvitation?`${['一','二','三','四','五','六','七','八','九'][item.sectInvitation.star-1]}星門派`:`今日 ${bought} / ${offer.dailyLimit}`;return `<button class="market-product${limited?' sold-out daily-limit':''}" type="button"${interaction}><span class="market-product-image"><img src="${item.image}" alt="${item.name}"></span><b>${item.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${formatLargeNumber(offer.price)}</em><small>${limited?'今日已購足':detail}</small></button>`}).join(''):products.map(id=>{const offer=marketOfferForItem(id),daily=offer.dailyLimit!=null&&marketDailyBought(offer)>=offer.dailyLimit,weekly=offer.weeklyLimit!=null&&marketWeeklyBought(offer)>=offer.weeklyLimit,permanent=offer.permanentLimit!=null&&marketPermanentBought(offer)>=offer.permanentLimit,limited=daily||weekly||permanent,interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${id}"`;return `<button class="market-product${limited?' sold-out':''}${daily||weekly?' daily-limit':''}" type="button"${interaction}><span class="market-product-image"><img src="${offer.image}" alt="${offer.name}"></span><b>${offer.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${formatLargeNumber(offer.price)}</em><small>${daily?'今日已購足':weekly?'本週已購足・週一刷新':permanent?'已購買・永久限購':offer.dailyLimit!=null?`今日 ${marketDailyBought(offer)}／${offer.dailyLimit}`:treasureOfferDetail(id)}</small></button>`}).join('');
-  $('#marketContent').innerHTML=`<div class="market-shop-banner"><small>${data.subtitle}</small><b>${floorTitle}</b></div>${floorControls}<div id="marketFloorNotice" class="market-floor-notice" role="status"></div><div class="market-product-grid${tab==='treasure'?' treasure-product-grid':''}">${productHtml}</div><p class="market-restock">${tab==='scripture'||tab==='reputation'?'每日 00:00 自動刷新':tab==='treasure'?'週限購商品每週一 00:00 刷新；其餘商品依各自限購規則':'坊市日限購商品每日 00:00 重置；週限購商品每週一 00:00 重置'}</p>`;
+  $('#marketContent').innerHTML=`<div class="market-shop-banner"><small>${data.subtitle}</small><b>${floorTitle}</b></div>${floorControls}<div id="marketFloorNotice" class="market-floor-notice" role="status"></div><div class="market-product-grid">${productHtml}</div><p class="market-restock">${tab==='scripture'||tab==='reputation'?'每日 00:00 自動刷新':tab==='treasure'?'週限購商品每週一 00:00 刷新；其餘商品依各自限購規則':'坊市日限購商品每日 00:00 重置；週限購商品每週一 00:00 重置'}</p>`;
   $$('[data-market-floor]').forEach(button=>button.onclick=()=>changeMarketFloor(button.dataset.marketFloor==='up'?1:-1));
+  $$('[data-market-treasure-page]').forEach(button=>button.onclick=()=>{marketTreasurePage+=button.dataset.marketTreasurePage==='next'?1:-1;renderMarket('treasure')});
   $$('[data-market-purchase]').forEach(button=>button.onclick=()=>openMarketPurchase(button.dataset.marketPurchase));
   render();
 }
@@ -2572,8 +2579,8 @@ function changeMarketFloor(direction){
   marketFloors[currentMarketTab]=next;
   renderMarket(currentMarketTab);
 }
-function resetMarketNavigation(){currentMarketTab='market';Object.keys(marketFloors).forEach(tab=>marketFloors[tab]=1)}
-function switchMarketTab(tab){if(Object.prototype.hasOwnProperty.call(marketFloors,tab))marketFloors[tab]=1;renderMarket(tab)}
+function resetMarketNavigation(){currentMarketTab='market';marketTreasurePage=1;Object.keys(marketFloors).forEach(tab=>marketFloors[tab]=1)}
+function switchMarketTab(tab){if(tab==='treasure')marketTreasurePage=1;if(Object.prototype.hasOwnProperty.call(marketFloors,tab))marketFloors[tab]=1;renderMarket(tab)}
 function openMarket(){
   $('#gameMenu').classList.add('hidden');
   resetMarketNavigation();
