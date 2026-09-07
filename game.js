@@ -522,6 +522,9 @@ function formatLargeNumber(value){
   return sign+parts.join('');
 }
 function formatCaveAmount(value){const amount=Math.max(0,Number(value)||0),units=['','萬','億','兆','京','垓','秭','穰','溝','澗','正','載'];if(amount<10000)return Math.floor(amount).toLocaleString();const index=Math.min(units.length-1,Math.floor(Math.log10(amount)/4)),scaled=amount/Math.pow(10000,index),digits=scaled>=100?0:scaled>=10?1:2;return `${scaled.toFixed(digits).replace(/\.0+$|(?<=\.[0-9])0+$/,'')}${units[index]}`}
+function clampSelectableQuantity(value,minimum,maximum){const min=Math.max(0,Math.floor(Number(minimum)||0)),max=Math.max(min,Math.floor(Number(maximum)||0)),parsed=Math.floor(Number(String(value).replace(/[^0-9]/g,'')));return Math.max(min,Math.min(max,Number.isFinite(parsed)?parsed:min))}
+function setQuantityInputValue(id,value){const input=$('#'+id);if(input&&input.value!==String(value))input.value=String(value)}
+function bindQuantityInput(id,{minimum=1,maximum,onChange,refresh}){const input=$('#'+id);if(!input)return;const limits=()=>({min:typeof minimum==='function'?minimum():minimum,max:typeof maximum==='function'?maximum():maximum});const commit=()=>{const {min,max}=limits(),value=clampSelectableQuantity(input.value,min,max);onChange(value);refresh()};input.addEventListener('input',()=>{input.value=input.value.replace(/[^0-9]/g,'');if(input.value==='')return;commit()});input.addEventListener('blur',commit);input.addEventListener('change',commit);input.addEventListener('focus',()=>input.select());input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();input.blur()}})}
 function legacySpiritAttributeGain(newLevel){const curve=1+Math.floor((Math.max(1,newLevel)-1)/20);return {trueQi:2+curve,rootBone:1+Math.ceil(curve/2),agility:newLevel%3===0?1+Math.floor(curve/6):0,physique:newLevel%5===0?1+Math.floor(curve/7):0,comprehension:newLevel%10===0?1+Math.floor(newLevel/50):0}}
 function legacyBodyAttributeGain(newLevel){const curve=1+Math.floor((Math.max(1,newLevel)-1)/20);return {rootBone:2+curve,physique:2+curve,trueQi:newLevel%4===0?1+Math.floor(curve/5):0,agility:newLevel%5===0?1+Math.floor(curve/6):0}}
 function growthStage(newLevel){return 1+Math.floor(Math.floor(Math.max(0,newLevel)/10)/4)}
@@ -1192,7 +1195,7 @@ function tribulationBaseChance(realmIndex){
 }
 function updateTribulationPanel(){
   const {realmIndex,item,count}=currentTribulationPill(),base=tribulationBaseChance(realmIndex),foundation=qiTribulationBonus(),maxPills=Math.max(0,Math.ceil((100-base-foundation)/5)),used=Math.min(tribulationPillUseCount,count,maxPills);
-  const cycleBonus=state.qiCycleMode==='still'?5:0,markBonus=Math.min(8,state.qiFoundationMarks?.still||0),focus=state.qiTribulationFocus||0;tribulationPillUseCount=used;$('#tribChance').textContent=`${Math.min(100,base+foundation+used*5)}%`;$('#tribChanceDetail').textContent=`基礎 ${base}%・定息周天 +${cycleBonus}%・不動印 +${markBonus}%・凝神加護 +${focus}%・丹藥 +${used*5}%`;$('#tribPillImage').src=item.image;$('#tribPillImage').alt=item.name;$('#tribPillName').textContent=item.name;$('#pillCount').textContent=`持有 ${formatLargeNumber(count)} 顆`;$('#tribPillUseCount').textContent=used;$('#tribPillMinus').disabled=used<=0;$('#tribPillPlus').disabled=used>=Math.min(count,maxPills);$('#tribPillMax').disabled=used>=Math.min(count,maxPills);
+  const cycleBonus=state.qiCycleMode==='still'?5:0,markBonus=Math.min(8,state.qiFoundationMarks?.still||0),focus=state.qiTribulationFocus||0;tribulationPillUseCount=used;$('#tribChance').textContent=`${Math.min(100,base+foundation+used*5)}%`;$('#tribChanceDetail').textContent=`基礎 ${base}%・定息周天 +${cycleBonus}%・不動印 +${markBonus}%・凝神加護 +${focus}%・丹藥 +${used*5}%`;$('#tribPillImage').src=item.image;$('#tribPillImage').alt=item.name;$('#tribPillName').textContent=item.name;$('#pillCount').textContent=`持有 ${formatLargeNumber(count)} 顆`;setQuantityInputValue('tribPillUseCount',used);$('#tribPillMin').disabled=used<=0;$('#tribPillMinus').disabled=used<=0;$('#tribPillPlus').disabled=used>=Math.min(count,maxPills);$('#tribPillMax').disabled=used>=Math.min(count,maxPills);
 }
 function adjustTribulationPills(delta){tribulationPillUseCount=Math.max(0,tribulationPillUseCount+delta);updateTribulationPanel()}
 function maximizeTribulationPills(){
@@ -1758,7 +1761,7 @@ function openItemModal(key){
   $('#itemModalActions').classList.toggle('no-use',!showUse);$('#itemModal').classList.remove('hidden');
 }
 function closeItemModal(){$('#itemModal').classList.add('hidden');itemModalKey=null;itemModalQuantity=1}
-function updateItemQuantity(){const item=itemCatalog[itemModalKey];if(!item)return;const owned=Math.max(0,Math.floor(Number(state[item.count])||0));itemModalQuantity=Math.max(1,Math.min(Math.max(1,owned),itemModalQuantity));$('#itemQuantity').textContent=formatLargeNumber(itemModalQuantity);$('#itemMinusBtn').disabled=itemModalQuantity<=1;$('#itemMinBtn').disabled=itemModalQuantity<=1;$('#itemPlusBtn').disabled=itemModalQuantity>=owned;$('#itemMaxBtn').disabled=itemModalQuantity>=owned}
+function updateItemQuantity(){const item=itemCatalog[itemModalKey];if(!item)return;const owned=Math.max(0,Math.floor(Number(state[item.count])||0));itemModalQuantity=Math.max(1,Math.min(Math.max(1,owned),itemModalQuantity));setQuantityInputValue('itemQuantity',itemModalQuantity);$('#itemMinusBtn').disabled=itemModalQuantity<=1;$('#itemMinBtn').disabled=itemModalQuantity<=1;$('#itemPlusBtn').disabled=itemModalQuantity>=owned;$('#itemMaxBtn').disabled=itemModalQuantity>=owned}
 function useTechniqueBook(key){
   const item=itemCatalog[key],book=item?.techniqueBook;if(!book)return false;
   if((state.learnedBookIds||[]).includes(book.id)){toast('此功法已習得，道具只能售出');return false}
@@ -2492,7 +2495,7 @@ function updateMarketPurchaseModal(){
   const offer=marketPurchaseOffer;if(!offer)return;
   const maximum=marketPurchaseCapacity(offer),reason=marketPurchaseBlockReason(offer);
   marketPurchaseQuantity=Math.max(1,Math.min(marketPurchaseQuantity,Math.max(1,maximum)));
-  $('#marketPurchaseQuantity').textContent=formatLargeNumber(marketPurchaseQuantity);
+  setQuantityInputValue('marketPurchaseQuantity',marketPurchaseQuantity);
   $('#marketPurchaseQuantityPanel').classList.toggle('hidden',!offer.quantityEnabled);
   $('#marketPurchasePrice').innerHTML=`單價：<img src="${offer.currencyImage}" alt="${offer.currencyName}"> ${formatLargeNumber(offer.price)} ${offer.currencyName}`;
   $('#marketPurchaseBalance').innerHTML=`當前持有：<img src="${offer.currencyImage}" alt="${offer.currencyName}"> <b>${formatLargeNumber(state[offer.currencyKey]||0)}</b> ${offer.currencyName}`;
@@ -2618,7 +2621,8 @@ $('#swordLifeUp').onclick=()=>openPrimarySwordView('sword');$('#swordTrialUp').o
 $('#bodyStatusUp').onclick=()=>openPrimaryBodyView('body');$('#bodyTrialUp').onclick=()=>openPrimaryBodyView('bodyTrial');
 $('#tribConfirm').onclick=tribulate; $('#tribCancel').onclick=()=>$('#tribulationModal').classList.add('hidden');
 $('#tribulationExit').onclick=exitTribulationResult;
-$('#tribPillMinus').onclick=()=>adjustTribulationPills(-1);$('#tribPillPlus').onclick=()=>adjustTribulationPills(1);$('#tribPillMax').onclick=maximizeTribulationPills;
+$('#tribPillMin').onclick=()=>{tribulationPillUseCount=0;updateTribulationPanel()};$('#tribPillMinus').onclick=()=>adjustTribulationPills(-1);$('#tribPillPlus').onclick=()=>adjustTribulationPills(1);$('#tribPillMax').onclick=maximizeTribulationPills;
+bindQuantityInput('tribPillUseCount',{minimum:0,maximum:()=>{const {realmIndex,count}=currentTribulationPill(),base=tribulationBaseChance(realmIndex);return Math.min(count,Math.max(0,Math.ceil((100-base-qiTribulationBonus())/5)))},onChange:value=>tribulationPillUseCount=value,refresh:updateTribulationPanel});
 $('#heroCharacterHotspot').onclick=openHeroCharacterAttributes;
 $$('.feature-tab').forEach(b=>b.onclick=()=>toggleFeature(b));
 $('#mainlineButton').onclick=toggleMainlinePage;
@@ -2657,11 +2661,13 @@ $('#marketPurchaseMin').onclick=()=>{marketPurchaseQuantity=1;updateMarketPurcha
 $('#marketPurchaseMinus').onclick=()=>{marketPurchaseQuantity--;updateMarketPurchaseModal()};
 $('#marketPurchasePlus').onclick=()=>{marketPurchaseQuantity++;updateMarketPurchaseModal()};
 $('#marketPurchaseMax').onclick=()=>{marketPurchaseQuantity=Math.max(1,marketPurchaseCapacity(marketPurchaseOffer));updateMarketPurchaseModal()};
+bindQuantityInput('marketPurchaseQuantity',{minimum:1,maximum:()=>Math.max(1,marketPurchaseCapacity(marketPurchaseOffer)),onChange:value=>marketPurchaseQuantity=value,refresh:updateMarketPurchaseModal});
 $('#itemModalClose').onclick=closeItemModal;
 $('#itemMinBtn').onclick=()=>{itemModalQuantity=1;updateItemQuantity()};
 $('#itemMinusBtn').onclick=()=>{itemModalQuantity--;updateItemQuantity()};
 $('#itemPlusBtn').onclick=()=>{itemModalQuantity++;updateItemQuantity()};
 $('#itemMaxBtn').onclick=()=>{const item=itemCatalog[itemModalKey];if(item)itemModalQuantity=state[item.count]||1;updateItemQuantity()};
+bindQuantityInput('itemQuantity',{minimum:1,maximum:()=>{const item=itemCatalog[itemModalKey];return Math.max(1,item?state[item.count]||0:1)},onChange:value=>itemModalQuantity=value,refresh:updateItemQuantity});
 $('#sellCancelBtn').onclick=closeSellModal;
 $('#sellConfirmBtn').onclick=confirmSellItem;
 $('#offlineModalClose').onclick=()=>$('#offlineModal').classList.add('hidden');

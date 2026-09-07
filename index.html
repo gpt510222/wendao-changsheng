@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>問道長生・試玩版</title>
-  <link rel="stylesheet" href="styles.css?v=20260907-7">
-  <link rel="stylesheet" href="q-style.css?v=20260907-6">
+  <link rel="stylesheet" href="styles.css?v=20260907-8">
+  <link rel="stylesheet" href="q-style.css?v=20260907-7">
   <script>document.documentElement.classList.add('q-style');</script>
 </head>
 <body>
@@ -259,7 +259,7 @@
           <div class="tribulation-pill-option">
             <img id="tribPillImage" src="assets/qstyle-v2/tribulation-pills/pill-01.png" alt="引霞丹">
             <div><b id="tribPillName">引霞丹</b><small>每顆成功率 +5%，最多提升至 100%</small><em id="pillCount">持有 0 顆</em></div>
-            <div class="tribulation-pill-stepper"><button id="tribPillMinus" type="button">−</button><strong id="tribPillUseCount">0</strong><button id="tribPillPlus" type="button">＋</button><button id="tribPillMax" class="tribulation-pill-max" type="button">最大</button></div>
+            <div class="tribulation-pill-stepper"><button id="tribPillMin" class="tribulation-pill-limit" type="button">最小</button><button id="tribPillMinus" type="button">−</button><input id="tribPillUseCount" class="quantity-input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" aria-label="使用丹藥數量"><button id="tribPillPlus" type="button">＋</button><button id="tribPillMax" class="tribulation-pill-limit" type="button">最大</button></div>
           </div>
           <div><button id="tribConfirm" class="jade-button">引動天雷</button><button id="tribCancel" class="text-button">暫緩</button></div>
         </div>
@@ -278,7 +278,7 @@
             <div class="item-quantity-controls">
               <button id="itemMinBtn" type="button">最小</button>
               <button id="itemMinusBtn" type="button" aria-label="減少數量">−</button>
-              <strong id="itemQuantity">1</strong>
+              <input id="itemQuantity" class="quantity-input" type="text" inputmode="numeric" pattern="[0-9]*" value="1" aria-label="操作數量">
               <button id="itemPlusBtn" type="button" aria-label="增加數量">＋</button>
               <button id="itemMaxBtn" type="button">最大</button>
             </div>
@@ -419,7 +419,7 @@
             <div class="sell-quantity-controls">
               <button id="marketPurchaseMin" type="button">最小</button>
               <button id="marketPurchaseMinus" type="button">−</button>
-              <b id="marketPurchaseQuantity">1</b>
+              <input id="marketPurchaseQuantity" class="quantity-input" type="text" inputmode="numeric" pattern="[0-9]*" value="1" aria-label="購買數量">
               <button id="marketPurchasePlus" type="button">＋</button>
               <button id="marketPurchaseMax" type="button">最大</button>
             </div>
@@ -527,6 +527,6 @@
   <audio id="tribulationFailureBgm" src="assets/bgm-tribulation-failure-v1.wav" preload="auto"></audio>
   <audio id="swordBreakthroughBgm" src="assets/bgm-sword-breakthrough-user-v1.wav" preload="auto"></audio>
   <script src="partner-system.js?v=20260907-3"></script>
-  <script src="game.js?v=20260907-13"></script>
+  <script src="game.js?v=20260907-14"></script>
 </body>
 </html>
