@@ -674,5 +674,20 @@
 @media(max-width:540px){.q-style .artifact-battle-fx .celestial-orb{width:54px;height:54px;top:6%}.q-style .boundary-gauge{top:4px;width:78%;grid-template-columns:auto minmax(100px,1fr) auto;font-size:8px}}
 @media(prefers-reduced-motion:reduce){.q-style .battle-arena.artifact-sun .celestial-orb,.q-style .battle-arena.artifact-moon .celestial-orb,.q-style .battle-arena.boundary-breaking,.q-style .battle-arena.boundary-breaking::after{animation:none!important}}
 
+/* Full ascension script controls and iPhone dynamic-viewport alignment. */
+.ascension-story-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.ascension-story-choices button{min-height:46px}.ascension-story-next{display:block;margin:10px 0 0 auto;min-width:92px}.ascension-dialogue-box>p{white-space:normal}
+@media(max-width:620px){
+  .ascension-modal{align-items:start;width:100%;height:100dvh;min-height:100dvh;padding:max(6px,env(safe-area-inset-top)) 0 max(6px,env(safe-area-inset-bottom));overflow:hidden}
+  .ascension-window:has(.ascension-dialogue-stage){width:100%;height:100%;max-height:none;border-radius:0;overflow:hidden}
+  .ascension-dialogue-stage{width:100%;height:100%;min-height:0;background-position:center top}
+  .ascension-window:has(.ascension-dialogue-stage) .ascension-close{right:max(8px,env(safe-area-inset-right));top:8px}
+  .ascension-chapter-card{left:10px;top:8px}
+  .ascension-dialogue-portrait{bottom:clamp(230px,38dvh,350px);width:84%;height:59%;object-position:center bottom}
+  .ascension-dialogue-stage.road-end .ascension-dialogue-portrait{width:88%}
+  .ascension-dialogue-box{left:8px;right:8px;bottom:4px;max-height:43dvh;padding:14px 12px 12px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  .ascension-dialogue-box>strong{padding-right:28px}.ascension-dialogue-box>p{font-size:13px;line-height:1.62}
+  .ascension-story-choices{grid-template-columns:1fr;gap:7px}.ascension-story-choices button{min-height:43px;padding:9px 10px}
+}
+
 /* 二次確認永遠覆蓋器塚與其他動態建立的選擇視窗。 */
 .q-style #confirmModal{z-index:2000}
