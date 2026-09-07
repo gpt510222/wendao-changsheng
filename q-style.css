@@ -676,6 +676,7 @@
 
 /* Full ascension script controls and iPhone dynamic-viewport alignment. */
 .ascension-story-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.ascension-story-choices button{min-height:46px}.ascension-story-next{display:block;margin:10px 0 0 auto;min-width:92px}.ascension-dialogue-box>p{white-space:normal}
+.ascension-story-choices button:disabled{filter:grayscale(1);opacity:.42;cursor:not-allowed;box-shadow:none}
 @media(max-width:620px){
   .ascension-modal{align-items:start;width:100%;height:100dvh;min-height:100dvh;padding:max(6px,env(safe-area-inset-top)) 0 max(6px,env(safe-area-inset-bottom));overflow:hidden}
   .ascension-window:has(.ascension-dialogue-stage){width:100%;height:100%;max-height:none;border-radius:0;overflow:hidden}
