@@ -696,6 +696,7 @@
 .ascension-window:has(.ascension-dialogue-stage) #ascensionContent{height:100%}
 .ascension-dialogue-stage{width:100%;height:100%;min-height:0;border:2px solid #a68b5f;box-shadow:0 22px 70px #000b}
 .ascension-window:has(.ascension-dialogue-stage) .ascension-close{right:10px;top:10px;border-color:#a68b5f}
+.ascension-window:has(.ascension-dialogue-stage) .ascension-close{display:none}
 .ascension-chapter-card{left:16px;top:14px;min-width:0;padding:7px 12px;border-left-width:4px;box-shadow:none}
 .ascension-chapter-card small{font-size:12px;letter-spacing:.04em}.ascension-chapter-card b{font-size:20px}
 .ascension-dialogue-portrait{bottom:118px;width:min(56%,390px);height:70%}
