@@ -689,5 +689,29 @@
   .ascension-story-choices{grid-template-columns:1fr;gap:7px}.ascension-story-choices button{min-height:43px;padding:9px 10px}
 }
 
+/* Ascension chapters use the same framed, immersive stage composition as Nine Locks. */
+.ascension-modal:has(.ascension-dialogue-stage){place-items:center;padding:0;background:#101b18dd;backdrop-filter:blur(4px)}
+.ascension-window:has(.ascension-dialogue-stage){width:min(94vw,760px);height:min(88vh,760px);max-height:none;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none}
+.ascension-dialogue-stage{width:100%;height:100%;min-height:0;border:2px solid #a68b5f;box-shadow:0 22px 70px #000b}
+.ascension-window:has(.ascension-dialogue-stage) .ascension-close{right:10px;top:10px;border-color:#a68b5f}
+.ascension-chapter-card{left:16px;top:14px;min-width:0;padding:7px 12px;border-left-width:4px;box-shadow:none}
+.ascension-chapter-card small{font-size:12px;letter-spacing:.04em}.ascension-chapter-card b{font-size:20px}
+.ascension-dialogue-portrait{bottom:118px;width:min(56%,390px);height:70%}
+.ascension-dialogue-stage.road-end .ascension-dialogue-portrait{width:min(60%,430px)}
+.ascension-dialogue-box{left:4%;right:4%;bottom:4%;min-height:110px;max-height:43%;padding:15px 94px 15px 18px;border-width:2px;box-shadow:0 8px 24px #0006}
+.ascension-dialogue-box>strong{font-size:18px}.ascension-dialogue-box>p{margin:7px 0;line-height:1.65}
+.ascension-story-next{position:absolute;right:14px;bottom:14px;margin:0;min-width:auto}
+@media(max-width:620px){
+  .ascension-modal:has(.ascension-dialogue-stage){width:100%;height:100dvh;min-height:100dvh;padding:max(8px,env(safe-area-inset-top)) 0 max(8px,env(safe-area-inset-bottom))}
+  .ascension-window:has(.ascension-dialogue-stage){width:94vw;height:calc(100dvh - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)))}
+  .ascension-dialogue-stage{height:100%;min-height:0}
+  .ascension-window:has(.ascension-dialogue-stage) .ascension-close{right:8px;top:8px}
+  .ascension-chapter-card{left:16px;top:16px;padding:7px 12px}.ascension-chapter-card small{font-size:11px}.ascension-chapter-card b{font-size:19px}
+  .ascension-dialogue-portrait{bottom:145px;width:78%;height:64%}
+  .ascension-dialogue-stage.road-end .ascension-dialogue-portrait{width:82%}
+  .ascension-dialogue-box{left:4%;right:4%;bottom:4%;min-height:110px;max-height:45%;padding:15px 18px 50px}
+  .ascension-story-next{right:12px;bottom:10px}
+}
+
 /* 二次確認永遠覆蓋器塚與其他動態建立的選擇視窗。 */
 .q-style #confirmModal{z-index:2000}
