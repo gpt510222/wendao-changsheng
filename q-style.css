@@ -752,4 +752,5 @@
 @keyframes realmTravelDown{from{transform:translateY(-100dvh)}to{transform:translateY(0)}}
 @keyframes realmTravelMist{0%,100%{opacity:0}42%,58%{opacity:1}}
 @media(max-width:620px){.q-style .game-screen.immortal-realm .realm-switch-button{left:2%;right:auto;top:20%}}
+@media(max-width:620px){.q-style .game-screen.immortal-realm .scene-bg{content:url('assets/qstyle-v2/ascension/immortal-realm-barren-mobile-v1.png');object-position:center center}}
 @media(prefers-reduced-motion:reduce){.realm-transition-up,.realm-transition-down{animation-duration:.01ms}.realm-transition::after{display:none}}

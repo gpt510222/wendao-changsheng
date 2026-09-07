@@ -749,3 +749,7 @@ html.entry-transition body::after{content:"";position:fixed;z-index:9999;inset:0
 @media(max-width:540px){.artifact-tomb-button{right:8px;top:calc(39% + 66px);width:58px;height:58px}.artifact-tomb-button img{width:100%;height:100%}}
 
 #confirmModal{z-index:240}
+
+/* Keep the labelled tribulation-pill limits legible on narrow phones. */
+.tribulation-pill-stepper .tribulation-pill-limit{width:auto;min-width:52px;padding:0 10px;border-radius:16px;font-size:12px;font-weight:700;white-space:nowrap}
+@media(max-width:540px){.tribulation-pill-stepper{gap:7px}.tribulation-pill-stepper .tribulation-pill-limit{min-width:54px;height:34px;padding:0 9px}}
