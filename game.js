@@ -160,6 +160,15 @@ Object.entries(techniqueBookKinds).forEach(([kind,assetPrefix])=>{
     }
   });
 });
+const treasureTechniqueBookSpecs=[
+  {id:'treasure-taiyang-lianshen-wujuan',count:'treasureTaiyangLianshenWujuanCount',name:'太陽煉神悟卷',kind:'ultimate',image:'assets/qstyle-v2/art-books/treasure-taiyang-lianshen-wujuan.png'},
+  {id:'treasure-chixiao-dingming-tianjian',count:'treasureChixiaoDingmingTianjianCount',name:'赤霄定命天箋',kind:'fragment',image:'assets/qstyle-v2/art-books/treasure-chixiao-dingming-tianjian.png'}
+];
+treasureTechniqueBookSpecs.forEach(spec=>{
+  const book={id:spec.id,count:spec.count,name:spec.name,kind:spec.kind,element:'fire',elementName:'火',tier:9,level:1,source:'book',exclusiveMarket:'treasure'};
+  techniqueBooks.push(book);techniqueBookDefaults[spec.count]=0;
+  itemCatalog[spec.id]={name:spec.name,image:spec.image,description:`火行・九階${artKinds[spec.kind].tab}。使用後習得「${spec.name}」，增加${artKinds[spec.kind].label}${spec.kind==='ultimate'?'，並額外增加主效果25%的銳識':''}；同名功法僅能習得一次。`,count:spec.count,usable:true,giftable:false,sellPrice:1,techniqueBook:book};
+});
 const startingTechniques=[
   {id:'origin',name:'凝念馭元',kind:'spirit',min:.8,max:1,description:'凝神引動體內元息，化為一道氣芒直擊對手。'},
   {id:'body-origin',name:'沉肩震步',kind:'body',unlockLevel:0,min:.9,max:1.05,guardBonus:.05,effect:'命中後本場減傷至少提升至 5%',description:'沉肩踏地，以命骨與玄軀推動全身，近身震開對手。'}
@@ -439,9 +448,9 @@ function titleUnlocked(id){
   return id==='nine-locks'?(state.mainlineCleared||0)>=18:(state.unlockedTitles||[]).includes(id);
 }
 function allBookArtsMastered(){
-  if(!techniqueBooks.length)return false;
+  const requiredBooks=techniqueBooks.filter(book=>!book.exclusiveMarket);if(!requiredBooks.length)return false;
   const levels=new Map((state.learnedArts||[]).filter(art=>art.source==='book').map(art=>[art.id,Math.max(0,Number(art.level)||0)]));
-  return techniqueBooks.every(book=>levels.get(book.id)>=10);
+  return requiredBooks.every(book=>levels.get(book.id)>=10);
 }
 function syncTitleUnlocks(){
   state.unlockedTitles=Array.isArray(state.unlockedTitles)?state.unlockedTitles:[];
@@ -2402,7 +2411,7 @@ const reputationResourcePrices={100:{spiritStone:10,wood:18,meteorIron:26},1000:
 function seededRandom(seedText){let seed=[...seedText].reduce((value,char)=>(value*31+char.charCodeAt(0))>>>0,2166136261);return()=>{seed+=0x6D2B79F5;let value=seed;value=Math.imul(value^value>>>15,value|1);value^=value+Math.imul(value^value>>>7,value|61);return((value^value>>>14)>>>0)/4294967296}}
 function scriptureDailyState(){const today=dateKey()||'local';if(state.scripturePurchases.date!==today){state.scripturePurchases={date:today,ids:[]};save()}return state.scripturePurchases}
 function scriptureStock(floor){
-  const today=dateKey()||'local',tiers=scriptureFloorTiers[floor-1]||[1,2],pool=techniqueBooks.filter(book=>tiers.includes(book.tier)),random=seededRandom(`藏經閣-${today}-${floor}`);
+  const today=dateKey()||'local',tiers=scriptureFloorTiers[floor-1]||[1,2],pool=techniqueBooks.filter(book=>!book.exclusiveMarket&&tiers.includes(book.tier)),random=seededRandom(`藏經閣-${today}-${floor}`);
   for(let index=pool.length-1;index>0;index--){const swap=Math.floor(random()*(index+1));[pool[index],pool[swap]]=[pool[swap],pool[index]]}
   return pool.slice(0,9);
 }
@@ -2422,7 +2431,8 @@ function marketWeeklyState(){const week=marketWeekKey();if(state.marketWeeklyPur
 function marketOfferForBook(id){
   const book=techniqueBooks.find(entry=>entry.id===id),item=itemCatalog[id];if(!book||!item)return null;
   const tier=['一','二','三','四','五','六','七','八','九'][book.tier-1];
-  return {id,item,name:book.name,image:item.image,description:`${item.description}\n功法效果：${artKinds[book.kind].label}+${artBaseEffect(book).toLocaleString()}（${book.elementName}行・${tier}階）`,currencyKey:'spiritStone',currencyName:'靈石',currencyImage:'assets/qstyle-v2/spirit-stone.png',price:scriptureTierPrices[book.tier-1],dailyLimit:null,permanentLimit:1,quantityEnabled:false};
+  const treasure=book.exclusiveMarket==='treasure';
+  return {id,item,name:book.name,image:item.image,description:`${item.description}\n功法效果：${artKinds[book.kind].label}+${artBaseEffect(book).toLocaleString()}（${book.elementName}行・${tier}階）`,currencyKey:treasure?'spiritJade':'spiritStone',currencyName:treasure?'靈玉':'靈石',currencyImage:`assets/qstyle-v2/${treasure?'spirit-jade':'spirit-stone'}.png`,price:treasure?999:scriptureTierPrices[book.tier-1],dailyLimit:null,permanentLimit:1,quantityEnabled:false};
 }
 function marketOfferForItem(id){
   const bookOffer=marketOfferForBook(id);if(bookOffer)return bookOffer;
@@ -2514,14 +2524,14 @@ function confirmMarketPurchase(){
   if(offer.id==='divineRoamingManual')state.divineRoamingUnlocked=true;
   toast(`購得「${offer.name}」${quantity>1?` × ${quantity}`:''}`);closeMarketPurchase();renderMarket(currentMarketTab);save();
 }
-function treasureOfferDetail(id){if(id==='divineRoamingManual')return state.spiritLevel>=40?'購得即開通神念遠遊':'需達化念境一層後購買';if(id==='xisuiFamaoPill'||id==='treasure-sword-embryo-reversion')return `本週 ${marketWeeklyBought(marketOfferForItem(id))}／1・週一00:00刷新`;if(id==='renameProtagonistJade')return '不限購・重書主角姓名';if(id==='genderRebirthMirror')return '不限購・轉換主角與命定因緣性別';if(id==='renamePartnerCovenant')return state.partnerSystem?.established?'不限購・重訂道侶姓名':'不限購・結緣後方可使用';if(id==='mindEmbodimentManual')return hasMindEmbodiment()?'已習得・購買後僅可收藏或售出':'使用後提前習得意念入體';return '百寶樓珍藏'}
+function treasureOfferDetail(id){if(id==='divineRoamingManual')return state.spiritLevel>=40?'購得即開通神念遠遊':'需達化念境一層後購買';if(id==='xisuiFamaoPill'||id==='treasure-sword-embryo-reversion')return `本週 ${marketWeeklyBought(marketOfferForItem(id))}／1・週一00:00刷新`;if(id==='renameProtagonistJade')return '不限購・重書主角姓名';if(id==='genderRebirthMirror')return '不限購・轉換主角與命定因緣性別';if(id==='renamePartnerCovenant')return state.partnerSystem?.established?'不限購・重訂道侶姓名':'不限購・結緣後方可使用';if(id==='mindEmbodimentManual')return hasMindEmbodiment()?'已習得・購買後僅可收藏或售出':'使用後提前習得意念入體';if(itemCatalog[id]?.techniqueBook?.exclusiveMarket==='treasure')return `火行・九階・${artKinds[itemCatalog[id].techniqueBook.kind].label}+${artBaseEffect(itemCatalog[id].techniqueBook).toLocaleString()}・永久限購一部`;return '百寶樓珍藏'}
 function renderMarket(tab=currentMarketTab){
   currentMarketTab=tab;
   const data={
     market:{title:'坊市',subtitle:'雲市百貨',currency:'stone',floors:[['market-sword-embryo-reversion'],['brew-base-normal'],[],['brew-base-rare'],['market-xisui-famao-pill']]},
     scripture:{title:'藏經閣',subtitle:'古卷玉簡',currency:'stone',floors:[[],[],[],[],[]]},
     reputation:{title:'聲望堂',subtitle:'名望珍藏',currency:'reputation',floors:[[],[],[],[],[]]},
-    treasure:{title:'百寶樓',subtitle:'仙珍奇物',currency:'jade',products:['xisuiFamaoPill','treasure-sword-embryo-reversion','renameProtagonistJade','genderRebirthMirror','renamePartnerCovenant','divineRoamingManual','mindEmbodimentManual','treasure-brew-base-rare']}
+    treasure:{title:'百寶樓',subtitle:'仙珍奇物',currency:'jade',products:['xisuiFamaoPill','treasure-sword-embryo-reversion','renameProtagonistJade','genderRebirthMirror','renamePartnerCovenant','divineRoamingManual','mindEmbodimentManual','treasure-brew-base-rare','treasure-taiyang-lianshen-wujuan','treasure-chixiao-dingming-tianjian']}
   }[tab];
   const hasFloors=tab!=='treasure';
   const floor=hasFloors?(marketFloors[tab]||1):1;
@@ -2534,7 +2544,7 @@ function renderMarket(tab=currentMarketTab){
   $$('.market-tabs button').forEach(button=>button.classList.toggle('active',button.dataset.marketTab===tab));
   const currency={stone:['assets/qstyle-v2/spirit-stone.png','靈石'],jade:['assets/qstyle-v2/spirit-jade.png','靈玉'],reputation:['assets/qstyle-v2/reputation.png','聲望']}[data.currency];
   const productHtml=tab==='scripture'?products.map(book=>{const item=itemCatalog[book.id],price=scriptureTierPrices[book.tier-1],offer=marketOfferForBook(book.id),learned=(state.learnedBookIds||[]).includes(book.id),limited=marketPermanentBought(offer)>=1,tier=['一','二','三','四','五','六','七','八','九'][book.tier-1],interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${book.id}"`;return `<button class="market-product${limited?' sold-out':''}" type="button"${interaction}><span class="market-product-image"><img src="${item.image}" alt="${book.name}"></span><b>${book.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${formatLargeNumber(price)}</em><small>${limited?'已購買':learned?'已習得':`${book.elementName}行・${tier}階・${artKinds[book.kind].label}+${artBaseEffect(book)}`}</small></button>`}).join(''):tab==='reputation'?products.map(id=>{const item=itemCatalog[id],offer=marketOfferForItem(id),bought=marketDailyBought(offer),limited=bought>=offer.dailyLimit,interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${id}"`,detail=item.sectInvitation?`${['一','二','三','四','五','六','七','八','九'][item.sectInvitation.star-1]}星門派`:`今日 ${bought} / ${offer.dailyLimit}`;return `<button class="market-product${limited?' sold-out daily-limit':''}" type="button"${interaction}><span class="market-product-image"><img src="${item.image}" alt="${item.name}"></span><b>${item.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${formatLargeNumber(offer.price)}</em><small>${limited?'今日已購足':detail}</small></button>`}).join(''):products.map(id=>{const offer=marketOfferForItem(id),daily=offer.dailyLimit!=null&&marketDailyBought(offer)>=offer.dailyLimit,weekly=offer.weeklyLimit!=null&&marketWeeklyBought(offer)>=offer.weeklyLimit,permanent=offer.permanentLimit!=null&&marketPermanentBought(offer)>=offer.permanentLimit,limited=daily||weekly||permanent,interaction=limited?' aria-disabled="true" tabindex="-1"':` data-market-purchase="${id}"`;return `<button class="market-product${limited?' sold-out':''}${daily||weekly?' daily-limit':''}" type="button"${interaction}><span class="market-product-image"><img src="${offer.image}" alt="${offer.name}"></span><b>${offer.name}</b><em><img src="${currency[0]}" alt="${currency[1]}">${formatLargeNumber(offer.price)}</em><small>${daily?'今日已購足':weekly?'本週已購足・週一刷新':permanent?'已購買・永久限購':offer.dailyLimit!=null?`今日 ${marketDailyBought(offer)}／${offer.dailyLimit}`:treasureOfferDetail(id)}</small></button>`}).join('');
-  $('#marketContent').innerHTML=`<div class="market-shop-banner"><small>${data.subtitle}</small><b>${floorTitle}</b></div>${floorControls}<div id="marketFloorNotice" class="market-floor-notice" role="status"></div><div class="market-product-grid">${productHtml}</div><p class="market-restock">${tab==='scripture'||tab==='reputation'?'每日 00:00 自動刷新':tab==='treasure'?'週限購商品每週一 00:00 刷新；其餘商品依各自限購規則':'坊市日限購商品每日 00:00 重置；週限購商品每週一 00:00 重置'}</p>`;
+  $('#marketContent').innerHTML=`<div class="market-shop-banner"><small>${data.subtitle}</small><b>${floorTitle}</b></div>${floorControls}<div id="marketFloorNotice" class="market-floor-notice" role="status"></div><div class="market-product-grid${tab==='treasure'?' treasure-product-grid':''}">${productHtml}</div><p class="market-restock">${tab==='scripture'||tab==='reputation'?'每日 00:00 自動刷新':tab==='treasure'?'週限購商品每週一 00:00 刷新；其餘商品依各自限購規則':'坊市日限購商品每日 00:00 重置；週限購商品每週一 00:00 重置'}</p>`;
   $$('[data-market-floor]').forEach(button=>button.onclick=()=>changeMarketFloor(button.dataset.marketFloor==='up'?1:-1));
   $$('[data-market-purchase]').forEach(button=>button.onclick=()=>openMarketPurchase(button.dataset.marketPurchase));
   render();
