@@ -841,6 +841,11 @@ async function syncLeaderboard(){
   try{const session=await ensureLeaderboardSession();if(leaderboardKnownPower===null)await loadOwnLeaderboardRecord(session);const currentPower=Math.max(0,Math.round(combatPower())),playerName=state.name.trim().slice(0,20)||'無名修士',nameChanged=playerName!==leaderboardKnownName,ascensionKey=ascensionLeaderboardKey(),ascensionChanged=ascensionKey!==leaderboardKnownAscensionKey;if(currentPower<=leaderboardKnownPower&&!nameChanged&&!ascensionChanged)return;const rankedPower=Math.max(currentPower,leaderboardKnownPower||0),payload={user_id:session.user.id,player_name:playerName,combat_power:rankedPower,spirit_level:state.spiritLevel||0,sword_level:state.swordLevel||0,body_level:state.bodyLevel||0,game_version:leaderboardVersionValue(),updated_at:new Date().toISOString()};const response=await fetch(`${leaderboardConfig.url}/rest/v1/player_rankings?on_conflict=user_id`,{method:'POST',headers:{...leaderboardHeaders(session.access_token),Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(payload)});if(!response.ok)throw new Error('ranking upload failed');leaderboardKnownPower=rankedPower;leaderboardKnownName=playerName;leaderboardKnownAscensionKey=ascensionKey}catch{}finally{leaderboardSyncInFlight=false}
 }
 function queueLeaderboardSync(){if(!state.name||!state.cultivationAwakened||leaderboardSyncTimer)return;leaderboardSyncTimer=setTimeout(()=>{leaderboardSyncTimer=0;syncLeaderboard().then(refreshOwnAscensionRank)},2500)}
+function syncLeaderboardAfterRename(){
+  if(leaderboardSyncTimer){clearTimeout(leaderboardSyncTimer);leaderboardSyncTimer=0}
+  const attempt=()=>{if(leaderboardSyncInFlight){leaderboardSyncTimer=setTimeout(()=>{leaderboardSyncTimer=0;attempt()},500);return}syncLeaderboard().then(refreshOwnAscensionRank)};
+  attempt();
+}
 function escapeLeaderboardText(value){const node=document.createElement('span');node.textContent=String(value??'');return node.innerHTML}
 function leaderboardHighestRealm(record){const paths=[{label:'修氣',level:Number(record.spirit_level)||0,realms:spiritRealms},{label:'淬劍',level:Number(record.sword_level)||0,realms:swordRealms},{label:'煉體',level:Number(record.body_level)||0,realms:bodyRealms}];const highest=paths.reduce((best,path)=>path.level>best.level?path:best,paths[0]);return `${highest.label}・${realmName(highest.level,highest.realms)}`}
 async function fetchCombatLeaderboard(){const query=`select=player_name,combat_power,spirit_level,sword_level,body_level,updated_at&order=combat_power.desc,updated_at.asc&limit=${leaderboardConfig.limit}`;const response=await fetch(`${leaderboardConfig.url}/rest/v1/player_rankings?${query}`,{headers:leaderboardHeaders()});if(!response.ok)throw new Error('ranking fetch failed');return response.json()}
@@ -1809,8 +1814,8 @@ function confirmIdentityNameChange(){
   if(!validIdentityName(name)){$('#identityChangeError').textContent='姓名限 1～8 個文字，可使用中文、字母、數字與間隔點。';return}
   const current=action==='protagonistName'?state.name:state.partnerSystem?.partner?.name;if(name===current){$('#identityChangeError').textContent='新姓名不可與目前姓名相同。';return}
   if((state[item.count]||0)<1){$('#identityChangeError').textContent='道具數量不足。';return}
-  state[item.count]--;if(action==='protagonistName'){state.name=name;queueLeaderboardSync()}else{state.partnerSystem.partner.name=name;if(state.partnerStory)state.partnerStory.name=name}
-  closeIdentityChangeModal();toast(action==='protagonistName'?`本命名諱已改為「${name}」`:`道侶自此以「${name}」之名同行`);render();if(currentFeature==='bag')renderBagView('bag');save();
+  state[item.count]--;if(action==='protagonistName')state.name=name;else{state.partnerSystem.partner.name=name;if(state.partnerStory)state.partnerStory.name=name}
+  closeIdentityChangeModal();toast(action==='protagonistName'?`本命名諱已改為「${name}」`:`道侶自此以「${name}」之名同行`);render();if(currentFeature==='bag')renderBagView('bag');save();if(action==='protagonistName')syncLeaderboardAfterRename();
 }
 async function useGenderRebirthMirror(key){
   const item=itemCatalog[key];if((state[item.count]||0)<1)return false;const next=state.gender==='男'?'女':'男',established=!!state.partnerSystem?.established,encountered=!!state.partnerStory&&!established;
