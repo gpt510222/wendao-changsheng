@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>問道長生・試玩版</title>
   <link rel="stylesheet" href="styles.css?v=20260908-9">
-  <link rel="stylesheet" href="q-style.css?v=20260908-18">
+  <link rel="stylesheet" href="q-style.css?v=20260908-19">
   <script>document.documentElement.classList.add('q-style');</script>
 </head>
 <body>
@@ -247,13 +247,20 @@
         <small id="featureReturnHint">再次點擊目前頁籤即可回到修練畫面</small>
       </section>
 
-      <footer class="bottom-nav paper-panel">
+      <footer class="bottom-nav mortal-bottom-nav paper-panel">
         <button class="feature-tab" data-page="root" data-title="靈根"><img class="nav-icon" src="assets/qstyle-v2/nav-spirit-root.png" alt=""><small>靈根</small></button>
         <button class="feature-tab" data-page="cave" data-title="洞府"><img class="nav-icon" src="assets/qstyle-v2/nav-cave.png" alt=""><small>洞府</small></button>
         <button class="feature-tab" data-page="sect" data-title="門派"><img class="nav-icon" src="assets/qstyle-v2/nav-sect.png" alt=""><small>門派</small></button>
         <button class="feature-tab" data-page="arts" data-title="功法"><img class="nav-icon" src="assets/qstyle-v2/nav-arts-cutout.png" alt=""><small>功法</small></button>
         <button class="feature-tab" data-page="experience" data-title="兼修"><img class="nav-icon" src="assets/qstyle-v2/nav-experience.png" alt=""><small>兼修</small></button>
         <button class="feature-tab" data-page="bag" data-title="儲物袋"><img class="nav-icon" src="assets/qstyle-v2/nav-bag-cutout.png" alt=""><small>儲物袋</small></button>
+      </footer>
+      <footer class="bottom-nav immortal-bottom-nav" aria-label="仙界功能">
+        <button class="feature-tab immortal-feature-tab" data-page="immortal-domain" data-title="仙域"><img class="nav-icon" src="assets/qstyle-v2/immortal/nav-domain-v1.png" alt=""><small>仙域</small></button>
+        <button class="feature-tab immortal-feature-tab" data-page="immortal-expedition" data-title="遠征"><img class="nav-icon" src="assets/qstyle-v2/immortal/nav-expedition-v1.png" alt=""><small>遠征</small></button>
+        <button class="feature-tab immortal-feature-tab" data-page="immortal-path" data-title="仙途"><img class="nav-icon" src="assets/qstyle-v2/immortal/nav-path-v1.png" alt=""><small>仙途</small></button>
+        <button class="feature-tab immortal-feature-tab" data-page="immortal-restoration" data-title="復界"><img class="nav-icon" src="assets/qstyle-v2/immortal/nav-restoration-v1.png" alt=""><small>復界</small></button>
+        <button class="feature-tab immortal-feature-tab" data-page="bag" data-title="儲物袋"><img class="nav-icon" src="assets/qstyle-v2/nav-bag-cutout.png" alt=""><small>儲物袋</small></button>
       </footer>
 
       <div id="toast" class="toast"></div>
@@ -538,6 +545,6 @@
   <audio id="tribulationFailureBgm" src="assets/bgm-tribulation-failure-v1.wav" preload="auto"></audio>
   <audio id="swordBreakthroughBgm" src="assets/bgm-sword-breakthrough-user-v1.wav" preload="auto"></audio>
   <script src="partner-system.js?v=20260908-4"></script>
-  <script src="game.js?v=20260908-43"></script>
+  <script src="game.js?v=20260908-44"></script>
 </body>
 </html>
