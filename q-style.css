@@ -754,3 +754,25 @@
 @media(max-width:620px){.q-style .game-screen.immortal-realm .realm-switch-button{left:2%;right:auto;top:20%}}
 @media(max-width:620px){.q-style .game-screen.immortal-realm .scene-bg{content:url('assets/qstyle-v2/ascension/immortal-realm-barren-mobile-v1.png');object-position:center center}}
 @media(prefers-reduced-motion:reduce){.realm-transition-up,.realm-transition-down{animation-duration:.01ms}.realm-transition::after{display:none}}
+
+/* Immortal realm keeps the mortal navigation geometry but uses a separate visual system. */
+.q-style .immortal-bottom-nav{display:none!important}
+.q-style .game-screen.immortal-realm .immortal-bottom-nav{display:flex!important;overflow:visible;isolation:isolate;border:2px solid #6f6759;border-bottom:0;border-radius:20px 20px 0 0;background:linear-gradient(180deg,#343a39f5,#171d1df8);box-shadow:inset 0 2px 0 #b9a97966,inset 0 5px 0 #e4d6aa18,0 -9px 24px #080d0db3}
+.q-style .game-screen.immortal-realm .immortal-bottom-nav::before{content:"";position:absolute;inset:5px 8px auto;height:1px;background:linear-gradient(90deg,transparent,#bcae84aa,transparent);pointer-events:none}
+.q-style .game-screen.immortal-realm .immortal-feature-tab{color:#c7c1b2;text-shadow:0 1px #000;filter:saturate(.72)}
+.q-style .game-screen.immortal-realm .immortal-feature-tab .nav-icon{opacity:.76;filter:saturate(.55) brightness(.78) drop-shadow(0 2px 3px #0009)}
+.q-style .game-screen.immortal-realm .immortal-feature-tab.active{color:#e8dfc9;background:linear-gradient(180deg,#8aa49a24,#668f8240);filter:none}
+.q-style .game-screen.immortal-realm .immortal-feature-tab.active::before{background:#9fd3c4;box-shadow:0 0 10px #8be2ca}
+.q-style .game-screen.immortal-realm .immortal-feature-tab.active .nav-icon{opacity:1;filter:saturate(.9) brightness(.92) drop-shadow(0 0 7px #7ec7b5aa)}
+.q-style .game-screen.immortal-realm .topbar{border-color:#706959;background:linear-gradient(105deg,#282e2deF,#4a463dec);box-shadow:inset 0 2px #b9aa8266,0 7px 18px #05090980;color:#e8e0cd}
+.q-style .game-screen.immortal-realm .topbar::after{content:"";position:absolute;inset:5px;border:1px solid #b3a37438;border-radius:inherit;pointer-events:none}
+.q-style .game-screen.immortal-realm .topbar strong,.q-style .game-screen.immortal-realm .topbar b{color:#e7dcc0;text-shadow:0 1px 2px #000}
+.q-style .game-screen.immortal-realm .topbar small,.q-style .game-screen.immortal-realm .topbar em{color:#aaa493}
+.q-style .game-screen.immortal-realm.feature-open .feature-panel{display:block!important;border-color:#716958;background:linear-gradient(145deg,#252b2af5,#3c3932f2);color:#ddd5c1;box-shadow:0 16px 36px #05080899}
+.q-style .game-screen.immortal-realm.feature-open .feature-panel>#featureDescription{background:transparent}
+.immortal-feature-skeleton{display:grid;gap:14px;max-width:620px;margin:auto;padding:18px;color:#d6cfbd;text-align:left}
+.immortal-feature-skeleton>header{padding:17px;border:1px solid #82765f;border-radius:14px;background:linear-gradient(135deg,#47504b99,#242827dd);box-shadow:inset 0 1px #d6c89b33}
+.immortal-feature-skeleton header small{color:#a9cfc2;letter-spacing:.18em}.immortal-feature-skeleton h2{margin:4px 0;color:#eee4ca;font-family:serif;font-size:25px}.immortal-feature-skeleton p{margin:0;color:#bcb4a2;line-height:1.65}
+.immortal-feature-skeleton>div{display:grid;gap:8px}.immortal-feature-skeleton article{display:grid;grid-template-columns:32px minmax(0,1fr);gap:2px 10px;align-items:center;padding:11px;border:1px solid #696457;border-radius:10px;background:#1d2322cc}.immortal-feature-skeleton article i{grid-row:1/3;display:grid;width:30px;aspect-ratio:1;place-items:center;border:1px solid #8a8069;border-radius:50%;color:#b7d8ce;font-style:normal}.immortal-feature-skeleton article b{color:#ddd4bd}.immortal-feature-skeleton article span,.immortal-feature-skeleton>em{color:#918b7e;font-size:9px;font-style:normal}.immortal-feature-skeleton>em{text-align:center;letter-spacing:.12em}
+.q-style .ascension-dialogue-stage.immortal-arrival::after{background:linear-gradient(transparent,#202523 45%)}
+.q-style .ascension-dialogue-stage.immortal-arrival .ascension-dialogue-box{border-color:#756d5d;background:#282d2bea;color:#ded6c3}.q-style .ascension-dialogue-stage.immortal-arrival .ascension-dialogue-box strong{color:#b8dbd0}.q-style .ascension-dialogue-stage.immortal-arrival .ascension-dialogue-box p{color:#ded6c3}

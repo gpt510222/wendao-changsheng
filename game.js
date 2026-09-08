@@ -398,7 +398,7 @@ defaults.sectRecords={};
 defaults.sectMerit=0;
 defaults.sectSearchAvailableAt=0;
 defaults.mainlineCleared=0;defaults.mainlineStories={};defaults.mainlineMaterials={};defaults.mainlineLoot={};defaults.mainlineHarvest=[];defaults.mainlineSpiritStoneBag=0;defaults.mainlineWoodBag=0;defaults.mainlineIronBag=0;defaults.mainlineFoodBag=0;defaults.craftingMaterialMigration=0;defaults.ownedArtifacts=[];defaults.equippedArtifact='';
-defaults.ascension={version:1,route:'none',prologueCompleted:false,heartTrialCompleted:false,delusionTrialCompleted:false,roadEndCompleted:false,heartRewardAllocated:false,delusionRewardAllocated:false,roadEndRewardAllocated:false,ascended:false,ascendedAt:0,serverAscensionRank:0,titleId:'',heartAnswers:[],delusionReplies:[],delusionAttemptCount:0,roadEndAttemptCount:0,lastMortalTrainingGround:'spirit',currentRealm:'mortal'};
+defaults.ascension={version:1,route:'none',prologueCompleted:false,heartTrialCompleted:false,delusionTrialCompleted:false,roadEndCompleted:false,heartRewardAllocated:false,delusionRewardAllocated:false,roadEndRewardAllocated:false,ascended:false,ascendedAt:0,serverAscensionRank:0,titleId:'',heartAnswers:[],delusionReplies:[],delusionAttemptCount:0,roadEndAttemptCount:0,lastMortalTrainingGround:'spirit',currentRealm:'mortal',immortalArrivalStoryVersion:0};
 defaults.divineRoamingUnlocked=false;defaults.divineRoamingManualCount=0;defaults.divineRoamingDay='';defaults.divineRoamingUsed=0;defaults.divineRoamingJob=null;defaults.divineRoamingHarvest={};defaults.divineRoamingTimingVersion=0;
 defaults.encounterVersion=1;defaults.encounterQueue=[];defaults.encounterHistory=[];defaults.encounterMilestones={};defaults.encounterActiveMs=0;defaults.encounterNextMs=2700000;defaults.encounterSerial=0;
 defaults.partnerStory=null;defaults.partnerSystem=null;
@@ -1286,7 +1286,7 @@ async function startSwordBreakthrough(cost=swordReq(state.swordLevel||0)){
 
 function openHeroCharacterAttributes(){
   if(!isPureCultivationView()||!hasMindEmbodiment())return;
-  const bagButton=$('.feature-tab[data-page="bag"]');
+  const bagButton=normalizeAscension().currentRealm==='immortal'?$('.immortal-bottom-nav .feature-tab[data-page="bag"]'):$('.mortal-bottom-nav .feature-tab[data-page="bag"]');
   currentFeature='bag';
   setFeaturePanelStandalone(false);
   $$('.feature-tab').forEach(button=>button.classList.toggle('active',button===bagButton));
@@ -1538,12 +1538,23 @@ function recoverFeaturePanel(page){
     else if(page==='sect')renderSectPanel(currentSectView||'home');
     else if(page==='arts')renderArtsPanel(currentArtsView||'sect');
     else if(page==='experience')renderExperiencePanel(currentExperienceView||'overview');
+    else if(page.startsWith('immortal-'))renderImmortalFeatureSkeleton(page);
     else if(page==='mainline')renderMainlinePage();
     else description.textContent=descriptions[page]||'此頁面暫時無法顯示，請重新切換頁籤。';
   }));
 }
+const immortalFeatureSkeletons={
+  'immortal-domain':{eyebrow:'荒蕪仙界・所在之地',title:'仙域',description:'查看所在仙域、場景互動與後續開放的區域地圖。',items:['飛升古臺・目前所在','仙域地圖・等待探索系統接入','場景互動・等待主線內容接入']},
+  'immortal-expedition':{eyebrow:'踏荒尋跡・量力而行',title:'遠征',description:'整備補給、選擇路線並深入仙界遺墟；完整遠征玩法將於後續展開。',items:['遠征路線・尚未開放','補給配置・等待仙界資源定案','撤離結算・等待探索系統接入']},
+  'immortal-path':{eyebrow:'凡道為基・仙途初啟',title:'仙途',description:'仙界獨立成長參數與道痕配置的入口；凡間三途成果仍將保留。',items:['仙界參數・規劃中','道痕配置・尚未開放','破碎虛空・尚不可知']},
+  'immortal-restoration':{eyebrow:'殘界待甦・一念新生',title:'復界',description:'修復飛升古臺、仙界據點與枯竭地脈，逐步改變荒蕪世界。',items:['飛升古臺・待調查','仙界據點・尚未建立','枯竭仙脈・尚未尋得']}
+};
+function renderImmortalFeatureSkeleton(page){const data=immortalFeatureSkeletons[page];if(!data)return;$('#featureDescription').innerHTML=`<section class="immortal-feature-skeleton"><header><small>${data.eyebrow}</small><h2>${data.title}</h2><p>${data.description}</p></header><div>${data.items.map((item,index)=>`<article><i>${index+1}</i><b>${item}</b><span>此處已建立功能骨架</span></article>`).join('')}</div><em>測試版・內容將依仙界規劃逐步接入</em></section>`}
 function toggleFeature(button) {
   const page=button.dataset.page;
+  const inImmortal=normalizeAscension().ascended&&normalizeAscension().currentRealm==='immortal',immortalPage=page.startsWith('immortal-');
+  if(inImmortal&&!immortalPage&&page!=='bag'||!inImmortal&&immortalPage)return toast('必須身處對應世界才能操作此功能');
+  if(immortalArrivalPending)return toast('初臨仙界的異象尚未平息');
   $('#mainlineButton')?.classList.remove('active');
   if(!state.cultivationAwakened)return toast('完成新手教程、踏入聽息一層後開啟此功能');
   if(currentFeature==='bag')clearWardrobeLayers();
@@ -1573,6 +1584,8 @@ function toggleFeature(button) {
     $('#featurePanel').classList.remove('feature-locked');renderArtsPanel('sect');
   } else if(page==='experience') {
     $('#featurePanel').classList.remove('feature-locked');renderExperiencePanel('overview');
+  } else if(immortalPage) {
+    $('#featurePanel').classList.remove('feature-locked');renderImmortalFeatureSkeleton(page);
   } else {
     $('#featurePanel').classList.remove('feature-locked');
     $('#featureDescription').textContent=descriptions[page];
@@ -2683,14 +2696,38 @@ const delusionRouteAttacks={
 function delusionQuestionAttack(route,questionIndex,answerIndex){const answer=heartQuestions[questionIndex]?.options[answerIndex]??'我沒有留下答案',answerAttack=delusionAttacks[questionIndex]?.[answerIndex]??'連自己的回答都記不清，還談什麼問心？',routeAttack=delusionRouteAttacks[route]?.[questionIndex]??'';return `你在問心陣親口回答：「${answer}」。${answerAttack}${routeAttack?` ${routeAttack}`:''}`}
 function renderAscensionEntrances(){const a=normalizeAscension(),eligible=ascensionEligible(),realmButton=$('#realmSwitchButton'),realmImage=realmButton?.querySelector('img');$('#ascensionButton').classList.toggle('hidden',!eligible);realmButton.classList.toggle('hidden',!a.ascended);const immortal=a.currentRealm==='immortal'&&a.ascended,$scene=$('.scene-bg');$('#gameScreen').classList.toggle('immortal-realm',immortal);$$('.path-action-group').forEach(group=>group.classList.toggle('realm-hidden',immortal));if(immortal){$scene.src='assets/qstyle-v2/ascension/immortal-realm-barren-v1.png';$scene.alt='靈氣枯竭的荒蕪仙界';realmImage.src='assets/qstyle-v2/ascension/entry-mortal-v1.png';realmImage.alt='凡間';realmButton.setAttribute('aria-label','返回凡間');$('#headerSpiritRealm').title='仙界沒有靈氣；凡間修練與產能照常運作'}else{const path=a.lastMortalTrainingGround||state.activePath||state.firstPath||'spirit';$scene.src=cultivationPathMeta[path]?.scene||cultivationPathMeta.spirit.scene;$scene.alt=`${cultivationPathMeta[path]?.name||'練氣'}修練道場`;realmImage.src='assets/qstyle-v2/ascension/entry-immortal-v1.png';realmImage.alt='仙界';realmButton.setAttribute('aria-label','前往仙界')}}
 let realmSwitching=false;
+let immortalArrivalPending=false;
+let immortalArrivalTimer=0;
 let realmSwipeStart=null;
 function realmTransitionScene(path,label){return `<section class="realm-transition-scene" style="background-image:url('${path}')" aria-label="${label}"></section>`}
+function playImmortalArrivalStory(){
+  const a=normalizeAscension();if(!a.ascended||a.currentRealm!=='immortal'||a.immortalArrivalStoryVersion>=1){immortalArrivalPending=false;return}
+  const modal=ensureAscensionModal(),player=state.name||'修士',background=window.matchMedia('(max-width:620px)').matches?'assets/qstyle-v2/ascension/immortal-realm-barren-mobile-v1.png':'assets/qstyle-v2/ascension/immortal-realm-barren-v1.png';
+  modal.classList.add('show');
+  const lines=[
+    ascensionLine('旁白','腳下最後一級天階在身後散去。沒有迎接飛升者的仙樂，也沒有傳說中的靈潮；風掠過斷裂石臺，只捲起一層灰白塵沙。','none'),
+    ascensionLine(player,'這裡……就是仙界？'),
+    ascensionLine('旁白',`${player}試著運轉功法，經脈中的力量仍在，四周卻沒有任何靈氣回應。遠方宮闕傾頹，浮山如死物般懸在蒼白天穹下。`,'none'),
+    ascensionLine('天路之主','不必再試了。這裡沒有靈氣。','master'),
+    ascensionLine(player,'你早就知道？那你為何直到現在才說？'),
+    ascensionLine('天路之主','若在門前告訴你仙界只剩荒土，你踏上天路時求的便不是自己的答案，而是衡量這一步值不值得。天路只問你能不能過門，不替你挑選門後的世界。','master'),
+    ascensionLine(player,'我的修為、劍元與肉身都還在，可這片天地像是在拒絕它們。'),
+    ascensionLine('天路之主','凡間所修不會消失，凡間的修練與洞府也不會因你站在此地便停下。但在仙界，你必須學會以另一種方式運用已有的一切。','master'),
+    ascensionLine(player,'仙界為什麼會變成這樣？'),
+    ascensionLine('天路之主','答案埋在這些遺墟裡。去看、去走、去問那些仍未完全死去的痕跡。若你能走到仙界道路的最後，便會知道天穹之外還有虛空。','master'),
+    ascensionLine(player,'飛升不是終點……仙界也不是。'),
+    ascensionLine('天路之主','自然不是。飛升只是離開凡間；有朝一日，當這片天地也再容不下你的道，你要做的便是——破碎虛空。','master'),
+    ascensionLine('旁白','話音消散，天路之主的身影化作微光，隨即被荒風吞沒。空寂仙界之中，只剩腳下殘破的飛升古臺，等待第一個決定。','none')
+  ];
+  playAscensionStory({theme:'immortalBarren',chapter:'仙界・初臨',title:'無靈之境',background,className:'immortal-arrival',lines,onDone:()=>{a.immortalArrivalStoryVersion=1;immortalArrivalPending=false;modal.classList.remove('show');save();render();resumeWorldBgm();toast('初臨仙界・仙域、遠征、仙途與復界已開啟')}})
+}
+function queueImmortalArrivalStory(delay=2000){const a=normalizeAscension();if(!a.ascended||a.currentRealm!=='immortal'||a.immortalArrivalStoryVersion>=1)return;clearTimeout(immortalArrivalTimer);immortalArrivalPending=true;immortalArrivalTimer=window.setTimeout(playImmortalArrivalStory,delay)}
 function switchWorldRealm(){
-  const a=normalizeAscension();if(!a.ascended||realmSwitching)return;
+  const a=normalizeAscension();if(!a.ascended||realmSwitching||immortalArrivalPending)return;
   const entering=a.currentRealm!=='immortal',path=a.lastMortalTrainingGround||state.activePath||state.firstPath||'spirit',mortalScene=cultivationPathMeta[path]?.scene||cultivationPathMeta.spirit.scene,immortalScene=window.matchMedia('(max-width:620px)').matches?'assets/qstyle-v2/ascension/immortal-realm-barren-mobile-v1.png':'assets/qstyle-v2/ascension/immortal-realm-barren-v1.png',transition=document.createElement('div');
   realmSwitching=true;transition.className=`realm-transition realm-transition-${entering?'down':'up'}`;transition.innerHTML=realmTransitionScene(immortalScene,'仙界')+realmTransitionScene(mortalScene,'凡間');document.body.append(transition);
-  window.setTimeout(()=>{a.currentRealm=entering?'immortal':'mortal';if(entering){a.lastMortalTrainingGround=state.activePath||state.firstPath||a.lastMortalTrainingGround||'spirit';currentFeature=null;$('#featurePanel').classList.add('hidden');$('#gameScreen').classList.remove('feature-open');$$('.feature-tab').forEach(tab=>tab.classList.remove('active'))}save();render();resumeWorldBgm()},500);
-  window.setTimeout(()=>{transition.remove();realmSwitching=false;toast(entering?'你踏入仙界。四野死寂，此地沒有一絲靈氣。':'你自荒蕪仙界降回凡間；凡間一切產能照常運轉。')},1050);
+  window.setTimeout(()=>{a.currentRealm=entering?'immortal':'mortal';if(entering)a.lastMortalTrainingGround=state.activePath||state.firstPath||a.lastMortalTrainingGround||'spirit';currentFeature=null;$('#featurePanel').classList.add('hidden');$('#gameScreen').classList.remove('feature-open');$$('.feature-tab').forEach(tab=>tab.classList.remove('active'));save();render();resumeWorldBgm()},500);
+  window.setTimeout(()=>{transition.remove();realmSwitching=false;toast(entering?'你踏入仙界。四野死寂，此地沒有一絲靈氣。':'你自荒蕪仙界降回凡間；凡間一切產能照常運轉。');if(entering)queueImmortalArrivalStory(2000)},1050);
 }
 function realmSwipeAllowed(target){
   const a=normalizeAscension(),screen=$('#gameScreen');
@@ -2715,7 +2752,7 @@ function ascensionBattleProfile(mode){const core=mode==='ascension-delusion'?{ro
 function startAscensionBattle(mode){ensureAscensionModal().classList.remove('show');clearTimeout(battleTimer);const player=battlePlayerStats(),roadEnd=mode==='ascension-road-end';startBgm(roadEnd?'ascensionRoadEnd':'ascensionDelusion');const generated=ascensionBattleProfile(mode),core=generated.core,enemy={combatPower:generated.combatPower,core,maxHp:Math.round(combatHealth(core.rootBone)*(roadEnd?1.25:1)),attack:Math.max(12,core.trueQi*5),defense:Math.max(0,core.physique*20),evasion:combatEvasion(core.agility),accuracy:combatAccuracy(core.spiritualPower),crit:combatCritical(core.spiritualPower),name:roadEnd?'天路之主':'心魔',race:roadEnd?'human':'demon',combatStyle:roadEnd?'defense':'attack-defense'};battle={active:true,resolved:false,mode,round:1,completedRounds:0,playerMoveIndex:0,player:{...player,hp:player.maxHp},enemy:{...enemy,hp:enemy.maxHp},logs:[]};$('#battleModal').classList.remove('hidden');$('#battleStage').classList.remove('hidden');$('#battleResult').classList.add('hidden');$('#playerSilhouette').className=`battle-silhouette ${state.gender==='女'?'silhouette-player-female':'silhouette-player-male'}`;$('#enemySilhouette').className=`battle-silhouette silhouette-${enemy.race}`;$('#battlePlayerName').textContent=state.name;$('#battleEnemyName').textContent=enemy.name;$('.battle-arena').style.backgroundImage=`linear-gradient(#10121455,#18140d55),url('assets/qstyle-v2/ascension/${roadEnd?'bg-road-end-v1.png':'bg-delusion-trial-v1.png'}')`;$('#battleLog').innerHTML=`<p><b>${roadEnd?'最終試煉':'照妄之戰'}</b>・${roadEnd?`人族・防禦型・戰力 ${formatCombatPower(enemy.combatPower)}；將天路之主氣血壓至 10% 即獲認可`:`魔族・攻防型・戰力 ${formatCombatPower(enemy.combatPower)}；擊敗映照自身的心魔`}</p>`;syncBattleWeapon();updateBattleUi();battleTimer=setTimeout(playerBattleTurn,700)}
 function completeAscensionBattle(mode,won){const a=normalizeAscension();if(!won){save();ensureAscensionModal().classList.remove('show');resumeWorldBgm();return}if(mode==='ascension-delusion'){a.delusionTrialCompleted=true;a.pendingReward={stage:'delusion',points:ascensionRouteMeta[a.route].reward[1]}}else{a.pendingReward={stage:'roadEnd',points:ascensionRouteMeta[a.route].reward[2]}}save()}
 function openAscensionAftermath(mode,won){const modal=ensureAscensionModal(),a=normalizeAscension(),player=state.name||'修士',roadEnd=mode==='ascension-road-end';modal.classList.add('show');if(!roadEnd){const routeClose={qi:'借來的力量可以成為自己的道，但別忘了自己是誰。',sword:'若劍只用來斬掉所有不想聽的聲音，那柄劍便不再屬於你。',body:'「我撐得住」不能成為所有痛苦都值得承受的理由。'}[a.route];const lines=won?[ascensionLine('心魔','……原來如此。我不會死。只要你還會懷疑、後悔，還會在夜深時想「如果當初選另一條路」，我就一直都在。','demon'),ascensionLine(player,'那這一關到底要我做什麼？'),ascensionLine('心魔','不是殺我，是認出我。若你把我的聲音當成真理，你就輸了；若你連我的聲音都不敢聽，你也輸了。','demon'),ascensionLine('心魔','疑心不是敵人，妄念也不是。真正危險的是，你開始分不清它們是不是自己。','demon'),ascensionLine('心魔',routeClose,'demon'),ascensionLine('心魔','我不會消失。只不過下一次——你應該認得出我的聲音了。','demon'),ascensionLine('神秘身影','問過心，照過妄，還能走到這裡。不錯。走上來，到了盡頭——我再告訴你。','master'),ascensionLine('系統','照妄陣・通關。下一關：天路盡頭。','master')]:[ascensionLine('旁白',`${player}倒在碎裂的黑色鏡面上，四周鏡片映出無數個倒下的自己。`,'demon'),ascensionLine('心魔','就這樣？這一次已經完了。你方才說得很好聽，說會承擔、不會被我定義；可到了最後，你連站都站不起來。','demon'),ascensionLine('心魔','我不需要證明你錯。我只要等你輸一次。只要輸過一次，你下次再說那些話，心裡就會多出一個聲音：「真的嗎？你真的做得到嗎？」','demon'),ascensionLine(player,'……所以你想讓我不敢再來？'),ascensionLine('心魔','錯了，我要你再來。如果你不敢踏進這裡，我就贏了；如果你帶著這次失敗再來，我會比現在更像你。下次見，記得把今天輸掉的這一刻一起帶回來。','demon'),ascensionLine('系統','照妄未破。此次挑戰失敗，你仍可再次進入照妄陣。','demon'),ascensionLine(player,'……那就下次，再分勝負。')];playAscensionStory({theme:'ascensionDelusion',chapter:won?'照妄陣・通關':'照妄未破',title:won?'妄念不滅，識之即可':'此次挑戰失敗',background:'assets/qstyle-v2/ascension/bg-delusion-trial-v1.png',className:'delusion',lines,onDone:()=>{if(won){completeAscensionBattle(mode,true);renderAscensionAllocation(a.pendingReward)}else{completeAscensionBattle(mode,false);renderAscensionRoad()}}});return}const lines=won?[ascensionLine('天路之主','夠了。','master'),ascensionLine(player,'還沒結束。你還站著，我還沒贏。'),ascensionLine('天路之主','結束了。你以為走完天路的條件是殺了我？若每個飛升者都必須先強過我，這扇門早就幾萬年沒開過了。','master'),ascensionLine(player,'那你剛才到底在試什麼？'),ascensionLine('天路之主','我在看，你被逼到極限之後，還剩多少是自己的。問心可以說謊，照妄也可以逞強，只有真的動手時，你的道騙不了人。你已經讓我看見了。我認可你。','master'),ascensionLine('天路之主','過去有善人、惡人、為眾生而來的人，也有只為自己長生的人走過這扇門。','master'),ascensionLine(player,'天路不管？'),ascensionLine('天路之主','為何要管？若天地只准它認為正確的人飛升，那九鎖與天路有何不同？天路只確認你有沒有能力走到門前，又有沒有勇氣承認門後的一切仍是你的選擇。','master'),ascensionLine('天路之主','最後看一眼凡間吧。','master',{choices:['有一點捨不得','我只是想把它記清楚','我不後悔'].map((label,index)=>({label,followup:[ascensionLine('天路之主',index===2?'不後悔很好，但別把不後悔變成日後不准自己改變。':'可以回頭看，不代表你必須回頭。記住它，然後繼續走。','master')]}))}),ascensionLine('天路之主','九鎖已解。心已問。妄已照。路已盡。','master'),ascensionLine('旁白','仙門震動，緊閉萬年的門扉緩緩開啟。','master'),ascensionLine('天路之主',`凡間修士，${player}。你有資格過門了。`,'master'),ascensionLine(player,'到了仙界之後，還有路嗎？'),ascensionLine('天路之主','你以為這裡叫「天路盡頭」，是因為道走完了？這裡只是凡間的路走完了。門後的路——才剛開始。','master'),ascensionLine('系統','天路盡頭・通關。此路已盡，此道未終。','master')]:[ascensionLine('旁白','天路之主沒有補刀，只靜靜看著倒下的你。','master'),ascensionLine('天路之主','今日輸了。你在照妄陣裡應該已經學過：一次失敗，不足以替你定義後面的路。','master'),ascensionLine('天路之主','天路沒有關。關上它的，只會是你自己。回去。等你覺得自己能再多走一步——就再來讓我看看。','master'),ascensionLine('系統','天路未盡。此次挑戰失敗，你仍可再次挑戰天路之主。','master')];playAscensionStory({theme:'ascensionRoadEnd',chapter:won?'最終試煉・認可':'天路未盡',title:won?'仙門將啟':'此次挑戰失敗',background:'assets/qstyle-v2/ascension/bg-road-end-v1.png',className:'road-end',lines,onDone:()=>{if(won){completeAscensionBattle(mode,true);renderAscensionAllocation(a.pendingReward)}else{completeAscensionBattle(mode,false);renderAscensionRoad()}}})}
-function renderAscensionSuccess(replay=false){const c=$('#ascensionContent'),titleId=replay?null:syncAscensionTitleUnlock(),title=titleCatalog.find(item=>item.id===titleId);c.innerHTML=`<div class="ascension-success"><small>${replay?'天路盡頭・重溫完成':'飛升成功'}</small><h2>${replay?'舊路重行，道果不重取':'凡途已盡，仙路初開'}</h2><p>「你以為天路盡頭，是因為道走完了？」</p><p>「這裡只是凡間的路走完了。門後的路，才剛開始。」</p><hr>${title?`<strong>獲得稱號「${title.name}」</strong>`:''}<strong>仙門之後沒有仙霧，也沒有靈潮。</strong><p>迎接你的，是一片靈氣枯竭、萬物死寂的荒蕪仙界。</p><em>${replay?'本次重溫未再次取得稱號、屬性獎勵或飛升順位。':'凡間的修練、洞府生產與所有既有產能均不受影響。'}</em><button data-enter-immortal>${replay?'結束重溫':'踏入荒蕪仙界'}</button></div>`;c.querySelector('[data-enter-immortal]').onclick=()=>{normalizeAscension().currentRealm='immortal';ensureAscensionModal().classList.remove('show');save();render();startBgm('immortalBarren');toast(replay?'飛升關卡重溫完成。':'仙界沒有靈氣。這裡的路，要用另一種方式走。')}}
+function renderAscensionSuccess(replay=false){const c=$('#ascensionContent'),titleId=replay?null:syncAscensionTitleUnlock(),title=titleCatalog.find(item=>item.id===titleId);c.innerHTML=`<div class="ascension-success"><small>${replay?'天路盡頭・重溫完成':'飛升成功'}</small><h2>${replay?'舊路重行，道果不重取':'凡途已盡，仙路初開'}</h2><p>「你以為天路盡頭，是因為道走完了？」</p><p>「這裡只是凡間的路走完了。門後的路，才剛開始。」</p><hr>${title?`<strong>獲得稱號「${title.name}」</strong>`:''}<strong>仙門之後沒有仙霧，也沒有靈潮。</strong><p>迎接你的，是一片靈氣枯竭、萬物死寂的荒蕪仙界。</p><em>${replay?'本次重溫未再次取得稱號、屬性獎勵或飛升順位。':'凡間的修練、洞府生產與所有既有產能均不受影響。'}</em><button data-enter-immortal>${replay?'結束重溫':'踏入荒蕪仙界'}</button></div>`;c.querySelector('[data-enter-immortal]').onclick=()=>{normalizeAscension().currentRealm='immortal';ensureAscensionModal().classList.remove('show');save();render();startBgm('immortalBarren');if(!replay)queueImmortalArrivalStory(2000);toast(replay?'飛升關卡重溫完成。':'仙界沒有靈氣。這裡的路，要用另一種方式走。')}}
 
 $('#spiritUp').onclick=()=>primaryPathAction();$('#spiritCycleUp').onclick=()=>openPrimarySpiritView('cycle');$('#spiritInsightUp').onclick=()=>openPrimarySpiritView('insight'); $('#swordUp').onclick=()=>upgrade('sword'); $('#bodyUp').onclick=()=>openPrimaryBodyView('training');
 $('#swordLifeUp').onclick=()=>openPrimarySwordView('sword');$('#swordTrialUp').onclick=()=>openPrimarySwordView('trial');
