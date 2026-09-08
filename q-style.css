@@ -768,8 +768,9 @@
 .q-style .game-screen.immortal-realm .topbar::after{content:"";position:absolute;inset:5px;border:1px solid #b3a37438;border-radius:inherit;pointer-events:none}
 .q-style .game-screen.immortal-realm .topbar strong,.q-style .game-screen.immortal-realm .topbar b{color:#e7dcc0;text-shadow:0 1px 2px #000}
 .q-style .game-screen.immortal-realm .topbar small,.q-style .game-screen.immortal-realm .topbar em{color:#aaa493}
-.q-style .game-screen.immortal-realm.feature-open .feature-panel{display:block!important;border-color:#716958;background:linear-gradient(145deg,#252b2af5,#3c3932f2);color:#ddd5c1;box-shadow:0 16px 36px #05080899}
-.q-style .game-screen.immortal-realm.feature-open .feature-panel>#featureDescription{background:transparent}
+.q-style .game-screen.immortal-realm.feature-open .realm-switch-button{display:none!important}
+.q-style .game-screen.immortal-realm.feature-open .feature-panel{z-index:10;display:flex!important;min-height:0;border-color:#716958;background:linear-gradient(145deg,#252b2af5,#3c3932f2);color:#ddd5c1;box-shadow:0 16px 36px #05080899}
+.q-style .game-screen.immortal-realm.feature-open .feature-panel>#featureDescription{min-height:0;overflow-x:hidden;overflow-y:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;background:transparent}
 .immortal-feature-skeleton{display:grid;gap:14px;max-width:620px;margin:auto;padding:18px;color:#d6cfbd;text-align:left}
 .immortal-feature-skeleton>header{padding:17px;border:1px solid #82765f;border-radius:14px;background:linear-gradient(135deg,#47504b99,#242827dd);box-shadow:inset 0 1px #d6c89b33}
 .immortal-feature-skeleton header small{color:#a9cfc2;letter-spacing:.18em}.immortal-feature-skeleton h2{margin:4px 0;color:#eee4ca;font-family:serif;font-size:25px}.immortal-feature-skeleton p{margin:0;color:#bcb4a2;line-height:1.65}
