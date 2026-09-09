@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>問道長生・試玩版</title>
   <link rel="stylesheet" href="styles.css?v=20260908-9">
-  <link rel="stylesheet" href="q-style.css?v=20260909-27">
+  <link rel="stylesheet" href="q-style.css?v=20260909-28">
   <script>document.documentElement.classList.add('q-style');</script>
 </head>
 <body>
@@ -160,6 +160,14 @@
           <button id="backToTitle">⌂ 回到標題</button>
         </div>
       </header>
+
+      <section id="immortalStatusBar" class="immortal-status-bar hidden" aria-label="仙界進程">
+        <span><small>界應</small><b id="immortalStatusAdaptation">0</b></span>
+        <i></i>
+        <span><small>界軀</small><b id="immortalStatusBody">零階</b></span>
+        <i></i>
+        <span><small>復界</small><b id="immortalStatusRestoration">古臺 0%</b></span>
+      </section>
 
       <section class="efficiency paper-panel">
         <div><small>當前修為</small><b id="totalQi">0</b></div>
@@ -545,6 +553,6 @@
   <audio id="tribulationFailureBgm" src="assets/bgm-tribulation-failure-v1.wav" preload="auto"></audio>
   <audio id="swordBreakthroughBgm" src="assets/bgm-sword-breakthrough-user-v1.wav" preload="auto"></audio>
   <script src="partner-system.js?v=20260908-4"></script>
-  <script src="game.js?v=20260909-52"></script>
+  <script src="game.js?v=20260909-53"></script>
 </body>
 </html>
