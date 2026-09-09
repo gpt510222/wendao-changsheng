@@ -1143,7 +1143,8 @@ function render() {
   const activePath=state.activePath||state.firstPath;$('#headerSpiritRealm').textContent=state.cultivationAwakened&&activePath?`${cultivationPathMeta[activePath].name}・${pathRealmName(activePath)}`:'尚未入門';
   $('#headerSect').textContent=state.sect||'無門無派';
   $('#yearsElapsed').textContent=`${experiencedYears().toLocaleString()} 年`;
-  $('#headerCombatPower').textContent=formatCombatPower(combatPower());
+  const ascension=normalizeAscension(),inImmortalRealm=ascension.ascended&&ascension.currentRealm==='immortal',headerPower=inImmortalRealm?immortalEffectiveCombatPower():combatPower(),headerPowerLabel=$('.combat-power-header small');
+  $('#headerCombatPower').textContent=formatCombatPower(headerPower);if(headerPowerLabel)headerPowerLabel.textContent=inImmortalRealm?'仙界戰力':'人物戰力';
   queueLeaderboardSync();
   $('#rateText').textContent=formatLargeNumber(rate())+' / 5秒';
   $('#spiritRealm').textContent=realmName(state.spiritLevel,spiritRealms);
