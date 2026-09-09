@@ -1150,6 +1150,7 @@ function render() {
   $('#yearsElapsed').textContent=`${experiencedYears().toLocaleString()} 年`;
   const ascension=normalizeAscension(),inImmortalRealm=ascension.ascended&&ascension.currentRealm==='immortal',headerPower=inImmortalRealm?immortalEffectiveCombatPower():combatPower(),headerPowerLabel=$('.combat-power-header small');
   $('#headerCombatPower').textContent=formatCombatPower(headerPower);if(headerPowerLabel)headerPowerLabel.textContent=inImmortalRealm?'仙界戰力':'人物戰力';
+  const immortalStatus=$('#immortalStatusBar');if(immortalStatus){immortalStatus.classList.toggle('hidden',!inImmortalRealm);if(inImmortalRealm){const im=immortalState(),w=im.wasteland,inWasteland=im.region==='wuxi-wasteland',stageNames=['零階','一階','二階','三階'];$('#immortalStatusAdaptation').textContent=immortalAdaptation();$('#immortalStatusBody').textContent=stageNames[Math.max(0,Math.min(3,w.bodyStage||0))];$('#immortalStatusRestoration').textContent=`${inWasteland?'荒原':'古臺'} ${inWasteland?wastelandExploration():immortalExploration()}%`}}
   if($('#leaderboardBtn'))$('#leaderboardBtn').textContent=inImmortalRealm?'◆ 復界碑':'◆ 潛龍榜';
   queueLeaderboardSync();
   $('#rateText').textContent=formatLargeNumber(rate())+' / 5秒';
@@ -2807,7 +2808,7 @@ function switchWorldRealm(){
 }
 function realmSwipeAllowed(target){
   const a=normalizeAscension(),screen=$('#gameScreen');
-  return !!a.ascended&&!realmSwitching&&!screen.classList.contains('hidden')&&!screen.classList.contains('feature-open')&&!screen.classList.contains('tribulation-locked')&&!target.closest('.topbar,.efficiency,.path-actions,.bottom-nav,.realm-switch-button,.ascension-entry-button,.mainline-entry-button,.market-button,.mail-button,.encounter-button,.artifact-tomb-button,.modal,.ascension-modal,.leaderboard-modal,.game-menu');
+  return !!a.ascended&&!realmSwitching&&!screen.classList.contains('hidden')&&!screen.classList.contains('feature-open')&&!screen.classList.contains('tribulation-locked')&&!target.closest('.topbar,.efficiency,.immortal-status-bar,.path-actions,.bottom-nav,.realm-switch-button,.ascension-entry-button,.mainline-entry-button,.market-button,.mail-button,.encounter-button,.artifact-tomb-button,.modal,.ascension-modal,.leaderboard-modal,.game-menu');
 }
 function bindRealmSwipe(){
   const screen=$('#gameScreen');if(!screen)return;
