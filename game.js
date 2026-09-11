@@ -376,7 +376,8 @@ const wardrobeOutfits={
   男:[
     {id:1,name:'青雲道袍',kind:'凡品',quality:'common'},{id:2,name:'玄劍法袍',kind:'凡品',quality:'common'},{id:3,name:'山嶽戰袍',kind:'凡品',quality:'common'},
     {id:4,name:'太虛星袍',kind:'靈品',quality:'spirit'},{id:5,name:'天衍劍衣',kind:'靈品',quality:'spirit'},
-    {id:6,name:'太初帝袍',kind:'天工絕品',quality:'masterwork',effect:'star'},{id:7,name:'鴻蒙火袞',kind:'天工絕品',quality:'masterwork',effect:'flame'},{id:8,name:'萬象道服',kind:'天工絕品',quality:'masterwork',effect:'myriad'}
+    {id:6,name:'太初帝袍',kind:'天工絕品',quality:'masterwork',effect:'star'},{id:7,name:'鴻蒙火袞',kind:'天工絕品',quality:'masterwork',effect:'flame'},{id:8,name:'萬象道服',kind:'天工絕品',quality:'masterwork',effect:'myriad'},
+    {id:9,name:'太虛星極仙袍',kind:'仙品',quality:'immortal',ascensionOnly:true,animated:true}
   ]
 };
 const trueFormCatalog=[
@@ -452,7 +453,9 @@ function gameNow(){return Math.floor(clockEpoch+(performance.now()-clockPerf))}
 function appearanceAsset(gender,appearance,outfit){
   if(qStyleMode){
     const g=gender==='男'?'male':'female';
-    const selectedOutfit=Math.max(1,Math.min(8,Number(outfit)||1));
+    const requestedOutfit=Number(outfit)||1;
+    if(g==='male'&&requestedOutfit===9)return 'assets/qstyle-v2/male-outfit-9-animated.webp?v=20260912a';
+    const selectedOutfit=Math.max(1,Math.min(8,requestedOutfit));
     const selectedAppearance=Math.max(1,Math.min(3,Number(appearance)||1));
     const asset=selectedAppearance===1
       ? `assets/qstyle-v2/${g}-outfit-${selectedOutfit}.png`
@@ -463,7 +466,10 @@ function appearanceAsset(gender,appearance,outfit){
   const version=appearance===2?'v2':'v1';
   return `assets/${g}-appearance-${appearance||1}-outfit-${outfit||1}-${version}.png`;
 }
-function characterAsset(){return appearanceAsset(state.gender,state.appearance||1,state.outfit||1)}
+function characterAsset(){
+  const outfit=Number(state.outfit)||1,allowed=outfit!==9||(state.gender==='男'&&normalizeAscension().ascended);
+  return appearanceAsset(state.gender,state.appearance||1,allowed?outfit:1);
+}
 function titleUnlocked(id){
   if(titleCatalog.find(title=>title.id===id)?.alwaysUnlocked)return true;
   return id==='nine-locks'?(state.mainlineCleared||0)>=18:(state.unlockedTitles||[]).includes(id);
@@ -2454,8 +2460,9 @@ function renderWardrobeSection(section,preserveScroll=false){
   $$('.wardrobe-tabs button').forEach(button=>button.classList.toggle('active',button.dataset.wardrobeView===section));
   const inner=$('#wardrobeInner');if(!inner)return;
   if(section==='outfits'){
-    const g=state.gender==='男'?'male':'female',appearance=state.appearance||1;
-    replaceWardrobeContent(inner,`<div class="wardrobe-intro"><b>衣閣藏衣</b><span>品質依序為凡品、良品、靈品、玄品、天工絕品；服裝不影響人物屬性。</span></div><div class="wardrobe-showcase-strip" data-wardrobe-strip="outfits">${wardrobeOutfits[state.gender].map(outfit=>`<article class="wardrobe-card ${outfit.effect?'mythic':''} ${state.outfit===outfit.id?'selected':''}" data-quality="${outfit.quality}" data-outfit-effect="${outfit.effect||'none'}"><span class="wardrobe-preview"><img src="${appearanceAsset(state.gender,appearance,outfit.id)}" alt="${outfit.name}"></span><b>${outfit.name}</b><small class="item-quality">${outfit.kind}</small><button type="button" class="wardrobe-action" data-outfit-action="${outfit.id}">${state.outfit===outfit.id?'穿戴中':'穿戴'}</button></article>`).join('')}</div>`);
+    const g=state.gender==='男'?'male':'female',appearance=state.appearance||1,ascended=normalizeAscension().ascended;
+    const visibleOutfits=wardrobeOutfits[state.gender].filter(outfit=>!outfit.ascensionOnly||ascended);
+    replaceWardrobeContent(inner,`<div class="wardrobe-intro"><b>衣閣藏衣</b><span>品質依序為凡品、良品、靈品、玄品、天工絕品${ascended?'、仙品':''}；服裝不影響人物屬性。</span></div><div class="wardrobe-showcase-strip" data-wardrobe-strip="outfits">${visibleOutfits.map(outfit=>`<article class="wardrobe-card ${outfit.effect?'mythic':''} ${outfit.animated?'animated-outfit':''} ${state.outfit===outfit.id?'selected':''}" data-quality="${outfit.quality}" data-outfit-effect="${outfit.effect||'none'}"><span class="wardrobe-preview"><img src="${appearanceAsset(state.gender,appearance,outfit.id)}" alt="${outfit.name}"></span><b>${outfit.name}</b><small class="item-quality">${outfit.kind}${outfit.animated?'・本體動態':''}</small><button type="button" class="wardrobe-action" data-outfit-action="${outfit.id}">${state.outfit===outfit.id?'穿戴中':'穿戴'}</button></article>`).join('')}</div>`);
     $$('[data-outfit-action]').forEach(button=>button.onclick=()=>{state.outfit=+button.dataset.outfitAction;applyCharacterVisual();renderWardrobeSection('outfits',true);save()});
     restoreWardrobeScroll(scrollTop);
     return;
