@@ -1,6 +1,6 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
-window.WENDAO_BUILD='20260911-80';
+window.WENDAO_BUILD='20260911-81';
 const qStyleMode=true;
 const leaderboardConfig={url:'https://oxzuunzhsbvumxxbezev.supabase.co',publishableKey:'sb_publishable_u2rmM6v1-AdjRLMZSVetRw_MgjeWSL3',sessionKey:'wendao-supabase-session-v1',gameVersion:'20260902-49',limit:50};
 let leaderboardSyncTimer=0,leaderboardSyncInFlight=false,leaderboardKnownPower=null,leaderboardKnownName='',leaderboardKnownAscensionKey='',leaderboardKnownImmortalKey='';
@@ -1256,6 +1256,7 @@ function upgrade(type) {
     if(state.bodyLevel>=maxBodyLevel)unlockTitle('body-ultimate');toast(`已提升至${bodyRealmName(state.bodyLevel)}`);
   }
   syncSectTaskRouteUnlocks(type);render();
+  if(spirit)renderQiDestination();
   if(!spirit&&!sword&&currentFeature==='experience')renderExperiencePanel('body');
   save();
 }
@@ -1330,7 +1331,7 @@ function tribulate() {
       const lossPercent=50-Math.min(3,state.qiHeartTraits?.guard||0)*5,loss=(cost*BigInt(lossPercent)+99n)/100n;state.free=state.free>loss?state.free-loss:0n;
       $('#tribulationResultSeal').textContent='敗';$('#tribulationResultTitle').textContent='渡劫失敗';$('#tribulationResultText').textContent=`雷劫傷及道基，本次修為折損 ${lossPercent}%${lossPercent<50?'・守一心護住部分根基':''}`;
     }
-    render();save();
+    render();renderQiDestination();save();
   },5150);
 }
 function swordCinematicSource(path){return swordCinematicSources[path]||swordCinematicSources.unmarked}
