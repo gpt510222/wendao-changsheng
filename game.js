@@ -1,6 +1,6 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
-window.WENDAO_BUILD='20260911-84';
+window.WENDAO_BUILD='20260913-85';
 const qStyleMode=true;
 const leaderboardConfig={url:'https://oxzuunzhsbvumxxbezev.supabase.co',publishableKey:'sb_publishable_u2rmM6v1-AdjRLMZSVetRw_MgjeWSL3',sessionKey:'wendao-supabase-session-v1',gameVersion:'20260902-49',limit:50};
 let leaderboardSyncTimer=0,leaderboardSyncInFlight=false,leaderboardKnownPower=null,leaderboardKnownName='',leaderboardKnownAscensionKey='',leaderboardKnownImmortalKey='';
@@ -979,7 +979,7 @@ function normalizePillEffectValues(needsMigration=false){
   return true;
 }
 function chanceFromRating(rating,cap) { return Math.min(cap,rating/(rating+1000)*100); }
-function save() { if(suppressSave)return;if(state.sect)syncCurrentSectRecord();const now=gameNow();if(sessionOnline||!state.name||!state.lastSave)state.lastSave=now;if(trustedClockReady)state.lastTrustedTime=Math.max(state.lastTrustedTime||0,now);localStorage.setItem(saveKey,JSON.stringify(state,(_,value)=>typeof value==='bigint'?value.toString():value));scheduleRecoveryBackup() }
+function save() { if(suppressSave)return;if(state.sect)syncCurrentSectRecord();const now=gameNow();if(sessionOnline||!state.name||!state.lastSave)state.lastSave=now;if(trustedClockReady)state.lastTrustedTime=Math.max(state.lastTrustedTime||0,now);localStorage.setItem(saveKey,JSON.stringify(state,(_,value)=>typeof value==='bigint'?value.toString():value)) }
 function grantTestTribulationPills(){
   Object.keys(tribulationPillDefaults).forEach(key=>state[key]=Math.max(200,state[key]||0));
   state.testTribulationPillGrantVersion=1;
@@ -1391,7 +1391,6 @@ function scheduleOfflineRewards(before,seconds){
 }
 async function startGame() {
   if(sessionOnline)return;finishPause();sessionOnline=true;
-  await verifyAccountOwnership();if(suppressSave)return;
   const savedLast=state.lastSave||0,savedTrusted=state.lastTrustedTime||0;
   trustedClockReady=location.protocol==='file:';
   const clockOkay=await syncTrustedTime(),now=gameNow(),clockRollback=(savedTrusted&&now+120000<savedTrusted)||(savedLast&&savedLast>now+120000);
@@ -2657,8 +2656,6 @@ function renderHelp(tab='cultivation'){
     arts:helpCard('靈根與靈氣',['靈氣由修練與相關效果取得，可用來提升金、木、水、火、土五行靈根。','靈根會放大相同五行功法的效果；人物天契會提高靈氣獲取效率。','提升靈池可增加靈氣相關成長，操作前可在畫面查看所需物資。'])+helpCard('功法系統',['功法頁分為門派功法、功法書與招式；功法書再依玄錄、命篇、體典、行章、悟卷、天箋分類。','門派功法需加入門派後前往「傳功殿」學習；外門、內門、親傳依序可學一、二、三部。','門派秘藏在尚未查明前只顯示線索；晉升內門可確認，晉升親傳後才可受授。','坊市藏經閣出售功法書；購買後需到儲物袋使用，同名功法不能重複學習。','功法可消耗靈氣升級，效果會計入人物屬性與戰鬥力；遺忘不返還已投入的靈氣。']),
     cave:helpCard('靈脈與修行設施',['洞府靈脈提供設施運作所需供應，提升靈脈可擴充供應上限。','聚靈室提高掛機修為；洗劍池提高掛機劍元；鍛體室降低手動鍛體的材料消耗與受傷風險。','設施可啟停與升級；供應不足時無法啟用。鍛體室不會在在線或離線期間自動增加肉身進度。'])+helpCard('道童與資源生產',['道童可分配至食物、木材及隕鐵生產線；每條生產線每升一級可多安排一名道童。','三條生產線目前最高30級，因此單條生產線最多安排30名道童。','生產線等級與倉儲容量是煉體大境界突破條件的一部分，跨入鎮陸需三線皆達30級。'])+helpCard('煉丹、煉器與儲物袋',['丹房使用神念遠遊取得的主藥與丹砂製作永久屬性丹；可製作階級取決於三路最高境界。','器室可用織天台消耗木材、靈石製作補天絲；可在目前最高境界內自由選擇較低階織法，選擇會保留，離線期間照常推進。','儲物袋初始100格、最高19階，每次升階增加50格；每格同種道具最多容納9,999個。','器室也能使用神念遠遊素材、階材與器靈精魄製作裝備。'])+helpCard('書房',['山海志只收錄親自通過的九鎖封天地域，並記載所遇生靈與地方特產；未發現項目維持封卷。','戰錄彙整九鎖封天、試劍境、肉身試煉與因緣進度，不改變任何屬性。','典故錄只供重新翻閱已完成的主線對話與結果；因緣抉擇請由因緣入口的歲月錄查看。']),
     sect:helpCard('加入、離開與重返',['一至九星門派會隨三路最高境界依序開放；無門無派時可隨機尋訪目前可加入的門派。','隨機尋訪會優先遇到未拜入或尚未探索完整的門派；聲望堂信物可指定加入對應門派。','脫離門派後，需等待三個修練年才能再次免費尋訪；使用指定門派信物不受此等待限制。','每個門派的職位、功勳、貢獻、任務與傳承見聞都會獨立保存，日後重返可繼續累積。'])+helpCard('門派設施',['門派主殿：查看職位與資源、晉升、領取每日俸祿及脫離門派。','門人：切磋、向掌門請安或發起掌門挑戰；大長老與供奉可引導前往門派設施。','練功房：進行每日練功及掌門傳功。','執事堂：承接持續任務；傳功殿：學習門派功法；功勳堂：使用貢獻兌換物資。','門派見聞：只記錄玩家親自拜入後得知的門派與傳承線索。'])+helpCard('持續任務與三路判定',['門派任務依練氣、淬劍、煉體三路中的最高大境界解鎖：第一至第九境每境一項，之後於第11、13、15、17、19、21、23境各開一項，共16項。','每個門檻由最先令三路最高進度達標的道路決定任務內容；其他道路日後超越並跨過新門檻時，仍會正常解鎖新任務。','已解鎖任務的道路與內容永久保留，不會因切換道場或另一條路線追上而改變。','持續任務每個修練年同時增加本門功勳與門派貢獻，並發放靈石、聲望及對應正邪閱歷。'])+helpCard('功勳、貢獻與職位',['任務基礎功勳與貢獻由每年＋10逐步成長至＋50；門派閱歷仍會提高低階任務收益，但實際每年最高各＋50。','職位依累計本門功勳晉升，晉升不會扣除功勳；門派貢獻則保留給功勳堂兌換。','功勳堂供應釀坊原釀、丹藥素材與裝備素材；一般製作素材每種每日限換10份，器靈精魄每日限換2枚。','外門、內門、親傳、供奉、護法會影響功法、俸祿及部分門派功能。']),
-    wardrobe:helpCard('衣閣外觀',['髮型、服裝與真身只改變人物外觀，不會增加屬性或戰鬥力。','一般外觀可直接選用；標示「天工絕品・未擁有」的項目需使用靈玉永久購買。','天工絕品服裝每件50靈玉；天工絕品真身每款100靈玉。','服裝依男、女衣閣分別收藏；已購買的真身不受性別限制。'])+helpCard('購買與保存',['購買前會再次確認，靈玉扣除後立即加入目前角色衣閣。','衣閣收藏會隨角色存檔保存，使用帳號恢復碼移轉裝置時也會一併帶走。']),
-    account:helpCard('正式版 UID 與靈玉',['每名正式版玩家都有唯一 UID，可在「選單 → 設定」查看及複製；向開發者購買靈玉時請提供此 UID。','靈玉發放完成後，遊戲在線時會自動同步入帳；同一筆發放不會重複領取。','使用易名玉牒更改姓名後，潛龍榜與飛升榜會自動更新為新姓名。'])+helpCard('帳號恢復碼',['在「選單 → 設定」建立恢復碼後，遊戲會定期將角色存檔備份至正式版帳號。','更換裝置時，在標題畫面點擊「使用帳號恢復碼」，可取回角色、原 UID、排行榜身分、衣閣收藏與待領靈玉。','恢復成功後仍沿用原恢復碼；除非永久刪除角色，否則恢復碼不會失效或變更。恢復碼等同帳號密碼，切勿交給他人。','舊裝置在線時會偵測帳號已轉移並清除本機資料；若當時離線，會在下次連網後執行。'])+helpCard('遊戲連線與存檔',['切換到其他應用程式或暫時離開瀏覽器，不會強制斷線或返回標題畫面。','尚未建立恢復碼前，角色存檔只存在目前瀏覽器；清除網站資料、移除瀏覽器或遺失裝置可能導致角色無法取回。','永久刪除角色時，已建立的雲端備份與本機恢復碼也會一併刪除。'])
   };const encounterHelp=helpCard('因緣與歲月',['修練達10、30、50、100、300、500與1000年時，會留下固定歲月事件。','正常在線遊玩約每30至60分鐘可能遇見一樁隨機奇遇；離線、戰鬥與突破演出期間不會累積隨機奇遇計時。','奇遇可暫時收起，待處理事件會保留在右側「因緣」入口。'])+helpCard('抉擇與道心',['每樁奇遇均可守正、逐利或守衡，分別累積正氣、邪氣或兩者閱歷。','獎勵只使用正式既有物品，包括物資袋、凡間素材與渡劫丹；測試道具不會出現。','守正提高氣血、防禦與減傷；逐煞提高三路攻擊但略增承傷；守衡提高命中、閃避與第二招式。']);$('#helpContent').innerHTML=(tab==='encounter'?encounterHelp:pages[tab])||pages.cultivation;
 }
 const scriptureFloorTiers=[[1,2],[3,4],[5,6],[7,8],[9]];
@@ -3044,7 +3041,7 @@ $('#deleteVerifyBtn').onclick=()=>{
   $('#deleteError').textContent=''; showSettingsSection('#deleteStepTwo');
 };
 $('#deleteBackBtn').onclick=()=>showSettingsSection('#deleteStepOne');
-$('#deleteFinalBtn').onclick=async()=>{suppressSave=true;sessionOnline=false;clearTimeout(battleTimer);clearSwordTrialAdvance();clearTimeout(recoveryBackupTimer);battle=null;stopAllBgm();if(storedRecoveryCode())try{await recoveryRpc('delete_recovery_backup',{})}catch{}localStorage.removeItem(accountRecoveryConfig.codeKey);localStorage.removeItem(saveKey);state={...defaults,name:'',bornAt:null,lastSave:gameNow()};location.reload()};
+$('#deleteFinalBtn').onclick=()=>{suppressSave=true;sessionOnline=false;clearTimeout(battleTimer);clearSwordTrialAdvance();battle=null;stopAllBgm();localStorage.removeItem(saveKey);localStorage.removeItem('wendao-idle-v1');state={...defaults,name:'',bornAt:null,lastSave:gameNow()};location.reload()};
 $('#backToTitle').onclick=forceOffline;
 $('#backToTitle').addEventListener('click',()=>{$('#mailboxModal').classList.add('hidden');$('#mailDetailModal').classList.add('hidden');currentMailId=null});
 $('#muteBtn').onclick=()=>{state.muted=!state.muted;updateBgmVolume();render();save()};
