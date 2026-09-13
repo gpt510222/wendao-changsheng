@@ -454,7 +454,7 @@ function appearanceAsset(gender,appearance,outfit){
   if(qStyleMode){
     const g=gender==='男'?'male':'female';
     const requestedOutfit=Number(outfit)||1;
-    if(g==='male'&&requestedOutfit===9)return 'assets/qstyle-v2/male-outfit-9-animated.webp?v=20260912a';
+    if(g==='male'&&requestedOutfit===9)return 'assets/qstyle-v2/male-outfit-9-animated-v2.webp?v=20260913b';
     const selectedOutfit=Math.max(1,Math.min(8,requestedOutfit));
     const selectedAppearance=Math.max(1,Math.min(3,Number(appearance)||1));
     const asset=selectedAppearance===1
