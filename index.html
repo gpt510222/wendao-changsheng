@@ -9,7 +9,7 @@
   <link rel="manifest" href="manifest.webmanifest?v=20260911-1">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/qstyle-v2/app-icons/wendao-icon-180.png?v=20260911-1">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/qstyle-v2/app-icons/wendao-icon-32.png?v=20260911-1">
-  <link rel="stylesheet" href="styles.css?v=20260913-snapshot2">
+  <link rel="stylesheet" href="styles.css?v=20260914-recovery1">
   <link rel="stylesheet" href="q-style.css?v=20260913-26">
   <link rel="stylesheet" href="production-fix.css?v=20260911-05">
   <script>document.documentElement.classList.add('q-style');</script>
@@ -24,6 +24,7 @@
         <p class="seal">凡心一念・踏霧尋仙</p>
       </div>
       <div class="tap-to-enter"><span id="titleHint">點擊螢幕進入遊戲</span><small>CLICK TO ENTER</small></div>
+      <button id="titleRecoveryBtn" class="title-recovery-button" type="button">使用測試版恢復碼</button>
       <small class="version">概念試玩版 0.1</small>
     </section>
 
@@ -354,6 +355,12 @@
         <div class="paper-panel modal-card settings-card">
           <div id="settingsMain">
             <p class="eyebrow">遊戲選項</p><h2>設定</h2>
+            <section class="account-recovery-card">
+              <small>測試版永久恢復碼</small>
+              <b id="recoveryCodeValue">尚未建立</b>
+              <p id="recoveryCodeHint">建立後會自動備份測試版存檔，並永久沿用至角色刪除；請妥善保存。</p>
+              <div><button id="createRecoveryCodeBtn" type="button">建立恢復碼</button><button id="copyRecoveryCodeBtn" type="button" disabled>複製恢復碼</button></div>
+            </section>
             <button id="muteBtn" class="setting-row">♪ 靜音</button>
             <button id="deleteStartBtn" class="setting-row danger">刪除角色</button>
             <button id="settingsCloseBtn" class="text-button">關閉</button>
@@ -370,6 +377,16 @@
             <p>角色、境界與所有修為都會永久消失。</p>
             <button id="deleteFinalBtn" class="danger-button">確認永久刪除</button><button id="deleteBackBtn" class="text-button">返回</button>
           </div>
+        </div>
+      </div>
+
+      <div id="accountRecoveryModal" class="modal hidden">
+        <div class="paper-panel modal-card account-recovery-modal-card">
+          <p class="eyebrow">測試版帳號移轉</p><h2>使用永久恢復碼</h2>
+          <p>輸入原裝置保存的測試版恢復碼，即可取回測試版角色存檔與排行榜身分；不會影響正式版存檔。</p>
+          <input id="accountRecoveryInput" class="delete-input" placeholder="WDT1-XXXXXX-XXXXXX-XXXXXX-XXXXXX" autocomplete="off" spellcheck="false">
+          <p id="accountRecoveryError" class="error"></p>
+          <button id="accountRecoveryConfirm" class="jade-button">恢復帳號</button><button id="accountRecoveryCancel" class="text-button">取消</button>
         </div>
       </div>
 
@@ -562,10 +579,10 @@
   <audio id="tribulationFailureBgm" src="assets/bgm-tribulation-failure-v1.wav" preload="auto"></audio>
   <audio id="swordBreakthroughBgm" src="assets/bgm-sword-breakthrough-user-v1.wav" preload="auto"></audio>
   <script src="partner-system.js?v=20260911-6"></script>
-  <script src="game.js?v=20260914-production-curve"></script>
+  <script src="game.js?v=20260914-test-recovery1"></script>
   <script src="arena.js?v=20260913-snapshot2"></script>
   <script src="immortal-potential-system.js?v=20260912-2"></script>
   <script src="production-rows.js?v=20260911-05"></script>
-  <script>window.addEventListener('load',()=>{if(window.WENDAO_BUILD==='20260913-101')return;const key='wendao-build-refresh-20260913-101';if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,'1');let refreshed=false;const refresh=()=>{if(refreshed)return;refreshed=true;location.reload()};navigator.serviceWorker?.addEventListener('controllerchange',refresh,{once:true});navigator.serviceWorker?.getRegistration().then(registration=>registration?.update()).catch(()=>{});setTimeout(refresh,1800)});</script>
+  <script>window.addEventListener('load',()=>{if(window.WENDAO_BUILD==='20260914-102')return;const key='wendao-build-refresh-20260914-102';if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,'1');let refreshed=false;const refresh=()=>{if(refreshed)return;refreshed=true;location.reload()};navigator.serviceWorker?.addEventListener('controllerchange',refresh,{once:true});navigator.serviceWorker?.getRegistration().then(registration=>registration?.update()).catch(()=>{});setTimeout(refresh,1800)});</script>
 </body>
 </html>

@@ -1,9 +1,11 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
-window.WENDAO_BUILD='20260913-101';
+window.WENDAO_BUILD='20260914-102';
 const qStyleMode=true;
-const leaderboardConfig={url:'https://oxzuunzhsbvumxxbezev.supabase.co',publishableKey:'sb_publishable_u2rmM6v1-AdjRLMZSVetRw_MgjeWSL3',sessionKey:'wendao-supabase-session-v1',gameVersion:'20260902-49',limit:50};
+const leaderboardConfig={url:'https://oxzuunzhsbvumxxbezev.supabase.co',publishableKey:'sb_publishable_u2rmM6v1-AdjRLMZSVetRw_MgjeWSL3',sessionKey:'wendao-supabase-session-test-v1',legacySessionKey:'wendao-supabase-session-v1',gameVersion:'20260902-49',limit:50};
 let leaderboardSyncTimer=0,leaderboardSyncInFlight=false,leaderboardKnownPower=null,leaderboardKnownName='',leaderboardKnownAscensionKey='',leaderboardKnownImmortalKey='';
+const accountRecoveryConfig={codeKey:'wendao-recovery-code-test-v1',boundUidKey:'wendao-bound-player-uid-test-v1',transferNoticeKey:'wendao-test-account-transfer-notice'};
+let recoveryBackupTimer=0,recoveryBackupInFlight=false,accountOwnershipCheckInFlight=false;
 
 const spiritRealms = ['聽息','引霞','凝曜','靈胎','化念','歸流','照虛','踏霄','遊穹','蛻凡','玄闕','天衡','玉宸','羅穹','神庭','寂空','渡厄','渾天','近聖','證聖','長明','道尊','天序'];
 const bodyRealms = ['塵軀','納勁','纏筋','玉骨','鳴髓','血海','靈藏','周天','曜身','擎嶽','撼霄','鎮陸','渡星','寰甲','無量','萬劫','諸漏盡','無漏金身','不滅法體','滴血重生','法天象地','天地同軀','肉身成聖'];
@@ -898,13 +900,28 @@ function displayedCore(attribute){return Math.round(effectiveCore(attribute))}
 const combatPowerWeights={rootBone:10,trueQi:25,physique:20,agility:15,spiritualPower:30};
 function combatPower(){return Math.round(Object.entries(combatPowerWeights).reduce((sum,[key,weight])=>sum+Math.max(0,effectiveCore(key))*weight,0))}
 function leaderboardHeaders(accessToken=''){const headers={apikey:leaderboardConfig.publishableKey,'Content-Type':'application/json'};if(accessToken)headers.Authorization=`Bearer ${accessToken}`;return headers}
-function readLeaderboardSession(){try{return JSON.parse(localStorage.getItem(leaderboardConfig.sessionKey))}catch{return null}}
+function readLeaderboardSession(){try{const current=localStorage.getItem(leaderboardConfig.sessionKey),legacy=!current&&leaderboardConfig.legacySessionKey?localStorage.getItem(leaderboardConfig.legacySessionKey):null,session=JSON.parse(current||legacy);if(!current&&session?.access_token)storeLeaderboardSession(session);return session}catch{return null}}
 function storeLeaderboardSession(session){if(!session?.access_token||!session?.user?.id)return null;const stored={access_token:session.access_token,refresh_token:session.refresh_token,user:{id:session.user.id},expires_at:Date.now()+Math.max(60,session.expires_in||3600)*1000};localStorage.setItem(leaderboardConfig.sessionKey,JSON.stringify(stored));return stored}
-async function ensureLeaderboardSession(){
-  let session=readLeaderboardSession();if(session?.access_token&&session?.user?.id&&session.expires_at>Date.now()+60000)return session;
+async function ensureLeaderboardSession(forceRefresh=false){
+  let session=readLeaderboardSession();if(!forceRefresh&&session?.access_token&&session?.user?.id&&session.expires_at>Date.now()+60000)return session;
   if(session?.refresh_token){try{const response=await fetch(`${leaderboardConfig.url}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:leaderboardHeaders(),body:JSON.stringify({refresh_token:session.refresh_token})});if(response.ok)return storeLeaderboardSession(await response.json())}catch{}}
+  localStorage.removeItem(leaderboardConfig.sessionKey);
   const response=await fetch(`${leaderboardConfig.url}/auth/v1/signup`,{method:'POST',headers:leaderboardHeaders(),body:'{}'});if(!response.ok)throw new Error('anonymous sign-in failed');return storeLeaderboardSession(await response.json());
 }
+function clearTransferredDeviceData(){if(suppressSave)return;suppressSave=true;sessionOnline=false;clearTimeout(battleTimer);clearSwordTrialAdvance();clearTimeout(recoveryBackupTimer);battle=null;stopAllBgm();sessionStorage.setItem(accountRecoveryConfig.transferNoticeKey,'1');localStorage.removeItem(accountRecoveryConfig.codeKey);localStorage.removeItem(accountRecoveryConfig.boundUidKey);localStorage.removeItem(leaderboardConfig.sessionKey);localStorage.removeItem(saveKey);localStorage.removeItem('wendao-idle-v1');location.reload()}
+function storedRecoveryCode(){return localStorage.getItem(accountRecoveryConfig.codeKey)||''}
+function normalizeRecoveryCode(value){const compact=String(value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(!compact.startsWith('WDT1')||compact.length!==28)return '';return `WDT1-${compact.slice(4,10)}-${compact.slice(10,16)}-${compact.slice(16,22)}-${compact.slice(22,28)}`}
+function generateRecoveryCode(){const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',bytes=crypto.getRandomValues(new Uint8Array(24)),body=[...bytes].map(value=>alphabet[value%alphabet.length]).join('');return `WDT1-${body.slice(0,6)}-${body.slice(6,12)}-${body.slice(12,18)}-${body.slice(18,24)}`}
+async function recoveryCodeHash(code){const normalized=normalizeRecoveryCode(code);if(!normalized)throw new Error('恢復碼格式不正確');const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(normalized));return [...new Uint8Array(bytes)].map(value=>value.toString(16).padStart(2,'0')).join('')}
+function recoverySaveData(){return JSON.parse(JSON.stringify(state,(_,value)=>typeof value==='bigint'?value.toString():value))}
+async function recoveryRpc(name,body,retryAuth=true){let session=await ensureLeaderboardSession(),response=await fetch(`${leaderboardConfig.url}/rest/v1/rpc/${name}`,{method:'POST',headers:leaderboardHeaders(session.access_token),body:JSON.stringify(body)});if(response.status===401&&retryAuth){await ensureLeaderboardSession(true);return recoveryRpc(name,body,false)}const data=await response.json().catch(()=>null);if(!response.ok)throw new Error(data?.message||'帳號恢復服務暫時無法使用');return {session,data}}
+async function uploadRecoveryBackup(code=storedRecoveryCode()){if(!code||recoveryBackupInFlight||!state.name)return;recoveryBackupInFlight=true;try{const {session}=await recoveryRpc('save_test_recovery_backup',{p_recovery_hash:await recoveryCodeHash(code),p_save_data:recoverySaveData()});localStorage.setItem(accountRecoveryConfig.boundUidKey,session.user.id)}finally{recoveryBackupInFlight=false}}
+function scheduleRecoveryBackup(){if(!storedRecoveryCode()||!state.name||recoveryBackupTimer)return;recoveryBackupTimer=setTimeout(()=>{recoveryBackupTimer=0;uploadRecoveryBackup().catch(()=>{})},15000)}
+async function verifyAccountOwnership(){const code=storedRecoveryCode(),boundUid=localStorage.getItem(accountRecoveryConfig.boundUidKey),session=readLeaderboardSession();if(!state.name||!code||!boundUid||!session?.user?.id||accountOwnershipCheckInFlight||document.hidden)return;accountOwnershipCheckInFlight=true;try{const {data}=await recoveryRpc('check_test_recovery_owner',{p_recovery_hash:await recoveryCodeHash(code)});if(data!==true)clearTransferredDeviceData()}catch{}finally{accountOwnershipCheckInFlight=false}}
+function refreshRecoveryCodeDisplay(){const code=storedRecoveryCode(),value=$('#recoveryCodeValue'),create=$('#createRecoveryCodeBtn'),copy=$('#copyRecoveryCodeBtn');if(value)value.textContent=code||'尚未建立';if(create){create.textContent=code?'永久恢復碼已建立':'建立恢復碼';create.disabled=!!code}if(copy)copy.disabled=!code}
+async function createRecoveryCode(){if(recoveryBackupInFlight)throw new Error('存檔正在備份，請稍後再試');const button=$('#createRecoveryCodeBtn'),hint=$('#recoveryCodeHint');if(storedRecoveryCode()){hint.textContent='此恢復碼會永久沿用，直到角色被刪除。';return}button.disabled=true;hint.textContent='正在建立恢復碼並備份角色……';try{const code=generateRecoveryCode();await uploadRecoveryBackup(code);localStorage.setItem(accountRecoveryConfig.codeKey,code);refreshRecoveryCodeDisplay();hint.textContent='測試版雲端備份已完成；請妥善保存此永久恢復碼。';toast('測試版永久恢復碼已建立')}catch(error){hint.textContent=`建立失敗：${error.message}`;throw error}finally{button.disabled=!!storedRecoveryCode()}}
+function openAccountRecovery(event){event?.stopPropagation();$('#accountRecoveryInput').value='';$('#accountRecoveryError').textContent='';$('#accountRecoveryConfirm').disabled=false;$('#accountRecoveryModal').classList.remove('hidden')}
+async function recoverAccount(){const input=$('#accountRecoveryInput'),button=$('#accountRecoveryConfirm'),code=normalizeRecoveryCode(input.value);if(!code){$('#accountRecoveryError').textContent='恢復碼格式不正確';return}if(state.name&&!await gameConfirm('恢復帳號會以雲端存檔取代此裝置目前的測試版角色。確定繼續？',{title:'取代測試版角色',confirmText:'確認恢復',danger:true}))return;button.disabled=true;$('#accountRecoveryError').textContent='正在取回測試版帳號……';try{const {session,data}=await recoveryRpc('recover_test_account',{p_recovery_hash:await recoveryCodeHash(code)});if(!data||typeof data!=='object'||!data.name)throw new Error('找不到可恢復的測試版角色存檔');localStorage.setItem(saveKey,JSON.stringify(data));localStorage.setItem(accountRecoveryConfig.codeKey,code);localStorage.setItem(accountRecoveryConfig.boundUidKey,session.user.id);leaderboardKnownPower=null;leaderboardKnownName='';leaderboardKnownAscensionKey='';leaderboardKnownImmortalKey='';state={...defaults,...data};await uploadRecoveryBackup(code);location.reload()}catch(error){$('#accountRecoveryError').textContent=error.message;button.disabled=false}}
 function ascensionLeaderboardKey(a=normalizeAscension()){return a.ascended?`${Math.max(1,Number(a.ascendedAt)||Date.now())}:${a.route}`:''}
 function immortalLeaderboardKey(){const a=normalizeAscension();if(!a.ascended)return '';const im=a.immortalRealm,w=im.wasteland||{},exploration=Math.min(100,(Array.isArray(im.investigated)?im.investigated.length:0)*15+(im.guideStoneStage||0)*10+(im.outerRouteCleared?25:0)),wastelandProgress=Object.values(w.routeProgress||{}).reduce((sum,value)=>sum+Math.max(0,Number(value)||0),0);return `${Math.max(0,im.guideStoneStage||0)}:${exploration}:${Math.max(0,im.expedition?.runs||0)}:${Math.max(0,w.outpostStage||0)}:${wastelandProgress}:${Math.max(0,w.bodyStage||0)}`}
 function leaderboardVersionValue(){const ascensionKey=ascensionLeaderboardKey(),immortalKey=immortalLeaderboardKey();return `${leaderboardConfig.gameVersion}${ascensionKey?`|A:${ascensionKey}`:''}${immortalKey?`|I:${immortalKey}`:''}`}
@@ -991,7 +1008,7 @@ function normalizePillEffectValues(needsMigration=false){
   return true;
 }
 function chanceFromRating(rating,cap) { return Math.min(cap,rating/(rating+1000)*100); }
-function save() { if(suppressSave)return;if(state.sect)syncCurrentSectRecord();const now=gameNow();if(sessionOnline||!state.name||!state.lastSave)state.lastSave=now;if(trustedClockReady)state.lastTrustedTime=Math.max(state.lastTrustedTime||0,now);localStorage.setItem(saveKey,JSON.stringify(state,(_,value)=>typeof value==='bigint'?value.toString():value)) }
+function save() { if(suppressSave)return;if(state.sect)syncCurrentSectRecord();const now=gameNow();if(sessionOnline||!state.name||!state.lastSave)state.lastSave=now;if(trustedClockReady)state.lastTrustedTime=Math.max(state.lastTrustedTime||0,now);localStorage.setItem(saveKey,JSON.stringify(state,(_,value)=>typeof value==='bigint'?value.toString():value));scheduleRecoveryBackup() }
 function grantTestTribulationPills(){
   Object.keys(tribulationPillDefaults).forEach(key=>state[key]=Math.max(200,state[key]||0));
   state.testTribulationPillGrantVersion=1;
@@ -2668,6 +2685,7 @@ function openSettings() {
   $('#settingsModal').classList.remove('hidden');
   $('#deleteConfirmInput').value=''; $('#deleteError').textContent='';
   $('#deletePhraseHint').textContent=`${state.name}/刪除`;
+  refreshRecoveryCodeDisplay();
   showSettingsSection('#settingsMain');
 }
 function openHelp(){
@@ -2904,8 +2922,9 @@ load();normalizeSpiritRootCurve(spiritRootCurveMigrationNeeded);const pillEffect
 normalizeQiPath();
 try{const existing=JSON.parse(localStorage.getItem(saveKey));if(state.name&&(!existing||!Object.prototype.hasOwnProperty.call(existing,'cultivationAwakened')))state.cultivationAwakened=true}catch{}
 setClockAnchor(state.lastTrustedTime||Math.min(state.lastSave||Date.now(),Date.now()),location.protocol==='file:');
-$('#titleHint').textContent=state.name?'點擊螢幕繼續修煉':'點擊螢幕進入遊戲';
+const accountTransferNotice=sessionStorage.getItem(accountRecoveryConfig.transferNoticeKey);if(accountTransferNotice)sessionStorage.removeItem(accountRecoveryConfig.transferNoticeKey);$('#titleHint').textContent=accountTransferNotice?'測試版帳號已轉移・本機測試存檔已清除':state.name?'點擊螢幕繼續修煉':'點擊螢幕進入遊戲';
 $('#titleScreen').onclick=enterFromTitle;
+$('#titleRecoveryBtn').onclick=openAccountRecovery;
 $('#titleScreen').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();enterFromTitle()}};
 $('#prologueScreen').onclick=finishCreationPrologue;
 $('#prologueScreen').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();finishCreationPrologue()}};
@@ -3053,6 +3072,11 @@ $('#leaderboardBtn').onclick=openLeaderboard;
 $('#helpBtn').onclick=openHelp;
 $$('[data-help-tab]').forEach(button=>button.onclick=()=>renderHelp(button.dataset.helpTab));
 $('#settingsCloseBtn').onclick=()=>$('#settingsModal').classList.add('hidden');
+document.body.append($('#accountRecoveryModal'));
+$('#createRecoveryCodeBtn').onclick=()=>createRecoveryCode().catch(()=>{});
+$('#copyRecoveryCodeBtn').onclick=async()=>{const code=storedRecoveryCode();if(!code)return;try{await navigator.clipboard.writeText(code);toast('恢復碼已複製')}catch{toast('複製失敗，請長按恢復碼複製')}};
+$('#accountRecoveryCancel').onclick=()=>$('#accountRecoveryModal').classList.add('hidden');
+$('#accountRecoveryConfirm').onclick=recoverAccount;
 $('#helpCloseBtn').onclick=()=>$('#helpModal').classList.add('hidden');
 $('#marketButton').onclick=openMarket;
 $('#mailButton').onclick=openMailbox;
@@ -3091,7 +3115,7 @@ $('#deleteVerifyBtn').onclick=()=>{
   $('#deleteError').textContent=''; showSettingsSection('#deleteStepTwo');
 };
 $('#deleteBackBtn').onclick=()=>showSettingsSection('#deleteStepOne');
-$('#deleteFinalBtn').onclick=()=>{suppressSave=true;sessionOnline=false;clearTimeout(battleTimer);clearSwordTrialAdvance();battle=null;stopAllBgm();localStorage.removeItem(saveKey);localStorage.removeItem('wendao-idle-v1');state={...defaults,name:'',bornAt:null,lastSave:gameNow()};location.reload()};
+$('#deleteFinalBtn').onclick=async()=>{suppressSave=true;sessionOnline=false;clearTimeout(battleTimer);clearSwordTrialAdvance();clearTimeout(recoveryBackupTimer);battle=null;stopAllBgm();if(storedRecoveryCode())try{await recoveryRpc('delete_test_recovery_backup',{})}catch{}localStorage.removeItem(accountRecoveryConfig.codeKey);localStorage.removeItem(accountRecoveryConfig.boundUidKey);localStorage.removeItem(saveKey);localStorage.removeItem('wendao-idle-v1');state={...defaults,name:'',bornAt:null,lastSave:gameNow()};location.reload()};
 $('#backToTitle').onclick=forceOffline;
 $('#backToTitle').addEventListener('click',()=>{$('#mailboxModal').classList.add('hidden');$('#mailDetailModal').classList.add('hidden');currentMailId=null});
 $('#muteBtn').onclick=()=>{state.muted=!state.muted;updateBgmVolume();render();save()};
@@ -3146,7 +3170,9 @@ setInterval(updateDivineRoamingTimer,1000);
 setInterval(()=>{if(currentFeature==='immortal-restoration'&&(immortalRestorationJob()||wastelandRestorationJob()))renderImmortalRestoration()},5000);
 setInterval(()=>{const today=dateKey()||'local';if(today!==lastScriptureDayKey){lastScriptureDayKey=today;if(!$('#marketModal').classList.contains('hidden'))renderMarket(currentMarketTab);if(currentFeature==='cave'&&currentCaveView==='brew')renderBrewProduction($('#caveInner'));if(currentFeature==='sect'&&currentSectView==='shop')renderSectShop()}},1000);
 setInterval(()=>{if(sessionOnline&&!document.hidden)syncTrustedTime()},600000);
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&!suppressSave)save()});
+setInterval(verifyAccountOwnership,30000);
+window.addEventListener('online',verifyAccountOwnership);
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&!suppressSave)save();else if(!document.hidden)verifyAccountOwnership()});
 window.addEventListener('pagehide',()=>{if(!suppressSave)save()});
 async function initializeAssetCache(){
   if(!('serviceWorker' in navigator)||!/^https?:$/.test(location.protocol))return;
