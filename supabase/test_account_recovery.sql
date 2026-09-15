@@ -47,6 +47,8 @@ begin
   delete from public.arena_rewards where user_id=new_user and channel='test';
   delete from public.arena_matches where channel='test' and (challenger_id=new_user or defender_id=new_user);
   delete from public.arena_profiles where user_id=new_user and channel='test';
+  delete from private.player_state_events where user_id=new_user and channel='test';
+  delete from private.player_states where user_id=new_user and channel='test';
   update public.player_rankings set user_id=new_user
   where user_id=old_user and game_version like '20260902-49%';
   update public.arena_profiles set user_id=new_user where user_id=old_user and channel='test';
@@ -55,6 +57,8 @@ begin
   update public.arena_matches set challenger_id=new_user where challenger_id=old_user and channel='test';
   update public.arena_matches set defender_id=new_user where defender_id=old_user and channel='test';
   update private.arena_name_owners set user_id=new_user where user_id=old_user and channel='test';
+  update private.player_states set user_id=new_user where user_id=old_user and channel='test';
+  update private.player_state_events set user_id=new_user where user_id=old_user and channel='test';
   delete from public.test_account_recovery_backups where user_id=new_user;
   update public.test_account_recovery_backups set user_id=new_user,updated_at=now() where user_id=old_user;
   return recovered_save;
