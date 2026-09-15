@@ -1,14 +1,17 @@
 {
-  "id": "./",
-  "name": "問道長生",
-  "short_name": "問道長生",
-  "description": "踏霧尋仙，問道長生。",
+  "id": "./?app=test-pwa",
+  "name": "問道長生測試版",
+  "short_name": "問道長生測試",
+  "description": "問道長生功能測試版。",
   "lang": "zh-Hant",
-  "start_url": "./",
+  "start_url": "./?source=homescreen",
   "scope": "./",
-  "display": "browser",
+  "display": "standalone",
+  "display_override": ["standalone"],
   "background_color": "#0b3f43",
   "theme_color": "#0b3f43",
+  "categories": ["games"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "assets/qstyle-v2/app-icons/wendao-icon-192.png",
